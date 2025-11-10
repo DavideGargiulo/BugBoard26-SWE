@@ -137,3 +137,17 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# LaTeX intermediate and output files
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.blx
+*.log
+*.toc
+*.out
+*.psd
+*.lol
+*.html
+*.synctex.gz

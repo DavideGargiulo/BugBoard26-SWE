@@ -33,7 +33,7 @@
 
 \RequirePackage{titling}
 \RequirePackage{titletoc}
-\RequirePackage{etoc}
+%\RequirePackage{etoc}
 \RequirePackage[explicit]{titlesec}
 \RequirePackage{eso-pic,transparent}
 
@@ -45,6 +45,12 @@
 \RequirePackage{xpatch}
 \RequirePackage{rotating}
 \RequirePackage{fbox}
+
+\RequirePackage[most]{tcolorbox}
+\RequirePackage{tabularx}
+\RequirePackage{tikz}
+\usetikzlibrary{shadows}
+\RequirePackage{wrapfig}
 
 % Some colors
 \definecolor{arsenic}{rgb}{0.40, 0.40, 0.40}
@@ -248,7 +254,7 @@
     \vskip 10\p@%
     {\normalfont #3}\par%
     \vskip 20\p@%
-    \localtableofcontents
+    %\localtableofcontents
     \@endpart}
 \makeatother
 
@@ -272,86 +278,42 @@
 \arrayrulecolor{beaublue}
 \numberwithin{equation}{section}
 
-\usepackage[most]{tcolorbox}
-\usepackage{tabularx}
-\usepackage{tikz}
-\usetikzlibrary{shadows}
-
-\newcommand{\persona}[7]{%
-\begin{tcolorbox}[
-    enhanced,
-    colback=white,
-    colframe=lightgray,
-    arc=5pt,
-    boxrule=1pt,
-    width=\textwidth,
-    left=10pt,
-    right=10pt,
-    top=10pt,
-    bottom=10pt
-]
-
-% Nome della persona
-\textcolor{brown}{\Large\textbf{#1}}
-
-\vspace{8pt}
-
-% --- Layout immagine + testo fluido ---
-\noindent
-\begin{minipage}[t]{0.27\textwidth}
-    \includegraphics[width=\linewidth, height=5cm, keepaspectratio]{#2}
-\end{minipage}\hspace{1em}%
-\begin{minipage}[t]{\dimexpr\textwidth-0.27\textwidth-2em\relax}
-    \renewcommand{\arraystretch}{1.3}
-    \begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash\bfseries}p{3cm}X}
-        Età & #3 \\
-        \rowcolor{ultralight}
-        Residenza & #4 \\
-        Istruzione & #5 \\
-        \rowcolor{ultralight}
-        Lavoro & #6 \\
-        Tratti personali & #7 \\
-    \end{tabularx}
-\end{minipage}
-
-\end{tcolorbox}
-}
-
-
 % Comando per la sezione Biografia
 \newcommand{\biografia}[1]{%
-\vspace{15pt}
-\noindent
-\begin{tabular}{@{}p{\textwidth}@{}}
-\rowcolor{teal!70!cyan!80}\textcolor{white}{\textbf{Biografia}} \\
-\hline
-\begin{minipage}[t]{\dimexpr\textwidth-2\tabcolsep}
-\vspace{8pt}
-#1
-\vspace{8pt}
-\end{minipage} \\
-\hline
-\end{tabular}
+  \begin{tcolorbox}[
+    enhanced,
+    title=Biografia,
+    colback=ultralight,
+    colframe=beaublue,
+    coltitle=white,
+    colbacktitle=beaublue,
+    fonttitle=\bfseries,
+    boxrule=1pt,
+    arc=0pt
+  ]
+  #1
+  \end{tcolorbox}
 }
 
 % Comando per la sezione Scopi e Obiettivi
 \newcommand{\scopiobiettivi}[1]{%
-\vspace{15pt}
-\noindent
-\begin{tabular}{@{}p{\textwidth}@{}}
-\rowcolor{teal!70!cyan!80}\textcolor{white}{\textbf{Scopi e obiettivi in riferimento al sistema}} \\
-\hline
-\begin{minipage}[t]{\dimexpr\textwidth-2\tabcolsep}
-\vspace{8pt}
-#1
-\vspace{8pt}
-\end{minipage} \\
-\hline
-\end{tabular}
+  \begin{tcolorbox}[
+    enhanced,
+    title=Scopi e obiettivi in riferimento al sistema,
+    colback=ultralight,
+    colframe=beaublue,
+    coltitle=white,
+    colbacktitle=beaublue,
+    fonttitle=\bfseries,
+    boxrule=1pt,
+    arc=0pt
+  ]
+  #1
+  \end{tcolorbox}
 }
 
-\newcommand{\personaext}[8]{%
-\begin{tcolorbox}[
+\newcommand{\persona}[8]{%
+  \begin{tcolorbox}[
     enhanced,
     colback=white,
     colframe=lightgray,
@@ -362,32 +324,27 @@
     right=10pt,
     top=10pt,
     bottom=10pt
-]
+  ]
 
-% Nome della persona
-\textcolor{brown}{\Large\textbf{#1}}
+  \textcolor{brown}{\Large\textbf{#1}}
 
-\vspace{8pt}
+  \vspace{8pt}
 
-% --- Layout immagine + testo fluido ---
-\noindent
-\begin{minipage}[t]{0.27\textwidth}
+  \setlength{\columnsep}{1em}
+
+  \begin{wrapfigure}{L}{0.27\textwidth}
+    \vspace{-0.8\baselineskip}
     \includegraphics[width=\linewidth, height=5cm, keepaspectratio]{#2}
-\end{minipage}\hspace{1em}%
-\begin{minipage}[t]{\dimexpr\textwidth-0.27\textwidth-2em\relax}
-    \renewcommand{\arraystretch}{1.3}
-    \begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash\bfseries}p{3cm}X}
-        Età & #3 \\
-        \rowcolor{ultralight}
-        Residenza & #4 \\
-        Istruzione & #5 \\
-        \rowcolor{ultralight}
-        Lavoro & #6 \\
-        Tratti personali & #7 \\
-        \rowcolor{ultralight}
-        Interessi & #8 \\
-    \end{tabularx}
-\end{minipage}
+  \end{wrapfigure}
 
-\end{tcolorbox}
+  \noindent\textbf{Età:} #3 \par
+  \noindent\textbf{Residenza:} #4 \par
+  \noindent\textbf{Istruzione:} #5 \par
+  \noindent\textbf{Lavoro:} #6 \par
+  \noindent\textbf{Tratti personali:} #7 \par
+  \noindent\textbf{Interessi:} #8 \par
+
+  \vspace{1pt}
+
+  \end{tcolorbox}
 }

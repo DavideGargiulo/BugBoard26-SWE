@@ -1,0 +1,54 @@
+\chapter{Descrizione dei requisiti non-funzionali e di dominio}
+
+\section{Requisiti non-funzionali}
+
+\begin{table}[H]
+  \centering
+  \renewcommand{\arraystretch}{1.8}
+  \setlength{\tabcolsep}{12pt}
+  \begin{tabularx}{\textwidth}{>{\centering\arraybackslash\bfseries}p{2.5cm}X}
+    \rowcolor{airforceblue!80!cyan}
+    \textcolor{white}{\textbf{Codice}} & \textcolor{white}{\textbf{Requisito}} \\
+    \hline
+    \rowcolor{beaublue!30}
+    \textit{SR01} & Il Sistema deve essere realizzato in modo distribuito prevedendo almeno due macro-componenti indipendenti (back-end/front-end). \\
+    \hline
+    SR02 & Il back-end deve esporre interfacce di programmazione accessibili via rete. \\
+    \hline
+    \rowcolor{beaublue!30}
+    \textit{SR03} & Il back-end dovrebbe essere distribuito utilizzando tecnologie di containerizzazione. \\
+    \hline
+    SR04 & Il front-end deve essere un'interfaccia utente che si appoggia ai servizi offerti dal back-end esclusivamente attraverso la rete. \\
+    \hline
+    \rowcolor{beaublue!30}
+    \textit{SR05} & La parte front-end deve essere realizzata come applicazione web app spa. \\
+    \hline
+    SR06 & La logica applicativa e la persistenza dei dati non devono essere gestite esclusivamente tramite servizi esterni. \\
+    \hline
+    \rowcolor{beaublue!30}
+    \textit{SR07} & Il Sistema deve essere scritto in un linguaggio di programmazione che supporta il paradigma orientato agli oggetti. \\
+    \hline
+    SR08 & Il Sistema deve essere conforme al GDPR per la protezione dei dati personali degli utenti. \\
+    \hline
+    \rowcolor{beaublue!30}
+    \textit{SR09} & Nel caso in cui il Sistema venga distribuito attraverso store di terze parti, deve essere conforme alle policy sui contenuti per sviluppatori di questi ultimi. \\
+    \hline
+    % TODO: Aggiungere requisiti di performance, usabilità, affidabilità, ecc.
+  \end{tabularx}
+\end{table}
+
+\section{Requisiti di dominio}
+
+\begin{table}[H]
+  \centering
+  \renewcommand{\arraystretch}{1.8}
+  \setlength{\tabcolsep}{12pt}
+  \begin{tabularx}{\textwidth}{>{\centering\arraybackslash\bfseries}p{2.5cm}X}
+    \rowcolor{airforceblue!80!cyan}
+    \textcolor{white}{\textbf{Codice}} & \textcolor{white}{\textbf{Requisito}} \\
+    \hline
+    \rowcolor{beaublue!30}
+    \textit{DR01} & Il Sistema deve essere realizzato in modo distribuito prevedendo almeno due macro-componenti indipendenti (back-end/front-end). \\
+    \hline
+  \end{tabularx}
+\end{table}

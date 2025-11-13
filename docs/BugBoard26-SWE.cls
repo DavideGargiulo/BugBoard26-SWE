@@ -52,6 +52,7 @@
 \usetikzlibrary{shadows}
 \RequirePackage{wrapfig}
 \RequirePackage{longtable}
+\RequirePackage[inkscapelatex=false]{svg}
 
 % Some colors
 \definecolor{arsenic}{rgb}{0.40, 0.40, 0.40}

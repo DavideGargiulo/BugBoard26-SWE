@@ -1,0 +1,5 @@
+{"rule":"MORFOLOGIK_RULE_IT_IT","sentence":"^\\Qairforceblue!80!cyan Use Case X Crea Nuova Issue\\E$"}
+{"rule":"MORFOLOGIK_RULE_IT_IT","sentence":"^\\Qbeaublue!30 Scopo Un utente vuole creare una nuova Issue.\\E$"}
+{"rule":"MORFOLOGIK_RULE_IT_IT","sentence":"^\\Qbeaublue!30 Condizione finale di successo La nuova Issue è stata creata con successo nel sistema.\\E$"}
+{"rule":"GR_04_002","sentence":"^\\QCondizione finale di insuccesso La creazione della nuova Issue non è riuscita a causa di un errore del sistema o di dati non validi forniti dall'utente.\\E$"}
+{"rule":"MORFOLOGIK_RULE_IT_IT","sentence":"^\\Qbeaublue!30 Attore Principale Utente generale.\\E$"}

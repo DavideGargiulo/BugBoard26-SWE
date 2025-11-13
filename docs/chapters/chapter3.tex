@@ -1,0 +1,82 @@
+\chapter{Dettagli dei casi d'uso specifici}
+
+\section{Utente: Creazione di una nuova Issue}
+
+\begin{longtable}{|>{\centering\arraybackslash\bfseries}p{2.5cm}|p{11cm}|}
+  \hline
+  \rowcolor{airforceblue!80!cyan}
+  \textcolor{white}{\textbf{Use Case \#X}} & \textcolor{white}{\textbf{Crea Nuova Issue}} \\
+  \hline
+  \endfirsthead
+
+  \hline
+  \rowcolor{airforceblue!80!cyan}
+  \textcolor{white}{\textbf{Use Case \#X}} & \textcolor{white}{\textbf{Crea Nuova Issue}} \\
+  \hline
+  \endhead
+
+  \hline
+
+  \rowcolor{beaublue!30}
+  \textit{Scopo} & Un utente vuole creare una nuova Issue. \\
+  \hline
+
+  Precondizioni & L'utente è autenticato nel sistema. \\
+  \hline
+
+  \rowcolor{beaublue!30}
+  \textit{Condizione finale di successo} & La nuova Issue è stata creata con successo nel sistema. \\
+  \hline
+
+  Condizione finale di insuccesso & La creazione della nuova Issue non è riuscita a causa di un errore del sistema o di dati non validi forniti dall'utente. \\
+  \hline
+
+  \rowcolor{beaublue!30}
+  \textit{Attore Principale} & Utente generale. \\
+  \hline
+
+  Trigger & L'utente clicca sul bottone "Nuova Issue" in UC00\_MC00. \\
+  \hline
+
+  \rowcolor{beaublue!30}
+  \textit{Main Scenario} &
+    \begin{tabular}{|c|p{5cm}|p{4cm}|}
+      \hline
+      \rowcolor{beaublue!50}
+      \textbf{Step n.} & \textbf{Utente generale} & \textbf{Sistema} \\
+      \hline
+      01 & L'utente clicca sul bottone "Nuova Issue" in UC00\_MC00 & \\
+      \hline
+      02 & & Il sistema mostra UC00\_MC00 \\
+      \hline
+      03 & L'utente compila correttamente il form e clicca "Conferma" & \\
+      \hline
+      04 & & Mostra UC00\_MC00 e termina UC \\
+      \hline
+    \end{tabular} \\
+  \hline
+  Extension \#01 &
+    \begin{tabular}{|c|p{5cm}|p{4cm}|}
+      \hline
+      \rowcolor{beaublue!50}
+      \textbf{Step n.} & \textbf{Utente generale} & \textbf{Sistema} \\
+      \hline
+      3.01 & L'utente non compila titolo o descrizione e clicca "Conferma" & \\
+      \hline
+      4.01 & & Mostra messaggio di errore e riparte dal punto 2 \\
+      \hline
+    \end{tabular} \\
+  \hline
+  \textit{Extension \#02} &
+    \begin{tabular}{|c|p{5cm}|p{4cm}|}
+      \hline
+      \rowcolor{beaublue!50}
+      \textbf{Step n.} & \textbf{Utente generale} & \textbf{Sistema} \\
+      \hline
+      3.02 & L'utente clicca sul bottone "Annulla"& \\
+      \hline
+      4.02 & & Mostra UC00\_MC00 e termina UC \\
+      \hline
+    \end{tabular} \\
+  \hline
+\end{longtable}

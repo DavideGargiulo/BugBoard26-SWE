@@ -51,6 +51,7 @@
 \RequirePackage{tikz}
 \usetikzlibrary{shadows}
 \RequirePackage{wrapfig}
+\RequirePackage{longtable}
 
 % Some colors
 \definecolor{arsenic}{rgb}{0.40, 0.40, 0.40}

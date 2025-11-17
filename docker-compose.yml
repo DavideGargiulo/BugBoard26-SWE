@@ -6,9 +6,9 @@ services:
     image: postgres:17.6
     container_name: postgres_db
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: bugBoard
     ports:
       - "5432:5432"
     volumes:
@@ -22,47 +22,47 @@ services:
       retries: 5
 
   # Backend Express
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: express_backend
-    environment:
-      NODE_ENV: development
-      PORT: 3000
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: myuser
-      DB_PASSWORD: mypassword
-      DB_NAME: mydb
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - app-network
-    command: npm run dev
+  # backend:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: express_backend
+  #   environment:
+  #     NODE_ENV: development
+  #     PORT: 3000
+  #     DB_HOST: postgres
+  #     DB_PORT: 5432
+  #     DB_USER: myuser
+  #     DB_PASSWORD: mypassword
+  #     DB_NAME: mydb
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - ./backend:/app
+  #     - /app/node_modules
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   networks:
+  #     - app-network
+  #   command: npm run dev
 
-  # Frontend Angular
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: angular_frontend
-    ports:
-      - "4200:4200"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    depends_on:
-      - backend
-    networks:
-      - app-network
-    command: npm start
+  # # Frontend Angular
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: angular_frontend
+  #   ports:
+  #     - "4200:4200"
+  #   volumes:
+  #     - ./frontend:/app
+  #     - /app/node_modules
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - app-network
+  #   command: npm start
 
 volumes:
   postgres_data:

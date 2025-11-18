@@ -10,9 +10,9 @@ export const routes: Routes = [
   },
 
   {
-    path: "home",
+    path: "dashboard",
     component: DashboardComponent,
-    title: "Home - BugBoard"
+    title: "Dashboard - BugBoard"
   },
 
   // Redirect alla login se l'utente va sulla root
@@ -21,10 +21,5 @@ export const routes: Routes = [
     redirectTo: '/login',
     pathMatch: 'full'
   },
-
-  {
-    path: '**',
-    redirectTo: '/login'
-  }
 
 ];

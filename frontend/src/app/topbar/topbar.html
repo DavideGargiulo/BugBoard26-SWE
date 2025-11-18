@@ -1,0 +1,74 @@
+<div class="w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-5 flex flex-col gap-6">
+
+  <!-- Title row -->
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <h1 class="text-3xl font-semibold text-gray-900 dark:text-gray-100">Dashboard</h1>
+      <svg class="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="7" height="7" stroke-width="2"/>
+        <rect x="14" y="3" width="7" height="7" stroke-width="2"/>
+        <rect x="3" y="14" width="7" height="7" stroke-width="2"/>
+        <rect x="14" y="14" width="7" height="7" stroke-width="2"/>
+      </svg>
+    </div>
+
+    <!-- Pie chart + labels -->
+    <div class="flex items-center gap-3">
+      <div class="flex flex-col text-xs font-medium text-gray-700 dark:text-gray-300 gap-1">
+        <span class="px-2 py-0.5 bg-gray-200 dark:bg-gray-700 rounded">{{ todoPercentage }}% TODO</span>
+        <span class="px-2 py-0.5 bg-gray-200 dark:bg-gray-700 rounded">{{ inProgressPercentage }}% IN PROGRESS</span>
+        <span class="px-2 py-0.5 bg-gray-200 dark:bg-gray-700 rounded">{{ donePercentage }}% DONE</span>
+      </div>
+      <div class="w-24 h-24 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+    </div>
+  </div>
+
+  <!-- 3 dropdown filters -->
+  <div class="flex items-center gap-4">
+
+    <select
+      class="px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+    >
+      <option>Tipo</option>
+      <option>Bug</option>
+      <option>Feature</option>
+      <option>Question</option>
+      <option>Documentation</option>
+    </select>
+
+    <select
+      class="px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+    >
+      <option>Stato</option>
+      <option>TODO</option>
+      <option>In Progress</option>
+      <option>Done</option>
+    </select>
+
+    <select
+      class="px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+    >
+      <option>Priorità</option>
+      <option>Alta</option>
+      <option>Media</option>
+      <option>Bassa</option>
+    </select>
+
+  </div>
+
+  <!-- Search bar -->
+  <div class="relative w-full">
+    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8" stroke-width="2"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </span>
+    <input
+      type="text"
+      placeholder="Cerca issue..."
+      class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+    />
+  </div>
+
+</div>

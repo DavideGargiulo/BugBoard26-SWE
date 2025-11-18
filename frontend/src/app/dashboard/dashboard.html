@@ -1,1 +1,24 @@
-<p>dashboard works!</p>
+<!DOCTYPE html>
+<div class="flex h-screen w-full">
+
+  <!-- Sidebar a sinistra -->
+  <div class="w-64">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <!-- Contenuto + topbar a destra -->
+  <div class="flex-1 flex flex-col">
+
+    <!-- Topbar -->
+    <div class="topnav">
+      <app-topbar></app-topbar>
+    </div>
+
+    <!-- Qui il contenuto della pagina -->
+    <div class="flex-1 overflow-auto">
+      <router-outlet></router-outlet>
+    </div>
+
+  </div>
+
+</div>

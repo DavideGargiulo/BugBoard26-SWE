@@ -12,7 +12,7 @@ CREATE TYPE tipo_issue AS ENUM (
 );
 
 CREATE TYPE stato_issue AS ENUM (
-	'TODO',	
+	'TODO',
 	'In-Progress',
 	'Done'
 );
@@ -62,9 +62,12 @@ CREATE TABLE IF NOT EXISTS "commento" (
 -- Creazione tabella Allegato
 CREATE TABLE IF NOT EXISTS "allegato" (
 	id SERIAL PRIMARY KEY,
-	nome_file VARCHAR(255) NOT NULL,
-	contenuto BYTEA NOT NULL,
+	nome_file_originale VARCHAR(255) NOT NULL,
+	nome_file_storage VARCHAR(255) NOT NULL UNIQUE,  -- Nome univoco sul filesystem
+	percorso_relativo VARCHAR(500) NOT NULL,  -- Percorso dalla root dello storage
+	tipo_mime VARCHAR(50) NOT NULL,  -- es: 'image/jpeg', 'image/png'
 	dimensione_byte INTEGER NOT NULL CHECK (dimensione_byte <= 5242880),
+	hash_sha256 VARCHAR(64),  -- Per verifica integrità
 	id_commento INTEGER REFERENCES "commento"(id) ON DELETE CASCADE,
 	id_issue INTEGER REFERENCES "issue"(id) ON DELETE CASCADE,
 	CONSTRAINT chk_allegato_xor CHECK (
@@ -78,5 +81,6 @@ CREATE INDEX idx_issue_creatore ON "issue"(id_creatore);
 CREATE INDEX idx_issue_progetto ON "issue"(id_progetto);
 CREATE INDEX idx_commento_utente ON "commento"(id_utente);
 CREATE INDEX idx_commento_issue ON "commento"(id_issue);
-CREATE INDEX idx_allegato_commento ON "allegato"(id_commento);
-CREATE INDEX idx_allegato_issue ON "allegato"(id_issue);
+CREATE INDEX idx_allegato_commento ON "allegato"(id_commento) WHERE id_commento IS NOT NULL;
+CREATE INDEX idx_allegato_issue ON "allegato"(id_issue) WHERE id_issue IS NOT NULL;
+CREATE INDEX idx_allegato_hash ON "allegato"(hash_sha256) WHERE hash_sha256 IS NOT NULL;

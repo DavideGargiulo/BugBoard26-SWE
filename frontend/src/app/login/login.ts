@@ -60,8 +60,6 @@ export class LoginComponent {
       rememberMe: this.loginForm.value.rememberMe
     };
 
-    console.log('Credentials:', credentials);
-
     // Simulazione chiamata API
     this.performLogin(credentials);
   }
@@ -70,8 +68,40 @@ export class LoginComponent {
    * Simula una chiamata al backend per il login
    */
   private performLogin(credentials: any): void {
-    // Sostituisci con la tua chiamata HTTP reale
-    // Esempio: this.authService.login(credentials).subscribe(...)
+    const url = 'http://localhost:3000/api/login';
+
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials)
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const errText = await res.text().catch(() => res.statusText);
+          throw new Error(errText || `HTTP ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        // Salva token se presente
+        if (data && data.token) {
+          if (credentials.rememberMe) {
+            localStorage.setItem('authToken', data.token);
+          } else {
+            sessionStorage.setItem('authToken', data.token);
+          }
+        }
+
+        this.isLoading = false;
+        alert('Login effettuato con successo!');
+        this.router.navigate(['/home']);
+      })
+      .catch((err: any) => {
+        console.error('Login error:', err);
+        this.handleLoginError(err?.message || 'Errore durante il login');
+      });
+
+    return;
 
     setTimeout(() => {
       this.isLoading = false;

@@ -1,136 +1,78 @@
 const express = require('express')
+const cors = require('cors')
+const { Pool } = require('pg')
+// const bcrypt = require('bcrypt') // Aggiungi questa dipendenza
 const app = express()
 const port = 3000
 
+// Crea un pool di connessioni riutilizzabili
+const pool = new Pool({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
+})
+
+// Configura CORS per accettare richieste da Angular
+app.use(cors({
+  origin: 'http://localhost:4200',
+  credentials: true
+}))
+
+// Middleware per parsare JSON
+app.use(express.json())
+
 app.get('/', (req, res) => {
   res.send('Hello World!')
+})
+
+app.post('/api/login', async (req, res) => {
+  const { email, password } = req.body
+
+  // Validazione input
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' })
+  }
+
+  try {
+    const query = 'SELECT * FROM utente WHERE email = $1'
+    const result = await pool.query(query, [email])
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid credentials' })
+    }
+
+    const user = result.rows[0]
+
+    // VERIFICA LA PASSWORD
+    // Se usi bcrypt (RACCOMANDATO):
+    // const isPasswordValid = await bcrypt.compare(password, user.password)
+
+    // Oppure se la password è in chiaro nel DB (NON SICURO):
+    const isPasswordValid = password === user.password
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Invalid credentials' })
+    }
+
+    return res.json({
+      success: true,
+      userId: user.id,
+      username: user.username
+    })
+
+  } catch (err) {
+    console.error('Login error details:', err)
+    return res.status(500).json({ error: 'Internal server error' })
+  }
 })
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
 
-
-// const express = require('express');
-// const cors = require('cors');
-// const bodyParser = require('body-parser');
-// const { Pool } = require('pg');
-// require('dotenv').config();
-
-// const app = express();
-// const PORT = process.env.PORT || 3000;
-
-// // Middleware
-// app.use(cors());
-// app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({ extended: true }));
-
-// // Database configuration
-// const pool = new Pool({
-//   host: process.env.DB_HOST || 'postgres',
-//   port: process.env.DB_PORT || 5432,
-//   user: process.env.DB_USER || 'myuser',
-//   password: process.env.DB_PASSWORD || 'mypassword',
-//   database: process.env.DB_NAME || 'mydb',
-// });
-
-// // Test database connection
-// pool.connect((err, client, release) => {
-//   if (err) {
-//     console.error('Error connecting to database:', err.stack);
-//   } else {
-//     console.log('Database connected successfully');
-//     release();
-//   }
-// });
-
-// // Routes
-// app.get('/api/health', (req, res) => {
-//   res.json({ status: 'ok', message: 'Server is running' });
-// });
-
-// // Example: Get all items from a table
-// app.get('/api/items', async (req, res) => {
-//   try {
-//     const result = await pool.query('SELECT * FROM items ORDER BY id');
-//     res.json(result.rows);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: 'Database error' });
-//   }
-// });
-
-// // Example: Get single item
-// app.get('/api/items/:id', async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const result = await pool.query('SELECT * FROM items WHERE id = $1', [id]);
-
-//     if (result.rows.length === 0) {
-//       return res.status(404).json({ error: 'Item not found' });
-//     }
-
-//     res.json(result.rows[0]);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: 'Database error' });
-//   }
-// });
-
-// // Example: Create new item
-// app.post('/api/items', async (req, res) => {
-//   try {
-//     const { name, description } = req.body;
-//     const result = await pool.query(
-//       'INSERT INTO items (name, description) VALUES ($1, $2) RETURNING *',
-//       [name, description]
-//     );
-//     res.status(201).json(result.rows[0]);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: 'Database error' });
-//   }
-// });
-
-// // Example: Update item
-// app.put('/api/items/:id', async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const { name, description } = req.body;
-//     const result = await pool.query(
-//       'UPDATE items SET name = $1, description = $2 WHERE id = $3 RETURNING *',
-//       [name, description, id]
-//     );
-
-//     if (result.rows.length === 0) {
-//       return res.status(404).json({ error: 'Item not found' });
-//     }
-
-//     res.json(result.rows[0]);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: 'Database error' });
-//   }
-// });
-
-// // Example: Delete item
-// app.delete('/api/items/:id', async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const result = await pool.query('DELETE FROM items WHERE id = $1 RETURNING *', [id]);
-
-//     if (result.rows.length === 0) {
-//       return res.status(404).json({ error: 'Item not found' });
-//     }
-
-//     res.json({ message: 'Item deleted successfully' });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: 'Database error' });
-//   }
-// });
-
-// // Start server
-// app.listen(PORT, '0.0.0.0', () => {
-//   console.log(`Server is running on port ${PORT}`);
-// });
+// Gestione chiusura graceful
+process.on('SIGTERM', () => {
+  pool.end()
+})

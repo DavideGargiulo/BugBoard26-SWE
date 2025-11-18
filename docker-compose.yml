@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
-      POSTGRES_DB: bugBoard
+      POSTGRES_DB: bugboard
     ports:
       - "5432:5432"
     volumes:
@@ -28,7 +28,7 @@ services:
       DB_PORT: 5432
       DB_USER: postgres
       DB_PASSWORD: admin
-      DB_NAME: bugBoard
+      DB_NAME: bugboard
     ports:
       - "3000:3000"
     volumes:

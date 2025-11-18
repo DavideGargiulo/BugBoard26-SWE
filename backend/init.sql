@@ -12,7 +12,7 @@ CREATE TYPE tipo_issue AS ENUM (
 );
 
 CREATE TYPE stato_issue AS ENUM (
-	'TODO',
+	'TODO',	
 	'In-Progress',
 	'Done'
 );
@@ -24,13 +24,13 @@ CREATE TYPE priorita AS ENUM (
 );
 
 -- Creazione tabella Progetto (prima per le dipendenze)
-CREATE TABLE IF NOT EXISTS "Progetto" (
+CREATE TABLE IF NOT EXISTS "progetto" (
 	id SERIAL PRIMARY KEY,
 	nome VARCHAR(255) NOT NULL UNIQUE
 );
 
 -- Creazione tabella Utente
-CREATE TABLE IF NOT EXISTS "Utente" (
+CREATE TABLE IF NOT EXISTS "utente" (
 	id SERIAL PRIMARY KEY,
 	nome VARCHAR(255) NOT NULL,
 	cognome VARCHAR(255) NOT NULL,
@@ -40,33 +40,33 @@ CREATE TABLE IF NOT EXISTS "Utente" (
 );
 
 -- Creazione tabella Issue
-CREATE TABLE IF NOT EXISTS "Issue" (
+CREATE TABLE IF NOT EXISTS "issue" (
 	id SERIAL PRIMARY KEY,
 	titolo VARCHAR(255) NOT NULL,
 	descrizione TEXT NOT NULL,
 	tipo tipo_issue NOT NULL,
 	stato stato_issue NOT NULL,
 	priorita priorita,
-	id_creatore INTEGER NOT NULL REFERENCES "Utente"(id) ON DELETE CASCADE,
-	id_progetto INTEGER NOT NULL REFERENCES "Progetto"(id) ON DELETE CASCADE
+	id_creatore INTEGER NOT NULL REFERENCES "utente"(id) ON DELETE CASCADE,
+	id_progetto INTEGER NOT NULL REFERENCES "progetto"(id) ON DELETE CASCADE
 );
 
 -- Creazione tabella Commento
-CREATE TABLE IF NOT EXISTS "Commento" (
+CREATE TABLE IF NOT EXISTS "commento" (
 	id SERIAL PRIMARY KEY,
 	testo TEXT NOT NULL,
-	id_utente INTEGER NOT NULL REFERENCES "Utente"(id) ON DELETE CASCADE,
-	id_issue INTEGER NOT NULL REFERENCES "Issue"(id) ON DELETE CASCADE
+	id_utente INTEGER NOT NULL REFERENCES "utente"(id) ON DELETE CASCADE,
+	id_issue INTEGER NOT NULL REFERENCES "issue"(id) ON DELETE CASCADE
 );
 
 -- Creazione tabella Allegato
-CREATE TABLE IF NOT EXISTS "Allegato" (
+CREATE TABLE IF NOT EXISTS "allegato" (
 	id SERIAL PRIMARY KEY,
 	nome_file VARCHAR(255) NOT NULL,
 	contenuto BYTEA NOT NULL,
 	dimensione_byte INTEGER NOT NULL CHECK (dimensione_byte <= 5242880),
-	id_commento INTEGER REFERENCES "Commento"(id) ON DELETE CASCADE,
-	id_issue INTEGER REFERENCES "Issue"(id) ON DELETE CASCADE,
+	id_commento INTEGER REFERENCES "commento"(id) ON DELETE CASCADE,
+	id_issue INTEGER REFERENCES "issue"(id) ON DELETE CASCADE,
 	CONSTRAINT chk_allegato_xor CHECK (
 		(id_commento IS NOT NULL AND id_issue IS NULL) OR
 		(id_commento IS NULL AND id_issue IS NOT NULL)
@@ -74,9 +74,9 @@ CREATE TABLE IF NOT EXISTS "Allegato" (
 );
 
 -- Indici per migliorare le performance
-CREATE INDEX idx_issue_creatore ON "Issue"(id_creatore);
-CREATE INDEX idx_issue_progetto ON "Issue"(id_progetto);
-CREATE INDEX idx_commento_utente ON "Commento"(id_utente);
-CREATE INDEX idx_commento_issue ON "Commento"(id_issue);
-CREATE INDEX idx_allegato_commento ON "Allegato"(id_commento);
-CREATE INDEX idx_allegato_issue ON "Allegato"(id_issue);
+CREATE INDEX idx_issue_creatore ON "issue"(id_creatore);
+CREATE INDEX idx_issue_progetto ON "issue"(id_progetto);
+CREATE INDEX idx_commento_utente ON "commento"(id_utente);
+CREATE INDEX idx_commento_issue ON "commento"(id_issue);
+CREATE INDEX idx_allegato_commento ON "allegato"(id_commento);
+CREATE INDEX idx_allegato_issue ON "allegato"(id_issue);

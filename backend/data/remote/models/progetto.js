@@ -10,7 +10,10 @@ export function createProgettoModel(database) {
     nome: {
       type: DataTypes.STRING(255),
       allowNull: false,
-      unique: true
+      unique: true,
+      validate: {
+        notEmpty: true
+      }
     }
   }, {
     tableName: 'progetto',

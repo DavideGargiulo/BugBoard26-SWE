@@ -48,8 +48,11 @@ export function createAllegatoModel(database) {
     timestamps: false,
     validate: {
       checkXor() {
-        if ((this.id_commento !== null && this.id_issue !== null) ||
-            (this.id_commento === null && this.id_issue === null)) {
+        const commento = this.id_commento || null;
+        const issue = this.id_issue || null;
+
+        if ((commento !== null && issue !== null) ||
+            (commento === null && issue === null)) {
           throw new Error('Un allegato deve essere associato O a un commento O a un\'issue');
         }
       }

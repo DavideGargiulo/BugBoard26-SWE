@@ -1,11 +1,11 @@
-import { Sequilize } from 'sequelize';
+import { Sequelize } from 'sequelize';
 import { createUtenteModel } from '../models/utente.js';
 import { createIssueModel } from '../models/issue.js';
 import { createProgettoModel } from '../models/progetto.js';
 import { createCommentoModel } from '../models/commento.js';
 import { createAllegatoModel } from '../models/allegato.js';
 
-import '../../.env'
+import 'dotenv/env';
 
 export const database = new Sequelize(process.env.DB_CONNECTION_URI, {
   dialect: process.env.DIALECT,
@@ -19,7 +19,7 @@ createAllegatoModel(database);
 
 export const { Utente, Progetto, Issue, Commento, Allegato } = database.models;
 
-createAssociations();
+createAssociations(database.models);
 
 setUpTriggers();
 

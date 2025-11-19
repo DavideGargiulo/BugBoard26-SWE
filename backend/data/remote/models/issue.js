@@ -17,15 +17,24 @@ export function createIssueModel(database) {
     },
     tipo: {
       type: DataTypes.ENUM('Question', 'Bug', 'Documentation', 'Feature'),
-      allowNull: false
+      allowNull: false,
+      validate: {
+        isIn: [['Question', 'Bug', 'Documentation', 'Feature']]
+      }
     },
     stato: {
       type: DataTypes.ENUM('TODO', 'In-Progress', 'Done'),
-      allowNull: false
+      allowNull: false,
+      validate: {
+        isIn: [['TODO', 'In-Progress', 'Done']]
+      }
     },
     priorita: {
       type: DataTypes.ENUM('Alta', 'Media', 'Bassa'),
-      allowNull: true
+      allowNull: true,
+      validate: {
+        isIn: [['Alta', 'Media', 'Bassa']]
+      }
     },
     id_creatore: {
       type: DataTypes.INTEGER,

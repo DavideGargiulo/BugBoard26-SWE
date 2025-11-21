@@ -1,44 +1,56 @@
 import { Sequelize } from 'sequelize';
-import { createUtenteModel } from '../models/utente.js';
-import { createIssueModel } from '../models/issue.js';
-import { createProgettoModel } from '../models/progetto.js';
-import { createCommentoModel } from '../models/commento.js';
-import { createAllegatoModel } from '../models/allegato.js';
+import { createUtenteModel } from './models/utente.js';
+import { createIssueModel } from './models/issue.js';
+import { createProgettoModel } from './models/progetto.js';
+import { createCommentoModel } from './models/commento.js';
+import { createAllegatoModel } from './models/allegato.js';
 
-import 'dotenv/env';
+import 'dotenv/config';
 
 export const database = new Sequelize(process.env.DB_CONNECTION_URI, {
   dialect: process.env.DIALECT,
+  logging: false,
 });
 
+// Inizializzazione Modelli
 createProgettoModel(database);
 createUtenteModel(database);
 createIssueModel(database);
 createCommentoModel(database);
 createAllegatoModel(database);
 
-export const { Utente, Progetto, Issue, Commento, Allegato } = database.models;
+// --- CORREZIONE FONDAMENTALE ---
+// Sequelize ha salvato i modelli in minuscolo ('utente', 'issue'...).
+// Noi li estraiamo rinominandoli in Maiuscolo (Utente, Issue...) per usarli nel codice.
+export const {
+  utente: Utente,
+  progetto: Progetto,
+  issue: Issue,
+  commento: Commento,
+  allegato: Allegato
+} = database.models;
 
-createAssociations(database.models);
+// Creazione Associazioni
+createAssociations();
 
 setUpTriggers();
 
 database
   .sync()
-  .then(() => {})
+  .then(() => {
+      console.log('Database sincronizzato con successo.');
+  })
   .catch((err) => {
-    console.error(
-      'Error with database synchronization: ' + err.message,
-      err.stack
-    );
+    console.error('Errore sincronizzazione DB:', err);
   });
 
 function setUpTriggers() {
   console.log("Setting up database triggers...");
 }
 
-function createAssociations(models) {
-  const { Utente, Progetto, Issue, Commento, Allegato } = models;
+function createAssociations() {
+  // Nota: Non passiamo più 'models' come argomento, usiamo direttamente
+  // le variabili Utente, Issue, ecc. che abbiamo esportato sopra.
 
   // Utente-Issue (creatore) 1:N
   Issue.belongsTo(Utente, {

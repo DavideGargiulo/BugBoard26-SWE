@@ -39,18 +39,34 @@ export class SidebarComponent implements OnInit {
     name: 'Mario Rossi',
     role: 'Amministratore'
   };
+
   userInitials: string | undefined;
   userName: string | undefined;
   userRole: string | undefined;
+
+  isDarkMode: boolean = false;
 
   constructor(private router: Router) {}
 
   ngOnInit(): void {
     // Inizializza i progetti filtrati con tutti i progetti
+    this.isDarkMode = document.documentElement.classList.contains('dark');
     this.filteredProjects = [...this.projects];
     this.userInitials = this.user.initials;
     this.userName = this.user.name;
     this.userRole = this.user.role;
+  }
+
+  toggleTheme() {
+    this.isDarkMode = !this.isDarkMode;
+
+    if (this.isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark'); // Salva solo quando l'utente cambia manualmente
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light'); // Salva solo quando l'utente cambia manualmente
+    }
   }
 
   /**
@@ -98,8 +114,8 @@ export class SidebarComponent implements OnInit {
     this.selectedProject = project;
     console.log('Progetto selezionato:', project);
 
-    // Naviga alla pagina del progetto (opzionale)
-    // this.router.navigate(['/progetti', project]);
+    // Naviga alla pagina del progetto
+    this.router.navigate(['/progetto']);
   }
 
   /**

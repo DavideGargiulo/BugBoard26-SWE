@@ -1,6 +1,5 @@
-
 services:
-  # Database PostgreSQL
+  # Database PostgreSQL (condiviso)
   postgres:
     image: postgres:17.6
     container_name: postgres_db
@@ -12,6 +11,88 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis per Authentik
+  redis:
+    image: redis:alpine
+    container_name: authentik_redis
+    command: --save 60 1 --loglevel warning
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Authentik Server
+  authentik-server:
+    image: ghcr.io/goauthentik/server:2024.12.0
+    container_name: authentik_server
+    command: server
+    environment:
+      AUTHENTIK_SECRET_KEY: "chiave-segreta-cambiala-con-stringa-casuale-lunga"
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+      # Database - STESSO DATABASE DI BUGBOARD
+      AUTHENTIK_POSTGRESQL__HOST: postgres
+      AUTHENTIK_POSTGRESQL__PORT: 5432
+      AUTHENTIK_POSTGRESQL__NAME: bugboard
+      AUTHENTIK_POSTGRESQL__USER: postgres
+      AUTHENTIK_POSTGRESQL__PASSWORD: admin
+      # Redis
+      AUTHENTIK_REDIS__HOST: redis
+      # Email (opzionale)
+      AUTHENTIK_EMAIL__HOST: localhost
+      AUTHENTIK_EMAIL__PORT: 25
+      AUTHENTIK_EMAIL__FROM: authentik@localhost
+    ports:
+      - "9000:9000"
+      - "9443:9443"
+    volumes:
+      - authentik_media:/media
+      - authentik_templates:/templates
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  # Authentik Worker
+  authentik-worker:
+    image: ghcr.io/goauthentik/server:2024.12.0
+    container_name: authentik_worker
+    command: worker
+    environment:
+      AUTHENTIK_SECRET_KEY: "chiave-segreta-cambiala-con-stringa-casuale-lunga"
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+      # Database - STESSO DATABASE DI BUGBOARD
+      AUTHENTIK_POSTGRESQL__HOST: postgres
+      AUTHENTIK_POSTGRESQL__PORT: 5432
+      AUTHENTIK_POSTGRESQL__NAME: bugboard
+      AUTHENTIK_POSTGRESQL__USER: postgres
+      AUTHENTIK_POSTGRESQL__PASSWORD: admin
+      # Redis
+      AUTHENTIK_REDIS__HOST: redis
+    volumes:
+      - authentik_media:/media
+      - authentik_templates:/templates
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -29,6 +110,11 @@ services:
       DB_USER: postgres
       DB_PASSWORD: admin
       DB_NAME: bugboard
+      # Authentik - INSERISCI I TUOI VALORI
+      AUTHENTIK_URL: http://authentik-server:9000
+      AUTHENTIK_CLIENT_ID: PbvkfxOhqoNwRHcieFmFU3ao1han9rZtRMtyhpgO
+      AUTHENTIK_CLIENT_SECRET: DFyVSx4TpAxd5IQfDxSbVkFQ92deNCuHzoySGNa76uhgIeRqbM2gXRE7WoggDEaSmGxKAhiN7CtKLTMRprOtYxDHWTdviznTMRFaWvr79JgqGstyaLbIGfxWkOeer3S8
+      AUTHENTIK_REDIRECT_URI: http://localhost:4200/auth/callback
     ports:
       - "3000:3000"
     volumes:
@@ -36,6 +122,8 @@ services:
       - /app/node_modules
     depends_on:
       postgres:
+        condition: service_healthy
+      authentik-server:
         condition: service_started
     networks:
       - app-network
@@ -47,6 +135,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: angular_frontend
+    environment:
+      AUTHENTIK_URL: http://localhost:9000
     ports:
       - "4200:4200"
     volumes:
@@ -59,6 +149,9 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
+  authentik_media:
+  authentik_templates:
 
 networks:
   app-network:

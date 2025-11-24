@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+import { TopbarComponent } from "../_internalComponents/topbar/topbar";
 
 @Component({
   selector: 'app-project',
-  imports: [],
+  imports: [TopbarComponent],
   templateUrl: './project.html',
   styleUrl: './project.css',
 })

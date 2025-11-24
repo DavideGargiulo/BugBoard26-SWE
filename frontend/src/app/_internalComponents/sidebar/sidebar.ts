@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { ProjectService } from '../../_services/project/project-service';
 
 @Component({
   selector: 'app-sidebar',
@@ -9,6 +10,7 @@ import { Router } from '@angular/router';
   templateUrl: './sidebar.html',
   styleUrls: ['./sidebar.css']
 })
+
 export class SidebarComponent implements OnInit {
   // Lista progetti
   projects: string[] = [
@@ -46,7 +48,10 @@ export class SidebarComponent implements OnInit {
 
   isDarkMode: boolean = false;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private projectService: ProjectService
+  ) {}
 
   ngOnInit(): void {
     // Inizializza i progetti filtrati con tutti i progetti
@@ -113,6 +118,8 @@ export class SidebarComponent implements OnInit {
   selectProject(project: string): void {
     this.selectedProject = project;
     console.log('Progetto selezionato:', project);
+
+    this.projectService.setSelectedProject(project);
 
     // Naviga alla pagina del progetto
     this.router.navigate(['/progetto']);

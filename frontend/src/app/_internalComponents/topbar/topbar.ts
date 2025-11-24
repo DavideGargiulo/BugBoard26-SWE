@@ -1,9 +1,14 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-
+import { Component, EventEmitter, OnInit, Output, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router, NavigationEnd } from '@angular/router';
+import { ProjectService } from '../../_services/project/project-service';
+import { Subject, takeUntil } from 'rxjs';
+import { filter } from 'rxjs/operators';
 @Component({
   selector: 'app-topbar',
   templateUrl: './topbar.html',
-  styleUrls: ['./topbar.css'] // opzionale se usi Tailwind
+  styleUrls: ['./topbar.css'],
+  imports: [CommonModule]
 })
 export class TopbarComponent implements OnInit {
 
@@ -33,6 +38,19 @@ export class TopbarComponent implements OnInit {
   donePercentage: number | undefined;
 
   // ------------------------------
+  // COSTRUTTORE
+  // ------------------------------
+
+  currentRoute: string = '';
+  selectedProject: string | null = null;
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private router: Router,
+    private projectService: ProjectService
+  ) {}
+
+  // ------------------------------
   // EVENT HANDLERS
   // ------------------------------
 
@@ -53,6 +71,40 @@ export class TopbarComponent implements OnInit {
     this.todoPercentage = this.calcultateTodo();
     this.inProgressPercentage = this.calcultateProgress();
     this.donePercentage = this.calcultateDone();
+
+    // Ascolta i cambiamenti di route
+    this.router.events
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((event: any) => {
+        this.currentRoute = event.url;
+      });
+
+    // Ascolta i cambiamenti del progetto selezionato
+    this.projectService.selectedProject$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(project => {
+        this.selectedProject = project;
+      });
+
+    // Inizializza con la route corrente
+    this.currentRoute = this.router.url;
+
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  isDashboard(): boolean {
+    return this.currentRoute === '/dashboard' || this.currentRoute.startsWith('/dashboard');
+  }
+
+  isProject(): boolean {
+    return this.currentRoute.includes('/progetto');
   }
 
   calcultateTodo(): number {

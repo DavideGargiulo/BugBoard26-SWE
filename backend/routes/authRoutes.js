@@ -1,23 +1,18 @@
-import express from 'express';
-import {
-    login,
-    callback,
-    logout,
-    me
-} from '../controllers/authController.js';
+import { Router } from 'express';
+const router = Router();
 
-const router = express.Router();
+import { login, checkAuthStatus, logout } from '../controllers/authController.js';
 
-// GET /api/auth/login -> Reindirizza l'utente su Authentik
-router.get('/login', login);
+// 1. POST /api/auth/login
+// Riceve { username, password } da Angular e parla con Authentik
+router.post('/login', login);
 
-// GET /api/auth/callback -> Authentik ci rimanda qui con il codice
-router.get('/callback', callback);
+// 2. GET /api/auth/me
+// Verifica se il cookie di sessione è valido e restituisce i dati dell'utente.
+router.get('/me', checkAuthStatus);
 
-// GET /api/auth/me -> Il frontend chiama questo per sapere chi è loggato
-router.get('/me',QAme);
-
-// POST /api/auth/logout -> Distrugge la sessione
+// 3. POST /api/auth/logout
+// Cancella il cookie di sessione.
 router.post('/logout', logout);
 
 export default router;

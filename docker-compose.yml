@@ -40,9 +40,8 @@ services:
     container_name: authentik_server
     command: server
     environment:
-      AUTHENTIK_SECRET_KEY: "chiave-segreta-cambiala-con-stringa-casuale-lunga"
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
       AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
-      # Database - STESSO DATABASE DI BUGBOARD
       AUTHENTIK_POSTGRESQL__HOST: postgres
       AUTHENTIK_POSTGRESQL__PORT: 5432
       AUTHENTIK_POSTGRESQL__NAME: bugboard
@@ -50,10 +49,6 @@ services:
       AUTHENTIK_POSTGRESQL__PASSWORD: admin
       # Redis
       AUTHENTIK_REDIS__HOST: redis
-      # Email (opzionale)
-      AUTHENTIK_EMAIL__HOST: localhost
-      AUTHENTIK_EMAIL__PORT: 25
-      AUTHENTIK_EMAIL__FROM: authentik@localhost
     ports:
       - "9000:9000"
       - "9443:9443"
@@ -74,15 +69,13 @@ services:
     container_name: authentik_worker
     command: worker
     environment:
-      AUTHENTIK_SECRET_KEY: "chiave-segreta-cambiala-con-stringa-casuale-lunga"
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
       AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
-      # Database - STESSO DATABASE DI BUGBOARD
       AUTHENTIK_POSTGRESQL__HOST: postgres
       AUTHENTIK_POSTGRESQL__PORT: 5432
       AUTHENTIK_POSTGRESQL__NAME: bugboard
       AUTHENTIK_POSTGRESQL__USER: postgres
       AUTHENTIK_POSTGRESQL__PASSWORD: admin
-      # Redis
       AUTHENTIK_REDIS__HOST: redis
     volumes:
       - authentik_media:/media
@@ -110,11 +103,11 @@ services:
       DB_USER: postgres
       DB_PASSWORD: admin
       DB_NAME: bugboard
-      # Authentik - INSERISCI I TUOI VALORI
+
+      CLIENT_URL: http://localhost:4200
       AUTHENTIK_URL: http://authentik-server:9000
-      AUTHENTIK_CLIENT_ID: PbvkfxOhqoNwRHcieFmFU3ao1han9rZtRMtyhpgO
-      AUTHENTIK_CLIENT_SECRET: DFyVSx4TpAxd5IQfDxSbVkFQ92deNCuHzoySGNa76uhgIeRqbM2gXRE7WoggDEaSmGxKAhiN7CtKLTMRprOtYxDHWTdviznTMRFaWvr79JgqGstyaLbIGfxWkOeer3S8
-      AUTHENTIK_REDIRECT_URI: http://localhost:4200/auth/callback
+      AUTHENTIK_FLOW_SLUG: default-authentication-flow
+      NODE_TLS_REJECT_UNAUTHORIZED: "0" # <--- Importante in dev!
     ports:
       - "3000:3000"
     volumes:

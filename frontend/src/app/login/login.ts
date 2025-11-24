@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthGuard } from '../_auth/auth-guard';
+import { AuthService } from '../_services/auth/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -18,7 +18,8 @@ export class LoginComponent {
 
   constructor(
     private formBuilder: FormBuilder,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -57,8 +58,8 @@ export class LoginComponent {
 
     const credentials = {
       email: this.loginForm.value.email,
-      password: this.loginForm.value.password,
-      rememberMe: this.loginForm.value.rememberMe
+      password: this.loginForm.value.password
+      // rememberMe: this.loginForm.value.rememberMe
     };
 
     // Simulazione chiamata API
@@ -69,54 +70,16 @@ export class LoginComponent {
    * Simula una chiamata al backend per il login
    */
   private performLogin(credentials: any): void {
-    const url = 'http://localhost:3000/api/login';
-
-    fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(credentials)
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const errText = await res.text().catch(() => res.statusText);
-          throw new Error(errText || `HTTP ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((data) => {
-        // Salva token se presente
-        if (data && data.token) {
-          if (credentials.rememberMe) {
-            localStorage.setItem('authToken', data.token);
-          } else {
-            sessionStorage.setItem('authToken', data.token);
-          }
-        }
-
+    this.authService.login(credentials).subscribe({
+      next: (response) => {
         this.isLoading = false;
-        alert('Login effettuato con successo!');
-        this.router.navigate(['/home']);
-      })
-      .catch((err: any) => {
-        console.error('Login error:', err);
-        this.handleLoginError(err?.message || 'Errore durante il login');
-      });
-
-    return;
-
-    setTimeout(() => {
-      this.isLoading = false;
-
-      // Simulazione successo
-      console.log('Login effettuato con successo!');
-      alert('Login effettuato con successo!');
-
-      // Naviga alla dashboard o home page
-      // this.router.navigate(['/dashboard']);
-
-      // In caso di errore:
-      // this.handleLoginError('Credenziali non valide');
-    }, 1500);
+        this.router.navigate(['/dashboard']);
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.handleLoginError('Credenziali non valide. Riprova.');
+      }
+    });
   }
 
   /**

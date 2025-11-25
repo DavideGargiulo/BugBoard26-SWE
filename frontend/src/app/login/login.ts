@@ -1,111 +1,62 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
 import { AuthService } from '../_services/auth/auth.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-login',
+  standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './login.html',
-  styleUrl: './login.css',
+  // styleUrls: ['./login.css'] // Decommenta solo se il file esiste
 })
 export class LoginComponent {
+  loginForm: FormGroup;
+  errorMessage: string = '';
+  isLoading: boolean = false;
 
-  loginForm!: FormGroup;
-  showPassword = false;
-  isLoading = false;
+  // Variabile per gestire la visibilità della password
+  showPassword: boolean = false;
 
   constructor(
-    private formBuilder: FormBuilder,
-    private router: Router,
-    private authService: AuthService
-  ) {}
-
-  ngOnInit(): void {
-    this.initializeForm();
-  }
-
-  /**
-   * Inizializza il form con i validatori
-   */
-  private initializeForm(): void {
-    this.loginForm = this.formBuilder.group({
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {
+    this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      rememberMe: [false]
+      password: ['', Validators.required],
+      rememberMe: [false] // Aggiunto per risolvere l'errore "Cannot find control with name: 'rememberMe'"
     });
   }
 
-  /**
-   * Toggle per mostrare/nascondere la password
-   */
+  // Metodo chiamato dal pulsante occhio nel template
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
   }
 
-  /**
-   * Gestisce il submit del form
-   */
   onSubmit(): void {
-    // Marca tutti i campi come touched per mostrare gli errori
-    if (this.loginForm.invalid) {
-      this.loginForm.markAllAsTouched();
-      return;
+    if (this.loginForm.valid) {
+      this.isLoading = true;
+      this.errorMessage = '';
+
+      // Estraiamo i valori dal form
+      const { email, password, rememberMe } = this.loginForm.value;
+
+      // Nota: rememberMe per ora non lo usiamo nella logica di login, ma il form è valido.
+
+      this.authService.login(email, password).subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.router.navigate(['/dashboard']);
+        },
+        error: (err) => {
+          this.isLoading = false;
+          console.error('Login error', err);
+          this.errorMessage = 'Credenziali non valide.';
+        }
+      });
     }
-
-    this.isLoading = true;
-
-    const credentials = {
-      email: this.loginForm.value.email,
-      password: this.loginForm.value.password
-      // rememberMe: this.loginForm.value.rememberMe
-    };
-
-    // Simulazione chiamata API
-    this.performLogin(credentials);
   }
-
-  /**
-   * Simula una chiamata al backend per il login
-   */
-  private performLogin(credentials: any): void {
-    this.authService.login(credentials).subscribe({
-      next: (response) => {
-        this.isLoading = false;
-        this.router.navigate(['/dashboard']);
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.handleLoginError('Credenziali non valide. Riprova.');
-      }
-    });
-  }
-
-  /**
-   * Gestisce gli errori di login
-   */
-  private handleLoginError(errorMessage: string): void {
-    this.isLoading = false;
-    alert(errorMessage);
-
-    // Oppure mostra un messaggio di errore più elegante
-    // this.errorMessage = errorMessage;
-  }
-
-  /**
-   * Getter di utility per accedere facilmente ai controlli del form
-   */
-  get email() {
-    return this.loginForm.get('email');
-  }
-
-  get password() {
-    return this.loginForm.get('password');
-  }
-
-  get rememberMe() {
-    return this.loginForm.get('rememberMe');
-  }
-
 }

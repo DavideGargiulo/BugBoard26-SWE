@@ -1,126 +1,206 @@
 import axios from 'axios';
 
-const AUTHENTIK_URL = process.env.AUTHENTIK_URL;
-const FLOW_SLUG = process.env.AUTHENTIK_FLOW_SLUG || 'default-authentication-flow';
+const KEYCLOAK_URL = process.env.KEYCLOAK_URL;
+const KEYCLOAK_REALM = process.env.KEYCLOAK_REALM;
+const CLIENT_ID = process.env.KEYCLOAK_BACKEND_CLIENT_ID;
+const CLIENT_SECRET = process.env.KEYCLOAK_BACKEND_CLIENT_SECRET;
 
-function getCookieValue(cookieName, cookieArray) {
-  if (!cookieArray) return null;
-  const cookieString = cookieArray.find(c => c.trim().startsWith(`${cookieName}=`));
-  if (!cookieString) return null;
-  return cookieString.split(';')[0].split('=')[1];
-}
+const TOKEN_URL = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`;
+const USERINFO_URL = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/userinfo`;
+const LOGOUT_URL = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/logout`;
 
-function updateCookieJar(currentCookies, newCookies) {
-  if (!newCookies) return currentCookies;
-  return [...(currentCookies || []), ...newCookies];
-}
-
+/**
+ * Login con username/email e password
+ * Keycloak supporta il "Resource Owner Password Credentials Grant"
+ */
 export const login = async (req, res) => {
-  const { email, password } = req.body; // Cambiato da username a email
+  const { email, password } = req.body;
 
-  let cookieJar = [];
-  let csrfToken = '';
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email e password sono obbligatori' });
+  }
 
   try {
-    console.log("1. Inizio flusso su:", `${AUTHENTIK_URL}/api/v3/flows/executor/${FLOW_SLUG}/`);
+    console.log('Tentativo di login per:', email);
 
-    const initResponse = await axios.get(
-      `${AUTHENTIK_URL}/api/v3/flows/executor/${FLOW_SLUG}/`,
-      {
-        headers: { 'Content-Type': 'application/json' },
-        withCredentials: true
-      }
-    );
-
-    cookieJar = updateCookieJar(cookieJar, initResponse.headers['set-cookie']);
-    csrfToken = getCookieValue('authentik_csrf', cookieJar);
-
-    console.log("2. Invio Email...");
-
-    const identResponse = await axios.post(
-      `${AUTHENTIK_URL}/api/v3/flows/executor/${FLOW_SLUG}/`,
-      {
-        component: "ak-stage-identification",
-        uid_field: email // Cambiato da username a email
-      },
+    // Richiesta token a Keycloak usando Direct Access Grant (password grant)
+    const response = await axios.post(
+      TOKEN_URL,
+      new URLSearchParams({
+        grant_type: 'password',
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        username: email, // Keycloak accetta sia username che email
+        password: password,
+        scope: 'openid profile email'
+      }),
       {
         headers: {
-          'Content-Type': 'application/json',
-          'X-Authentik-CSRF': csrfToken,
-          'Cookie': cookieJar.join('; ')
-        },
-        withCredentials: true
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
       }
     );
 
-    cookieJar = updateCookieJar(cookieJar, identResponse.headers['set-cookie']);
+    const { access_token, refresh_token, expires_in } = response.data;
 
-    if (identResponse.data.component === 'ak-stage-access-denied') {
-      return res.status(401).json({ error: "Email non trovata o accesso negato" }); // Aggiornato messaggio
-    }
+    console.log('Login effettuato con successo per:', email);
 
-    console.log("3. Invio Password...");
-    const passwordResponse = await axios.post(
-      `${AUTHENTIK_URL}/api/v3/flows/executor/${FLOW_SLUG}/`,
-      {
-        component: "ak-stage-password",
-        password: password
-      },
-      {
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Authentik-CSRF': csrfToken,
-            'Cookie': cookieJar.join('; ')
-        },
-        withCredentials: true
-      }
-    );
+    // Salva i token in cookie httpOnly
+    res.cookie('access_token', access_token, {
+      httpOnly: true,
+      secure: false, // Metti true in produzione con HTTPS
+      sameSite: 'lax',
+      maxAge: expires_in * 1000 // Converti secondi in millisecondi
+    });
 
-    cookieJar = updateCookieJar(cookieJar, passwordResponse.headers['set-cookie']);
+    res.cookie('refresh_token', refresh_token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000 // 24 ore
+    });
 
-    if (passwordResponse.data.type === 'redirect' || passwordResponse.data.component === 'xak-flow-redirect') {
-      const sessionToken = getCookieValue('authentik_session', cookieJar);
-      if (sessionToken) {
-        res.cookie('authentik_session', sessionToken, {
-          httpOnly: true,
-          secure: false,
-          sameSite: 'lax',
-          maxAge: 24 * 60 * 60 * 1000
-        });
-        return res.json({ success: true, message: "Login effettuato!" });
-      }
-    }
-    return res.status(401).json({ error: "Credenziali non valide" });
+    return res.json({
+      success: true,
+      message: 'Login effettuato!',
+      expiresIn: expires_in
+    });
+
   } catch (error) {
-    console.error("Errore Auth:", error.response?.data || error.message);
-    return res.status(500).json({ error: "Errore interno del server durante il login" });
+    console.error('Errore durante il login:', error.response?.data || error.message);
+
+    if (error.response?.status === 401) {
+      return res.status(401).json({ error: 'Credenziali non valide' });
+    }
+
+    return res.status(500).json({
+      error: 'Errore interno del server durante il login',
+      details: error.response?.data?.error_description || error.message
+    });
   }
 };
 
+/**
+ * Verifica lo stato di autenticazione e restituisce i dati dell'utente
+ */
 export const checkAuthStatus = async (req, res) => {
-  const sessionCookie = req.cookies.authentik_session;
+  const accessToken = req.cookies.access_token;
 
-  if (!sessionCookie) {
+  if (!accessToken) {
     return res.status(401).json({ authenticated: false });
   }
 
   try {
-    const response = await axios.get(`${AUTHENTIK_URL}/api/v3/core/users/me/`, {
+    // Richiedi info utente a Keycloak
+    const response = await axios.get(USERINFO_URL, {
       headers: {
-        'Cookie': `authentik_session=${sessionCookie}`
+        'Authorization': `Bearer ${accessToken}`
       }
     });
 
     return res.json({
       authenticated: true,
-      user: response.data.user
+      user: response.data
     });
+
   } catch (error) {
+    console.error('Errore verifica autenticazione:', error.response?.data || error.message);
+
+    // Se il token è scaduto, prova a fare refresh
+    if (error.response?.status === 401) {
+      const refreshToken = req.cookies.refresh_token;
+
+      if (refreshToken) {
+        try {
+          const refreshResponse = await axios.post(
+            TOKEN_URL,
+            new URLSearchParams({
+              grant_type: 'refresh_token',
+              client_id: CLIENT_ID,
+              client_secret: CLIENT_SECRET,
+              refresh_token: refreshToken
+            }),
+            {
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+              }
+            }
+          );
+
+          const { access_token, refresh_token: new_refresh_token, expires_in } = refreshResponse.data;
+
+          // Aggiorna i cookie
+          res.cookie('access_token', access_token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            maxAge: expires_in * 1000
+          });
+
+          res.cookie('refresh_token', new_refresh_token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            maxAge: 24 * 60 * 60 * 1000
+          });
+
+          // Riprova a ottenere le info utente
+          const userResponse = await axios.get(USERINFO_URL, {
+            headers: {
+              'Authorization': `Bearer ${access_token}`
+            }
+          });
+
+          return res.json({
+            authenticated: true,
+            user: userResponse.data
+          });
+
+        } catch (refreshError) {
+          console.error('Errore refresh token:', refreshError.response?.data || refreshError.message);
+          return res.status(401).json({ authenticated: false });
+        }
+      }
+    }
+
     return res.status(401).json({ authenticated: false });
   }
 };
 
-export const logout = (req, res) => {
-  res.clearCookie('authentik_session');
-  res.json({ success: true, message: "Logout effettuato" });
+/**
+ * Logout: cancella i cookie e revoca il token su Keycloak
+ */
+export const logout = async (req, res) => {
+  const refreshToken = req.cookies.refresh_token;
+
+  try {
+    if (refreshToken) {
+      // Revoca il token su Keycloak
+      await axios.post(
+        LOGOUT_URL,
+        new URLSearchParams({
+          client_id: CLIENT_ID,
+          client_secret: CLIENT_SECRET,
+          refresh_token: refreshToken
+        }),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }
+      );
+    }
+  } catch (error) {
+    console.error('Errore durante il logout su Keycloak:', error.response?.data || error.message);
+    // Continua comunque a cancellare i cookie
+  }
+
+  // Cancella i cookie
+  res.clearCookie('access_token');
+  res.clearCookie('refresh_token');
+
+  return res.json({
+    success: true,
+    message: 'Logout effettuato'
+  });
 };

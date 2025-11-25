@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ProjectService } from '../../_services/project/project-service';
+import { AuthService } from '../../_services/auth/auth.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -50,7 +51,8 @@ export class SidebarComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private projectService: ProjectService
+    private projectService: ProjectService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -139,11 +141,6 @@ export class SidebarComponent implements OnInit {
    * Effettua il logout
    */
   logout(): void {
-    console.log('Logout effettuato');
-
-    // Logica per il logout (es. pulizia token, redirect, etc.)
-    // Esempio:
-    // this.authService.logout();
-    // this.router.navigate(['/login']);
+    this.authService.logout();
   }
 }

@@ -14,7 +14,7 @@ const LOGOUT_URL = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-con
  * Keycloak supporta il "Resource Owner Password Credentials Grant"
  */
 export const login = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, rememberMe } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Email e password sono obbligatori' });
@@ -53,11 +53,13 @@ export const login = async (req, res) => {
       maxAge: expires_in * 1000 // Converti secondi in millisecondi
     });
 
+    const refresh_token_maxAge = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000; // 30 giorni o 1 giorno
+
     res.cookie('refresh_token', refresh_token, {
       httpOnly: true,
       secure: false,
       sameSite: 'lax',
-      maxAge: 24 * 60 * 60 * 1000 // 24 ore
+      maxAge: refresh_token_maxAge
     });
 
     return res.json({

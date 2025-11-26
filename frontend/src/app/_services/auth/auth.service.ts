@@ -25,8 +25,8 @@ export class AuthService {
   /**
    * Login tramite Backend (BFF Pattern)
    */
-  login(email: string, password: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, { email, password }, { withCredentials: true }).pipe(
+  login(email: string, password: string, rememberMe: boolean): Observable<any> {
+    return this.http.post(`${this.apiUrl}/login`, { email, password, rememberMe }, { withCredentials: true }).pipe(
       tap(() => {
         this.checkSession().subscribe();
       })

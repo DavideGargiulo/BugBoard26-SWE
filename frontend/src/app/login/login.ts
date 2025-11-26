@@ -44,9 +44,7 @@ export class LoginComponent {
       // Estraiamo i valori dal form
       const { email, password, rememberMe } = this.loginForm.value;
 
-      // Nota: rememberMe per ora non lo usiamo nella logica di login, ma il form è valido.
-
-      this.authService.login(email, password).subscribe({
+      this.authService.login(email, password, rememberMe).subscribe({
         next: () => {
           this.isLoading = false;
           this.router.navigate(['/dashboard']);

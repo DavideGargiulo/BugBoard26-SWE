@@ -84,3 +84,40 @@ CREATE INDEX idx_commento_issue ON "commento"(id_issue);
 CREATE INDEX idx_allegato_commento ON "allegato"(id_commento) WHERE id_commento IS NOT NULL;
 CREATE INDEX idx_allegato_issue ON "allegato"(id_issue) WHERE id_issue IS NOT NULL;
 CREATE INDEX idx_allegato_hash ON "allegato"(hash_sha256) WHERE hash_sha256 IS NOT NULL;
+
+-- Migrazione: Aggiunta campi per sincronizzazione Keycloak
+
+-- 1. Aggiungi colonna keycloak_id alla tabella utente
+ALTER TABLE "utente"
+ADD COLUMN IF NOT EXISTS keycloak_id VARCHAR(255) UNIQUE;
+
+-- 2. Aggiungi colonna per timestamp ultima sincronizzazione
+ALTER TABLE "utente"
+ADD COLUMN IF NOT EXISTS ultimo_sync TIMESTAMP;
+
+-- 3. Aggiungi colonne timestamps (createdAt, updatedAt)
+ALTER TABLE "utente"
+ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+-- 4. Rendi il campo password nullable (ora gestito da Keycloak)
+ALTER TABLE "utente"
+ALTER COLUMN password DROP NOT NULL;
+
+-- 5. Crea indice sulla colonna keycloak_id per performance
+CREATE INDEX IF NOT EXISTS idx_utente_keycloak_id ON "utente"(keycloak_id);
+
+-- 6. Aggiungi commento alle colonne
+COMMENT ON COLUMN "utente".keycloak_id IS 'ID utente su Keycloak per sincronizzazione';
+COMMENT ON COLUMN "utente".password IS 'Deprecato - autenticazione gestita da Keycloak';
+COMMENT ON COLUMN "utente".ultimo_sync IS 'Timestamp ultima sincronizzazione con Keycloak';
+
+-- 7. Visualizza lo stato della tabella
+SELECT
+    column_name,
+    data_type,
+    is_nullable,
+    column_default
+FROM information_schema.columns
+WHERE table_name = 'utente'
+ORDER BY ordinal_position;

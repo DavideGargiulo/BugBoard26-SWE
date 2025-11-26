@@ -27,7 +27,7 @@ app.use(cookieParser());
 const memoryStore = new session.MemoryStore();
 
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'some-secret-key-change-in-production',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
   store: memoryStore,

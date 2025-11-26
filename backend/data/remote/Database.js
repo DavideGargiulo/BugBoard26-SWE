@@ -1,4 +1,8 @@
 import { Sequelize } from 'sequelize';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import { config } from 'dotenv';
+import { existsSync } from 'fs';
 import { createUtenteModel } from './models/utente.js';
 import { createIssueModel } from './models/issue.js';
 import { createProgettoModel } from './models/progetto.js';
@@ -7,9 +11,35 @@ import { createAllegatoModel } from './models/allegato.js';
 
 import 'dotenv/config';
 
+if (!process.env.DB_CONNECTION_URI) {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+
+  const possibleEnvPaths = [
+    join(__dirname, '../../../.env'),  // Root del progetto
+    join(__dirname, '../../.env'),     // Backend folder
+  ];
+
+  for (const envPath of possibleEnvPaths) {
+    if (existsSync(envPath)) {
+      config({ path: envPath });
+      break;
+    }
+  }
+}
+
+console.log('DB_CONNECTION_URI in Database.js:', process.env.DB_CONNECTION_URI ? 'OK' : 'MISSING');
+
 export const database = new Sequelize(process.env.DB_CONNECTION_URI, {
-  dialect: process.env.DIALECT,
+  dialect: process.env.DIALECT || 'postgres',
   logging: false,
+  dialectOptions: {
+    // Opzioni per PostgreSQL
+    ssl: process.env.DB_SSL === 'true' ? {
+      require: true,
+      rejectUnauthorized: false
+    } : false
+  }
 });
 
 // Inizializzazione Modelli
@@ -19,9 +49,6 @@ createIssueModel(database);
 createCommentoModel(database);
 createAllegatoModel(database);
 
-// --- CORREZIONE FONDAMENTALE ---
-// Sequelize ha salvato i modelli in minuscolo ('utente', 'issue'...).
-// Noi li estraiamo rinominandoli in Maiuscolo (Utente, Issue...) per usarli nel codice.
 export const {
   utente: Utente,
   progetto: Progetto,
@@ -49,9 +76,6 @@ function setUpTriggers() {
 }
 
 function createAssociations() {
-  // Nota: Non passiamo più 'models' come argomento, usiamo direttamente
-  // le variabili Utente, Issue, ecc. che abbiamo esportato sopra.
-
   // Utente-Issue (creatore) 1:N
   Issue.belongsTo(Utente, {
     as: 'Creatore',

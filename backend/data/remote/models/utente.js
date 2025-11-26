@@ -7,6 +7,11 @@ export function createUtenteModel(database) {
       primaryKey: true,
       autoIncrement: true,
     },
+    keycloak_id: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      unique: true,
+    },
     nome: {
       type: DataTypes.STRING(255),
       allowNull: false,
@@ -23,16 +28,16 @@ export function createUtenteModel(database) {
         isEmail: true
       }
     },
-    password: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
     ruolo: {
       type: DataTypes.ENUM('Amministratore', 'Standard'),
       allowNull: false
+    },
+    ultimo_sync: {
+      type: DataTypes.DATE,
+      allowNull: true,
     }
   }, {
     tableName: 'utente',
-    timestamps: false,
+    timestamps: true,
   });
 }

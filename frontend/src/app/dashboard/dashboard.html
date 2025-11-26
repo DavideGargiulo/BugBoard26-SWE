@@ -2,7 +2,17 @@
 <html lang="it">
   <body>
 
-    <app-topbar></app-topbar>
+    <div class="flex flex-col h-screen overflow-hidden">
+
+      <app-topbar class="flex-none"></app-topbar>
+
+      <app-issues-list
+          class="flex-1 overflow-y-auto"
+          [issues]="issues"
+          [itemsPerPage]="4">
+      </app-issues-list>
+
+    </div>
 
   </body>
 </html>

@@ -4,6 +4,9 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
 
+const LOCAL = true; // Imposta a true per bypassare l'autenticazione in locale
+const ISAUTH = true; // Imposta a true per simulare utente autenticato in locale
+
 @Injectable({
   providedIn: 'root'
 })
@@ -41,26 +44,38 @@ export class AuthService {
   }
 
   checkSession(): Observable<boolean> {
-    return this.http.get<any>(`${this.apiUrl}/me`, { withCredentials: true }).pipe(
-      map(response => {
-        if (response.authenticated) {
-          this.userProfileSubject.next(response.user);
-          return true;
-        }
-        return false;
-      }),
-      catchError(() => {
-        this.userProfileSubject.next(null);
-        return of(false);
-      })
-    );
+
+    if (LOCAL){
+      return of(ISAUTH);
+    }else{
+      return this.http.get<any>(`${this.apiUrl}/me`, { withCredentials: true }).pipe(
+        map(response => {
+          if (response.authenticated) {
+            this.userProfileSubject.next(response.user);
+            return true;
+          }
+          return false;
+        }),
+        catchError(() => {
+          this.userProfileSubject.next(null);
+          return of(false);
+        })
+      );
+    }
+
   }
 
   isAuthenticated(): Observable<boolean> {
-    if (this.userProfileSubject.value) {
-      return of(true);
+
+    if (LOCAL){
+      return of(ISAUTH);
+    }else{
+      if (this.userProfileSubject.value) {
+        return of(true);
+      }
+      return this.checkSession();
     }
-    return this.checkSession();
+
   }
 
   hasRole(role: string): boolean {

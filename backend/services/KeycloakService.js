@@ -3,8 +3,8 @@ import KcAdminClient from '@keycloak/keycloak-admin-client';
 class KeycloakService {
   constructor() {
     this.kcAdminClient = new KcAdminClient({
-      baseUrl: process.env.KEYCLOAK_URL || 'http://localhost:8080',
-      realmName: process.env.KEYCLOAK_REALM || 'master'
+      baseUrl: process.env.KEYCLOAK_URL,
+      realmName: process.env.KEYCLOAK_REALM
     });
     this.authenticated = false;
   }
@@ -12,15 +12,15 @@ class KeycloakService {
   async authenticate() {
     try {
       await this.kcAdminClient.auth({
-        username: process.env.KEYCLOAK_USER || 'admin',
-        password: process.env.KEYCLOAK_PASSWORD || 'admin123',
+        username: process.env.KEYCLOAK_USER,
+        password: process.env.KEYCLOAK_PASSWORD,
         grantType: 'password',
         clientId: 'admin-cli'
       });
       this.authenticated = true;
-      console.log('✓ Autenticato su Keycloak');
+      console.log('Autenticato su Keycloak');
     } catch (error) {
-      console.error('✗ Errore autenticazione Keycloak:', error.message);
+      console.error('Errore autenticazione Keycloak:', error.message);
       throw error;
     }
   }
@@ -42,10 +42,10 @@ class KeycloakService {
         }
       });
 
-      console.log(`✓ Utente creato su Keycloak: ${userData.email}`);
+      console.log(`Utente creato su Keycloak: ${userData.email}`);
       return newUser.id;
     } catch (error) {
-      console.error(`✗ Errore creazione utente:`, error.message);
+      console.error(`Errore creazione utente:`, error.message);
       throw error;
     }
   }
@@ -69,9 +69,9 @@ class KeycloakService {
         }
       );
 
-      console.log(`✓ Utente aggiornato su Keycloak: ${userData.email}`);
+      console.log(`Utente aggiornato su Keycloak: ${userData.email}`);
     } catch (error) {
-      console.error(`✗ Errore aggiornamento utente:`, error.message);
+      console.error(`Errore aggiornamento utente:`, error.message);
       throw error;
     }
   }
@@ -85,9 +85,9 @@ class KeycloakService {
         id: keycloakId
       });
 
-      console.log(`✓ Utente eliminato da Keycloak`);
+      console.log(`Utente eliminato da Keycloak`);
     } catch (error) {
-      console.error(`✗ Errore eliminazione utente:`, error.message);
+      console.error(`Errore eliminazione utente:`, error.message);
       throw error;
     }
   }

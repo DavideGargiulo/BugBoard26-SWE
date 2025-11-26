@@ -1,1 +1,18 @@
-<p>users works!</p>
+<!DOCTYPE html>
+<html lang="it">
+  <body>
+
+    <div class="flex flex-col h-screen overflow-hidden">
+
+      <app-user-topbar class="flex-none"></app-user-topbar>
+
+      <app-users-list
+          class="flex-1 overflow-y-auto"
+          [users]="users"
+          [itemsPerPage]="12">
+      </app-users-list>
+
+    </div>
+
+  </body>
+</html>

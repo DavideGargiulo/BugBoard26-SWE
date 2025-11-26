@@ -4,12 +4,13 @@ import { Router, NavigationEnd } from '@angular/router';
 import { ProjectService } from '../../_services/project/project-service';
 import { Subject, takeUntil } from 'rxjs';
 import { filter } from 'rxjs/operators';
+
 @Component({
   selector: 'app-topbar',
   templateUrl: './topbar.html',
-  styleUrls: ['./topbar.css'],
   imports: [CommonModule]
 })
+
 export class TopbarComponent implements OnInit {
 
   // ------------------------------

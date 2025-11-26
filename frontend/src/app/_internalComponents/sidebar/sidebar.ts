@@ -3,13 +3,13 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ProjectService } from '../../_services/project/project-service';
 import { AuthService } from '../../_services/auth/auth.service';
+import { User } from '../user-card/user-card';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './sidebar.html',
-  styleUrls: ['./sidebar.css']
+  templateUrl: './sidebar.html'
 })
 
 export class SidebarComponent implements OnInit {
@@ -37,15 +37,18 @@ export class SidebarComponent implements OnInit {
   selectedProject: string | null = null;
 
   // Informazioni utente
-  user = {
-    initials: 'MR',
+  user: User = {
     name: 'Mario Rossi',
-    role: 'Amministratore'
+    role: 'Administrator'
   };
 
-  userInitials: string | undefined;
-  userName: string | undefined;
-  userRole: string | undefined;
+  getInitials(name: string): string {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase())
+      .join('')
+      .substring(0, 2);
+  }
 
   isDarkMode: boolean = false;
 
@@ -56,12 +59,8 @@ export class SidebarComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Inizializza i progetti filtrati con tutti i progetti
     this.isDarkMode = document.documentElement.classList.contains('dark');
     this.filteredProjects = [...this.projects];
-    this.userInitials = this.user.initials;
-    this.userName = this.user.name;
-    this.userRole = this.user.role;
   }
 
   toggleTheme() {

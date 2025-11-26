@@ -6,8 +6,7 @@ import { Issue } from '../_internalComponents/issue-card/issue-card';
 @Component({
   selector: 'app-project',
   imports: [TopbarComponent, IssuesListComponent],
-  templateUrl: './project.html',
-  styleUrl: './project.css',
+  templateUrl: './project.html'
 })
 
 export class ProjectComponent {

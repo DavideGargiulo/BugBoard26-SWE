@@ -6,8 +6,7 @@ import { Issue } from '../_internalComponents/issue-card/issue-card';
 @Component({
   selector: 'app-dashboard',
   imports: [TopbarComponent, IssuesListComponent],
-  templateUrl: './dashboard.html',
-  styleUrls: ['./dashboard.css'],
+  templateUrl: './dashboard.html'
 })
 export class DashboardComponent {
 

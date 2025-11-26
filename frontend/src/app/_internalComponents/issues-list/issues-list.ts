@@ -6,8 +6,7 @@ import { IssueCardComponent, Issue } from '../issue-card/issue-card';
   selector: 'app-issues-list',
   standalone: true,
   imports: [CommonModule, IssueCardComponent],
-  templateUrl: './issues-list.html',
-  styleUrl: './issues-list.css',
+  templateUrl: './issues-list.html'
 })
 
 export class IssuesListComponent implements OnInit {

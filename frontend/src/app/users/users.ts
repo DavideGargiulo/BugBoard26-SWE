@@ -1,11 +1,118 @@
 import { Component } from '@angular/core';
+import { User } from "../_internalComponents/user-card/user-card";
+import { UserListComponent } from '../_internalComponents/users-list/users-list';
+import { TopbarComponent } from "../_internalComponents/topbar/topbar";
+import { UserTopbar } from "../_internalComponents/user-topbar/user-topbar";
 
 @Component({
   selector: 'app-users',
-  imports: [],
-  templateUrl: './users.html',
-  styleUrl: './users.css',
+  imports: [UserListComponent, TopbarComponent, UserTopbar],
+  templateUrl: './users.html'
 })
 export class UsersComponent {
+
+  users: User[] = [
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+      {
+        name: 'Alice Johnson',
+        role: 'Administrator'
+      },
+
+    ]
 
 }

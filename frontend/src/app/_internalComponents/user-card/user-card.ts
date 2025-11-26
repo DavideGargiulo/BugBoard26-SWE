@@ -1,24 +1,20 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-export interface Issue {
-  id: number;
-  title: string;
-  description: string;
-  tags: string[];
-  commentsCount: number;
-  assignee: string;
+export interface User {
+  name: string;
+  role: string;
 }
 
 @Component({
-  selector: 'app-issue-card',
+  selector: 'app-user-card',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './issue-card.html'
+  templateUrl: './user-card.html'
 })
 
-export class IssueCardComponent {
-  @Input() issue!: Issue;
+export class UserCardComponent {
+  @Input() user!: User;
 
   getInitials(name: string): string {
     return name

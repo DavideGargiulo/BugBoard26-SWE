@@ -14,11 +14,11 @@
   <div class="p-4 border-b border-gray-200 dark:border-gray-700">
     <div class="flex items-center gap-3">
       <div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
-        <span class="text-lg font-medium text-gray-700 dark:text-gray-200">{{ userInitials }}</span>
+        <span class="text-lg font-medium text-gray-700 dark:text-gray-200">{{ getInitials(user.name) }}</span>
       </div>
       <div class="flex-1">
-        <div class="font-semibold text-gray-900 dark:text-gray-100">{{ userName }}</div>
-        <div class="text-sm text-gray-500 dark:text-gray-400">{{ userRole }}</div>
+        <div class="font-semibold text-gray-900 dark:text-gray-100">{{ user.name }}</div>
+        <div class="text-sm text-gray-500 dark:text-gray-400">{{ user.role }}</div>
       </div>
     </div>
   </div>

@@ -1,0 +1,183 @@
+<div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+  <h2 class="text-xl font-semibold mb-6 text-gray-900 dark:text-gray-100">
+    Creazione Utente
+  </h2>
+
+  <div class="px-8 py-8">
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="mb-6 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600 dark:text-red-400 mr-3" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+      </svg>
+      <span class="text-sm text-red-700 dark:text-red-300 font-medium">{{ errorMessage }}</span>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="newUserForm" (ngSubmit)="onSubmit()" class="space-y-6">
+
+      <!-- Nome -->
+      <div>
+        <label for="nome" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Nome
+        </label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 dark:text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <input
+            type="text"
+            id="nome"
+            formControlName="nome"
+            [class]="'block w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 ' +
+                      (newUserForm.get('nome')?.invalid && newUserForm.get('nome')?.touched ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600')"
+            placeholder="Inserisci il nome"
+          />
+        </div>
+        <div *ngIf="newUserForm.get('nome')?.invalid && newUserForm.get('nome')?.touched"
+              class="mt-2 flex items-center text-sm text-red-600 dark:text-red-400">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span *ngIf="newUserForm.get('nome')?.errors?.['required']">Il nome è obbligatorio</span>
+          <span *ngIf="newUserForm.get('nome')?.errors?.['minlength']">Il nome deve contenere almeno 2 caratteri</span>
+        </div>
+      </div>
+
+      <!-- Campo Cognome -->
+      <div>
+        <label for="cognome" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Cognome
+        </label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 dark:text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <input
+            type="text"
+            id="cognome"
+            formControlName="cognome"
+            [class]="'block w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 ' +
+                      (newUserForm.get('cognome')?.invalid && newUserForm.get('cognome')?.touched ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600')"
+            placeholder="Inserisci il cognome"
+          />
+        </div>
+        <div *ngIf="newUserForm.get('cognome')?.invalid && newUserForm.get('cognome')?.touched"
+              class="mt-2 flex items-center text-sm text-red-600 dark:text-red-400">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span *ngIf="newUserForm.get('cognome')?.errors?.['required']">Il cognome è obbligatorio</span>
+          <span *ngIf="newUserForm.get('cognome')?.errors?.['minlength']">Il cognome deve contenere almeno 2 caratteri</span>
+        </div>
+      </div>
+
+      <!-- Email -->
+       <div>
+          <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Email
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 dark:text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+              </svg>
+            </div>
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              [class]="'block w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 ' +
+                        (newUserForm.get('email')?.invalid && newUserForm.get('email')?.touched ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600')"
+              placeholder="tuo@email.com"
+            />
+          </div>
+          <div *ngIf="newUserForm.get('email')?.invalid && newUserForm.get('email')?.touched"
+                class="mt-2 flex items-center text-sm text-red-600 dark:text-red-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span *ngIf="newUserForm.get('email')?.errors?.['required']">L'email è obbligatoria</span>
+            <span *ngIf="newUserForm.get('email')?.errors?.['email']">Email non valida</span>
+          </div>
+        </div>
+
+        <!-- Ruolo -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Ruolo
+          </label>
+
+          <div class="flex items-center space-x-6">
+
+            <!-- Standard -->
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="radio"
+                formControlName="ruolo"
+                value="Standard"
+                class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+              />
+              <span class="text-gray-700 dark:text-gray-300">Standard</span>
+            </label>
+
+            <!-- Amministratore -->
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="radio"
+                formControlName="ruolo"
+                value="Amministratore"
+                class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+              />
+              <span class="text-gray-700 dark:text-gray-300">Amministratore</span>
+            </label>
+
+          </div>
+
+          <div *ngIf="newUserForm.get('ruolo')?.invalid && newUserForm.get('ruolo')?.touched"
+              class="mt-2 text-sm text-red-600 dark:text-red-400">
+            Devi selezionare un ruolo
+          </div>
+        </div>
+
+        <!-- Pulsanti -->
+        <div class="flex justify-end space-x-4 pt-4">
+
+          <!-- Annulla -->
+          <button
+            type="button"
+            (click)="dialogRef.close()"
+            class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600
+                  text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700
+                  hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+            Annulla
+          </button>
+
+          <!-- Conferma -->
+          <button
+            type="submit"
+            [disabled]="newUserForm.invalid || isLoading"
+            class="px-4 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition
+                  disabled:bg-blue-300">
+            {{ isLoading ? 'Caricamento...' : 'Conferma' }}
+          </button>
+
+        </div>
+
+    </form>
+  </div>
+
+
+</div>

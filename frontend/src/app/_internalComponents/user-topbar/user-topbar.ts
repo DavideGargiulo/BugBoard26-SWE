@@ -1,16 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { UserDialogComponent } from '../user-dialog/user-dialog';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-user-topbar',
-  imports: [],
+  standalone: true,
+  imports: [MatDialogModule],
   templateUrl: './user-topbar.html'
 })
 
 export class UserTopbar {
 
-  constructor(public dialog: MatDialog) {}
+  constructor(@Inject(MatDialog) public dialog: MatDialog) {}
 
   openAddUserDialog(): void {
     const dialogRef = this.dialog.open(UserDialogComponent, {

@@ -1,6 +1,6 @@
 import { Component, EventEmitter, OnInit, Output, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, NavigationEnd } from '@angular/router';
+import { Router, NavigationEnd, RouterModule } from '@angular/router';
 import { ProjectService } from '../../_services/project/project-service';
 import { Subject, takeUntil } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -8,7 +8,8 @@ import { filter } from 'rxjs/operators';
 @Component({
   selector: 'app-topbar',
   templateUrl: './topbar.html',
-  imports: [CommonModule]
+  standalone: true,
+  imports: [CommonModule, RouterModule]
 })
 
 export class TopbarComponent implements OnInit {
@@ -54,6 +55,10 @@ export class TopbarComponent implements OnInit {
   // ------------------------------
   // EVENT HANDLERS
   // ------------------------------
+
+  navigateToNewIssuePage(): void {
+    // TODO: Implementa la logica di navigazione alla pagina di creazione di una nuova issue
+  }
 
   onFilterChange(): void {
     this.filterChange.emit({

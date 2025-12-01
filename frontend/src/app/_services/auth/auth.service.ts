@@ -5,7 +5,7 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
 
 const LOCAL = true; // Imposta a true per bypassare l'autenticazione in locale
-const ISAUTH = true; // Imposta a true per simulare utente autenticato in locale
+const ISAUTH = false; // Imposta a true per simulare utente autenticato in locale
 
 @Injectable({
   providedIn: 'root'

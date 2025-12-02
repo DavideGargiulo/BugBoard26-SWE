@@ -2,13 +2,14 @@ import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule } from '@angular/material/dialog';
+import { OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, FormsModule, MatDialogModule],
   templateUrl: './app.html'
 })
-export class App {
+export class App implements OnInit {
 
   protected readonly title = signal('frontend');
 
@@ -25,7 +26,7 @@ export class App {
       }
     } else {
       // Altrimenti usa la preferenza del sistema
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const prefersDark = globalThis.matchMedia('(prefers-color-scheme: dark)').matches;
       if (prefersDark) {
         document.documentElement.classList.add('dark');
       } else {

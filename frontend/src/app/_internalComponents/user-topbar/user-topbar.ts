@@ -1,6 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { UserDialogComponent } from '../user-dialog/user-dialog';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { AuthService } from '../../_services/auth/auth.service';
 
 @Component({
   selector: 'app-user-topbar',
@@ -11,7 +12,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 export class UserTopbar {
 
-  constructor(@Inject(MatDialog) public dialog: MatDialog) {}
+  constructor(@Inject(MatDialog) public dialog: MatDialog, private authService: AuthService) {}
 
   openAddUserDialog(): void {
     const dialogRef = this.dialog.open(UserDialogComponent, {
@@ -24,7 +25,6 @@ export class UserTopbar {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         console.log('Dati utente ricevuti:', result);
-        // Qui puoi fare la chiamata API per creare l'utente
         this.createUser(result);
       } else {
         console.log('Dialog chiuso senza conferma');
@@ -33,8 +33,21 @@ export class UserTopbar {
   }
 
   createUser(userData: any): void {
-    // TODO: Aggiungere implementazione per creazione utente
-    console.log('Creazione utente:', userData);
-  }
+    this.authService.register(userData).subscribe({
+      next: (response: any) => {
+        const password = response.password;
 
+        alert(
+          `UTENTE CREATO CON SUCCESSO!\n\n` +
+          `Email: ${userData.email}\n` +
+          `Password: ${password}\n\n` +
+          `Copia la password ora, non sarà più visibile.`
+        );
+      },
+      error: (err) => {
+        console.error('Errore registrazione:', err);
+        alert('Errore: ' + (err.error?.error || 'Impossibile creare utente'));
+      }
+    });
+  }
 }

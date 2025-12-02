@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UserCardComponent, User } from '../user-card/user-card';
 
@@ -10,7 +10,7 @@ import { UserCardComponent, User } from '../user-card/user-card';
 })
 
 
-export class UserListComponent implements OnInit {
+export class UserListComponent implements OnInit, OnChanges {
 
   @Input() users: User[] = [];
     @Input() itemsPerPage: number = 4;

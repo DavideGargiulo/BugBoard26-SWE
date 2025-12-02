@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
 import { ProjectService } from '../../_services/project/project-service';
@@ -12,7 +12,7 @@ import { filter } from 'rxjs/operators';
   imports: [CommonModule, RouterModule]
 })
 
-export class TopbarComponent implements OnInit {
+export class TopbarComponent implements OnInit, OnDestroy {
 
   // ------------------------------
   // FILTRI
@@ -45,11 +45,11 @@ export class TopbarComponent implements OnInit {
 
   currentRoute: string = '';
   selectedProject: string | null = null;
-  private destroy$ = new Subject<void>();
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
-    private router: Router,
-    private projectService: ProjectService
+    private readonly router: Router,
+    private readonly projectService: ProjectService
   ) {}
 
   // ------------------------------

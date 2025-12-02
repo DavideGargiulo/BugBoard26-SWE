@@ -4,18 +4,18 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
 
-const LOCAL = true; // Imposta a true per bypassare l'autenticazione in locale
-const ISAUTH = true; // Imposta a true per simulare utente autenticato in locale
+const LOCAL = false; // Imposta a true per bypassare l'autenticazione in locale
+const ISAUTH = false; // Imposta a true per simulare utente autenticato in locale
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private http = inject(HttpClient);
-  private router = inject(Router);
+  private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
 
   // Assicurati che questa URL corrisponda al tuo backend
-  private apiUrl = 'http://localhost:3000/api/auth';
+  private readonly apiUrl = 'http://localhost:3000/api/auth';
 
   private userProfileSubject = new BehaviorSubject<any | null>(null);
   public currentUser$ = this.userProfileSubject.asObservable();
@@ -84,5 +84,11 @@ export class AuthService {
       return false;
     }
     return profile.realm_access.roles.includes(role);
+  }
+
+  register(userData: { nome: string; cognome: string; email: string; ruolo: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/register`, userData, {
+      withCredentials: true
+    });
   }
 }

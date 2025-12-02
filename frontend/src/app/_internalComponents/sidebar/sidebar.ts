@@ -53,9 +53,9 @@ export class SidebarComponent implements OnInit {
   isDarkMode: boolean = false;
 
   constructor(
-    private router: Router,
-    private projectService: ProjectService,
-    private authService: AuthService
+    private readonly router: Router,
+    private readonly projectService: ProjectService,
+    private readonly authService: AuthService
   ) {}
 
   ngOnInit(): void {

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IssueCardComponent, Issue } from '../issue-card/issue-card';
 
@@ -9,7 +9,7 @@ import { IssueCardComponent, Issue } from '../issue-card/issue-card';
   templateUrl: './issues-list.html'
 })
 
-export class IssuesListComponent implements OnInit {
+export class IssuesListComponent implements OnInit, OnChanges {
   @Input() issues: Issue[] = [];
   @Input() itemsPerPage: number = 4;
 

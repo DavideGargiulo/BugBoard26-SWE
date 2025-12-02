@@ -6,7 +6,6 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-user-dialog',
   templateUrl: './user-dialog.html',
-  styleUrls: ['./user-dialog.css'],
   standalone: true,
   imports: [
     CommonModule,
@@ -21,7 +20,7 @@ export class UserDialogComponent {
 
   constructor(
     public dialogRef: MatDialogRef<UserDialogComponent>,
-    private fb: FormBuilder
+    private readonly fb: FormBuilder
   ) {
     this.newUserForm = this.fb.group({
       nome: ['', Validators.required],

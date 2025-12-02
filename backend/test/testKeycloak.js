@@ -2,14 +2,18 @@ import KeycloakService from '../services/KeycloakService.js';
 import 'dotenv/config';
 
 async function test() {
-  console.log('🧪 Test connessione Keycloak\n');
+  console.log('Test connessione Keycloak\n');
 
   try {
     await KeycloakService.authenticate();
-    console.log('\n✅ Test superato!');
+    console.log('\nTest superato!');
   } catch (error) {
-    console.error('\n❌ Test fallito:', error.message);
+    console.error('\nTest fallito:', error.message);
   }
 }
 
-test();
+try {
+  test();
+} catch (error) {
+  console.error('Errore durante l\'esecuzione del test:', error.message);
+}

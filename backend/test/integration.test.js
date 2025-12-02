@@ -1,4 +1,4 @@
-import { Sequelize, ValidationError, UniqueConstraintError } from 'sequelize';
+import { Sequelize } from 'sequelize';
 // Importiamo le primitive di test da Vitest
 import { describe, test, expect, beforeAll, afterAll, afterEach, beforeEach } from 'vitest';
 

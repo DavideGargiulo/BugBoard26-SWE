@@ -1,8 +1,8 @@
 import { Sequelize } from 'sequelize';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 import { config } from 'dotenv';
-import { existsSync } from 'fs';
+import { existsSync } from 'node:fs';
 import { createUtenteModel } from './models/utente.js';
 import { createIssueModel } from './models/issue.js';
 import { createProgettoModel } from './models/progetto.js';
@@ -62,14 +62,12 @@ createAssociations();
 
 setUpTriggers();
 
-database
-  .sync()
-  .then(() => {
-      console.log('Database sincronizzato con successo.');
-  })
-  .catch((err) => {
-    console.error('Errore sincronizzazione DB:', err);
-  });
+try {
+  await database.sync();
+  console.log('Database sincronizzato con successo.');
+} catch (err) {
+  console.error('Errore sincronizzazione DB:', err);
+}
 
 function setUpTriggers() {
   console.log("Setting up database triggers...");

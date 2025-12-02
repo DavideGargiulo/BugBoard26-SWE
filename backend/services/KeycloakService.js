@@ -1,4 +1,5 @@
 import KcAdminClient from '@keycloak/keycloak-admin-client';
+import crypto from 'crypto';
 
 class KeycloakService {
   constructor() {
@@ -10,44 +11,117 @@ class KeycloakService {
   }
 
   async authenticate() {
+    if (this.authenticated) return;
+
     try {
       await this.kcAdminClient.auth({
-        username: process.env.KEYCLOAK_USER,
-        password: process.env.KEYCLOAK_PASSWORD,
-        grantType: 'password',
-        clientId: 'admin-cli'
+        grantType: 'client_credentials',
+        clientId: process.env.KEYCLOAK_BACKEND_CLIENT_ID,
+        clientSecret: process.env.KEYCLOAK_BACKEND_CLIENT_SECRET
       });
+
       this.authenticated = true;
-      console.log('Autenticato su Keycloak');
     } catch (error) {
       console.error('Errore autenticazione Keycloak:', error.message);
+      console.error('Error response:', error.response?.data);
       throw error;
     }
   }
 
-  async createUser(userData) {
+  generatePassword(length = 14) {
+    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$!%*?&';
+    let password = '';
+    const randomBytes = crypto.randomBytes(length);
+
+    for (let i = 0; i < length; i++) {
+      const randomIndex = randomBytes[i] % charset.length;
+      password += charset[randomIndex];
+    }
+    return password;
+  }
+
+  async userExists(username, email) {
     if (!this.authenticated) await this.authenticate();
 
+    const realm = process.env.KEYCLOAK_REALM;
+
+    const byUsername = await this.kcAdminClient.users.find({
+      realm,
+      username,
+      exact: true
+    });
+    if (byUsername.length > 0) return true;
+
+    const byEmail = await this.kcAdminClient.users.find({
+      realm,
+      email,
+      exact: true
+    });
+    return byEmail.length > 0;
+  }
+
+  /**
+   * Crea un utente, imposta la password e assegna il ruolo.
+   */
+  async registerUser(userData) {
+    await this.authenticate();
+    const realm = process.env.KEYCLOAK_REALM;
+
+    if (await this.userExists(userData.username, userData.email)) {
+      throw new Error('User already exists');
+    }
+
+    const generatedPassword = this.generatePassword();
+
+    // Crea utente
+    const createdUser = await this.kcAdminClient.users.create({
+      realm,
+      username: userData.email,
+      email: userData.email,
+      firstName: userData.firstName || '',
+      lastName: userData.lastName || '',
+      enabled: true,
+      emailVerified: true,
+      attributes: { ruolo: [userData.role] }
+    });
+
+    // Imposta password
+    await this.kcAdminClient.users.resetPassword({
+      realm,
+      id: createdUser.id,
+      credential: {
+        type: 'password',
+        value: generatedPassword,
+        temporary: false
+      }
+    });
+
+    // Assegna ruolo
+    const roleName = userData.role;
+
     try {
-      const newUser = await this.kcAdminClient.users.create({
-        realm: process.env.KEYCLOAK_REALM || 'master',
-        username: userData.email,
-        email: userData.email,
-        firstName: userData.nome,
-        lastName: userData.cognome,
-        enabled: true,
-        emailVerified: false,
-        attributes: {
-          ruolo: [userData.ruolo]
-        }
+      const role = await this.kcAdminClient.roles.findOneByName({
+        realm,
+        name: roleName
       });
 
-      console.log(`Utente creato su Keycloak: ${userData.email}`);
-      return newUser.id;
-    } catch (error) {
-      console.error(`Errore creazione utente:`, error.message);
-      throw error;
+      if (role) {
+        await this.kcAdminClient.users.addRealmRoleMappings({
+          realm,
+          id: createdUser.id,
+          roles: [{ id: role.id, name: role.name }]
+        });
+      } else {
+        console.warn(`ATTENZIONE: Il ruolo '${roleName}' non esiste su Keycloak!`);
+      }
+    } catch (err) {
+      console.error('Errore assegnazione ruolo:', err.message);
     }
+
+    return {
+      userId: createdUser.id,
+      password: generatedPassword
+    };
   }
 
   async updateUser(keycloakId, userData) {
@@ -56,7 +130,7 @@ class KeycloakService {
     try {
       await this.kcAdminClient.users.update(
         {
-          realm: process.env.KEYCLOAK_REALM || 'master',
+          realm: process.env.KEYCLOAK_REALM,
           id: keycloakId
         },
         {
@@ -69,7 +143,7 @@ class KeycloakService {
         }
       );
 
-      console.log(`Utente aggiornato su Keycloak: ${userData.email}`);
+      console.log(`Utente aggiornato: ${userData.email}`);
     } catch (error) {
       console.error(`Errore aggiornamento utente:`, error.message);
       throw error;
@@ -81,11 +155,11 @@ class KeycloakService {
 
     try {
       await this.kcAdminClient.users.del({
-        realm: process.env.KEYCLOAK_REALM || 'master',
+        realm: process.env.KEYCLOAK_REALM,
         id: keycloakId
       });
 
-      console.log(`Utente eliminato da Keycloak`);
+      console.log(`Utente eliminato`);
     } catch (error) {
       console.error(`Errore eliminazione utente:`, error.message);
       throw error;
@@ -97,14 +171,15 @@ class KeycloakService {
 
     try {
       const users = await this.kcAdminClient.users.find({
-        realm: process.env.KEYCLOAK_REALM || 'master',
-        email: email,
+        realm: process.env.KEYCLOAK_REALM,
+        email,
         exact: true
       });
 
       if (!users || users.length === 0) return null;
 
       const user = users[0];
+
       return {
         keycloak_id: user.id,
         nome: user.firstName || '',
@@ -112,8 +187,9 @@ class KeycloakService {
         email: user.email || '',
         ruolo: user.attributes?.ruolo?.[0] || 'Standard'
       };
+
     } catch (error) {
-      console.error(`✗ Errore ricerca utente:`, error.message);
+      console.error(`Errore ricerca utente:`, error.message);
       return null;
     }
   }

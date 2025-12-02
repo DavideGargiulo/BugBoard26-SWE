@@ -1,4 +1,6 @@
 import axios from 'axios';
+import KeycloakService from '../services/KeycloakService.js';
+import jwt from 'jsonwebtoken';
 
 const KEYCLOAK_URL = process.env.KEYCLOAK_URL;
 const KEYCLOAK_REALM = process.env.KEYCLOAK_REALM;
@@ -8,6 +10,19 @@ const CLIENT_SECRET = process.env.KEYCLOAK_BACKEND_CLIENT_SECRET;
 const TOKEN_URL = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`;
 const USERINFO_URL = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/userinfo`;
 const LOGOUT_URL = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/logout`;
+
+function userHasRole(accessToken, requiredRole) {
+  try {
+    const decoded = jwt.decode(accessToken);
+
+    const roles = decoded.realm_access?.roles || [];
+
+    return roles.includes(requiredRole);
+  } catch (err) {
+    console.error("Errore decode token:", err);
+    return false;
+  }
+}
 
 /**
  * Login con username/email e password
@@ -205,4 +220,47 @@ export const logout = async (req, res) => {
     success: true,
     message: 'Logout effettuato'
   });
+};
+
+/**
+ * 4. POST /api/auth/register
+ * Crea un nuovo utente su Keycloak (Headless)
+ */
+export const register = async (req, res) => {
+  const accessToken = req.cookies.access_token;
+
+  if (!accessToken) {
+    return res.status(401).json({ error: "Non autenticato" });
+  }
+
+  if (!userHasRole(accessToken, "Amministratore")) {
+    return res.status(403).json({ error: "Non autorizzato" });
+  }
+
+  const { nome, cognome, email, ruolo } = req.body;
+
+  if (!email || !nome || !cognome) {
+    return res.status(400).json({ error: 'Tutti i campi sono obbligatori' });
+  }
+
+  try {
+    const result = await KeycloakService.registerUser({
+      username: email,
+      email,
+      firstName: nome,
+      lastName: cognome,
+      role: ruolo || 'Standard'
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Utente creato con successo',
+      userId: result.userId,
+      password: result.password,
+      temporaryPassword: result.password
+    });
+  } catch (error) {
+    console.error("Errore registrazione:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
 };

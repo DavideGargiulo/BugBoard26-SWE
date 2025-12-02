@@ -10,12 +10,12 @@ const storage = multer.diskStorage({
   }
 })
 
-const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+const allowedTypes = new Set(['image/jpeg', 'image/png', 'application/pdf']);
 
 export const uploader = multer({
   storage: storage,
   fileFilter: function (req, file, cb) {
-    if (!allowedTypes.includes(file.mimetype)) {
+    if (!allowedTypes.has(file.mimetype)) {
       return cb({ status: 400, message: 'Unsupported file type' }, false);
     }
 

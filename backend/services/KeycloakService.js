@@ -1,5 +1,5 @@
 import KcAdminClient from '@keycloak/keycloak-admin-client';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 
 class KeycloakService {
   constructor() {

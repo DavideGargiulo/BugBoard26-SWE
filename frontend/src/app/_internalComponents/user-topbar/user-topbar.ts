@@ -12,7 +12,7 @@ import { AuthService } from '../../_services/auth/auth.service';
 
 export class UserTopbar {
 
-  constructor(@Inject(MatDialog) public dialog: MatDialog, private authService: AuthService) {}
+  constructor(@Inject(MatDialog) public dialog: MatDialog, private readonly authService: AuthService) {}
 
   openAddUserDialog(): void {
     const dialogRef = this.dialog.open(UserDialogComponent, {

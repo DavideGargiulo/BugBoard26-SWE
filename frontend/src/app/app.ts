@@ -1,18 +1,38 @@
 import { Component, signal } from '@angular/core';
-import { OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { initFlowbite } from 'flowbite';
+import { FormsModule } from '@angular/forms';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.html',
-  imports: [RouterOutlet]
+  imports: [RouterOutlet, FormsModule, MatDialogModule],
+  templateUrl: './app.html'
 })
-export class App implements OnInit {
-  
+export class App {
+
   protected readonly title = signal('frontend');
 
-  ngOnInit(): void {
-    initFlowbite();
+  ngOnInit() {
+    // Controlla se c'è un tema salvato dall'utente
+    const savedTheme = localStorage.getItem('theme');
+
+    if (savedTheme) {
+      // Se l'utente ha già scelto un tema, usa quello
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } else {
+      // Altrimenti usa la preferenza del sistema
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (prefersDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      // NON salvare in localStorage, così al prossimo caricamento ricontrolla il sistema
+    }
   }
+
 }

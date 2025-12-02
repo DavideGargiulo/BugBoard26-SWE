@@ -57,9 +57,7 @@ export class TopbarComponent implements OnInit {
   // ------------------------------
 
   navigateToNewIssuePage(): void {
-    if (this.selectedProject) {
-      this.router.navigate(['/progetto/nuovaissue']);
-    }
+    // TODO: Implementa la logica di navigazione alla pagina di creazione di una nuova issue
   }
 
   onFilterChange(): void {

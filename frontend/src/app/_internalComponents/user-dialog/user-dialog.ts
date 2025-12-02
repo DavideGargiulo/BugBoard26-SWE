@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
@@ -19,6 +20,7 @@ export class UserDialogComponent {
   isLoading: boolean = false;
 
   constructor(
+    public dialogRef: MatDialogRef<UserDialogComponent>,
     private fb: FormBuilder
   ) {
     this.newUserForm = this.fb.group({
@@ -45,6 +47,8 @@ export class UserDialogComponent {
       const { nome, cognome, email, ruolo } = this.newUserForm.value;
 
       this.userData = { nome, cognome, email, ruolo };
+
+      this.dialogRef.close(this.userData);
     }
   }
 }

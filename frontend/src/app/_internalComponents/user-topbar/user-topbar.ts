@@ -1,16 +1,35 @@
 import { Component, Inject } from '@angular/core';
 import { UserDialogComponent } from '../user-dialog/user-dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-user-topbar',
   standalone: true,
-  imports: [],
+  imports: [MatDialogModule],
   templateUrl: './user-topbar.html'
 })
 
 export class UserTopbar {
 
+  constructor(@Inject(MatDialog) public dialog: MatDialog) {}
+
   openAddUserDialog(): void {
+    const dialogRef = this.dialog.open(UserDialogComponent, {
+      width: '450px',
+      panelClass: 'custom-dialog-container',
+      disableClose: true,
+      autoFocus: true
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log('Dati utente ricevuti:', result);
+        // Qui puoi fare la chiamata API per creare l'utente
+        this.createUser(result);
+      } else {
+        console.log('Dialog chiuso senza conferma');
+      }
+    });
   }
 
   createUser(userData: any): void {

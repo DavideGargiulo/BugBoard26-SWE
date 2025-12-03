@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { ProjectService } from '../../_services/project/project-service';
 import { AuthService } from '../../_services/auth/auth.service';
 import { User } from '../user-card/user-card';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-sidebar',
@@ -38,9 +39,11 @@ export class SidebarComponent implements OnInit {
 
   // Informazioni utente
   user: User = {
-    name: 'Mario Rossi',
-    role: 'Administrator'
+    name: 'Caricamento...',
+    role: ''
   };
+
+  private userSubscription: Subscription | null = null;
 
   getInitials(name: string): string {
     return name
@@ -61,6 +64,24 @@ export class SidebarComponent implements OnInit {
   ngOnInit(): void {
     this.isDarkMode = document.documentElement.classList.contains('dark');
     this.filteredProjects = [...this.projects];
+
+    this.userSubscription = this.authService.currentUser$.subscribe(backendUser => {
+      if (backendUser) {
+        this.user = {
+          name: backendUser.name || `${backendUser.given_name} ${backendUser.family_name}`,
+          role: this.extractRole(backendUser)
+        };
+      } else {
+        this.user = { name: 'Ospite', role: '' };
+      }
+    });
+  }
+
+  private extractRole(user: any): string {
+    const roles = user.realm_access?.roles || [];
+
+    if (roles.includes('Amministratore')) return 'Amministratore';
+    return 'Standard';
   }
 
   toggleTheme() {

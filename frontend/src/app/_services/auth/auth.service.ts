@@ -3,9 +3,20 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
+import { User } from '../../_internalComponents/user-card/user-card';
 
 const LOCAL = false; // Imposta a true per bypassare l'autenticazione in locale
 const ISAUTH = false; // Imposta a true per simulare utente autenticato in locale
+
+export interface KeycloakTokenPayload {
+  given_name: string;
+  family_name: string;
+  email: string;
+  realm_access: {
+    roles: string[];
+  };
+  sub: string; // ID utente
+}
 
 @Injectable({
   providedIn: 'root'
@@ -66,7 +77,6 @@ export class AuthService {
   }
 
   isAuthenticated(): Observable<boolean> {
-
     if (LOCAL){
       return of(ISAUTH);
     }else{

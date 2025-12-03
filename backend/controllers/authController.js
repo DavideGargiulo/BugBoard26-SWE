@@ -1,11 +1,12 @@
 import axios from 'axios';
 import KeycloakService from '../services/KeycloakService.js';
 import jwt from 'jsonwebtoken';
+import syncService from '../services/syncService.js';
 
-const KEYCLOAK_URL = process.env.KEYCLOAK_URL;
-const KEYCLOAK_REALM = process.env.KEYCLOAK_REALM;
-const CLIENT_ID = process.env.KEYCLOAK_BACKEND_CLIENT_ID;
-const CLIENT_SECRET = process.env.KEYCLOAK_BACKEND_CLIENT_SECRET;
+const KEYCLOAK_URL = process.env.KEYCLOAK_URL?.trim();
+const KEYCLOAK_REALM = process.env.KEYCLOAK_REALM?.trim();
+const CLIENT_ID = process.env.KEYCLOAK_BACKEND_CLIENT_ID?.trim();
+const CLIENT_SECRET = process.env.KEYCLOAK_BACKEND_CLIENT_SECRET?.trim();
 
 const TOKEN_URL = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`;
 const USERINFO_URL = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/userinfo`;
@@ -38,20 +39,24 @@ export const login = async (req, res) => {
   try {
     console.log('Tentativo di login per:', email);
 
-    // Richiesta token a Keycloak usando Direct Access Grant (password grant)
+    // 1. Creiamo l'header Authorization: Basic base64(client_id:client_secret)
+    const authString = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64');
+
+    // 2. Prepariamo i parametri del body (SENZA client_id e client_secret)
+    const params = new URLSearchParams();
+    params.append('grant_type', 'password');
+    params.append('username', email);
+    params.append('password', password);
+    params.append('scope', 'openid profile email');
+
+    // 3. Eseguiamo la richiesta
     const response = await axios.post(
       TOKEN_URL,
-      new URLSearchParams({
-        grant_type: 'password',
-        client_id: CLIENT_ID,
-        client_secret: CLIENT_SECRET,
-        username: email, // Keycloak accetta sia username che email
-        password: password,
-        scope: 'openid profile email'
-      }),
+      params,
       {
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `Basic ${authString}` // Le credenziali passano qui
         }
       }
     );
@@ -86,8 +91,12 @@ export const login = async (req, res) => {
   } catch (error) {
     console.error('Errore durante il login:', error.response?.data || error.message);
 
-    if (error.response?.status === 401) {
-      return res.status(401).json({ error: 'Credenziali non valide' });
+    // Gestione specifica dell'errore Unauthorized
+    if (error.response?.status === 401 || error.response?.data?.error === 'unauthorized_client') {
+      return res.status(401).json({
+        error: 'Credenziali non valide o errore di configurazione client',
+        details: error.response?.data?.error_description
+      });
     }
 
     return res.status(500).json({
@@ -251,6 +260,18 @@ export const register = async (req, res) => {
       lastName: cognome,
       role: ruolo || 'Standard'
     });
+
+    const syncResult = await syncService.syncUserById(
+      result.userId,
+      KeycloakService.kcAdminClient,
+      process.env.KEYCLOAK_REALM
+    )
+
+    if (!syncResult.success) {
+      console.warn('Utente creato su Keycloak ma sincronizzazione DB fallita:', syncResult);
+    } else {
+      console.log('Utente sincronizzato nel database locale');
+    }
 
     return res.status(201).json({
       success: true,

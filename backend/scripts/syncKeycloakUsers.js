@@ -1,147 +1,290 @@
-import KeycloakService from '../services/KeycloakService.js';
-import { database, Utente } from '../data/remote/Database.js';
+import KcAdminClient from '@keycloak/keycloak-admin-client';
+import { Sequelize, DataTypes } from 'sequelize';
 import 'dotenv/config';
 
-async function importFromKeycloak() {
-  try {
-    await initializeConnection();
-    const keycloakUsers = await fetchKeycloakUsers();
-
-    if (keycloakUsers.length === 0) {
-      console.log('Nessun utente da importare');
-      await closeGracefully();
-      return;
-    }
-
-    const stats = await processUsers(keycloakUsers);
-    displayResults(stats);
-
-    await closeGracefully();
-    process.exit(stats.errors > 0 ? 1 : 0);
-
-  } catch (error) {
-    await handleFatalError(error);
-  }
-}
-
-async function initializeConnection() {
-  await database.authenticate();
-  console.log('Connesso al database PostgreSQL\n');
-  await KeycloakService.authenticate();
-}
-
-async function fetchKeycloakUsers() {
-  const kcClient = KeycloakService.kcAdminClient;
-  return await kcClient.users.find({
+const CONFIG = {
+  database: {
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    database: process.env.DB_NAME,
+    username: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+  },
+  keycloak: {
+    baseUrl: process.env.KEYCLOAK_URL,
     realm: process.env.KEYCLOAK_REALM,
-    max: 1000
+    adminUsername: process.env.KEYCLOAK_ADMIN_USERNAME,
+    adminPassword: process.env.KEYCLOAK_ADMIN_PASSWORD,
+  }
+};
+
+let sequelize;
+let Utente;
+
+function initDatabase() {
+  console.log('CONFIGURAZIONE DATABASE:');
+  console.log(`  Host:     ${CONFIG.database.host}:${CONFIG.database.port}`);
+  console.log(`  Database: ${CONFIG.database.database}`);
+
+  sequelize = new Sequelize(
+    CONFIG.database.database,
+    CONFIG.database.username,
+    CONFIG.database.password,
+    {
+      host: CONFIG.database.host,
+      port: CONFIG.database.port,
+      dialect: 'postgres',
+      logging: false,
+      pool: {
+        max: 5,
+        min: 0,
+        acquire: 30000,
+        idle: 10000
+      }
+    }
+  );
+
+  Utente = sequelize.define('utente', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    keycloak_id: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      unique: true
+    },
+    nome: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    cognome: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    email: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      unique: true,
+      validate: {
+        isEmail: true
+      }
+    },
+    ruolo: {
+      type: DataTypes.ENUM('Amministratore', 'Standard'),
+      allowNull: false
+    },
+    ultimo_sync: {
+      type: DataTypes.DATE,
+      allowNull: true
+    }
+  }, {
+    tableName: 'utente',
+    timestamps: true
   });
 }
 
-async function processUsers(keycloakUsers) {
-  const stats = { created: 0, updated: 0, skipped: 0, errors: 0 };
+let kcAdminClient;
+
+function initKeycloak() {
+  console.log('\nCONFIGURAZIONE KEYCLOAK:');
+  console.log(`  URL:   ${CONFIG.keycloak.baseUrl}`);
+  console.log(`  Realm: ${CONFIG.keycloak.realm}`);
+
+  kcAdminClient = new KcAdminClient({
+    baseUrl: CONFIG.keycloak.baseUrl,
+    realmName: 'master'
+  });
+}
+
+async function connectDatabase() {
+  try {
+    await sequelize.authenticate();
+    console.log('Connessione al database: OK');
+    return true;
+  } catch (error) {
+    console.error('Errore connessione database:', error.message);
+    throw error;
+  }
+}
+
+async function authenticateKeycloak() {
+  try {
+    await kcAdminClient.auth({
+      grantType: 'password',
+      clientId: 'admin-cli',
+      username: CONFIG.keycloak.adminUsername,
+      password: CONFIG.keycloak.adminPassword,
+    });
+
+    console.log('Autenticazione Keycloak: OK');
+    return true;
+  } catch (error) {
+    console.error('Errore autenticazione Keycloak:', error.message);
+    if (error.response) {
+      console.error('  Status:', error.response.status);
+      console.error('  Dettagli:', error.response.data);
+    }
+    throw error;
+  }
+}
+
+async function fetchKeycloakUsers() {
+  try {
+    kcAdminClient.setConfig({ realmName: CONFIG.keycloak.realm });
+
+    const users = await kcAdminClient.users.find({
+      max: 1000,
+      briefRepresentation: false
+    });
+
+    console.log(`Trovati ${users.length} utenti su Keycloak`);
+    return users;
+  } catch (error) {
+    console.error('Errore recupero utenti da Keycloak:', error.message);
+    throw error;
+  }
+}
+
+function determineRole(kcUser) {
+  if (kcUser.attributes?.ruolo) {
+    const ruolo = Array.isArray(kcUser.attributes.ruolo)
+      ? kcUser.attributes.ruolo[0]
+      : kcUser.attributes.ruolo;
+
+    if (ruolo === 'Amministratore') {
+      return 'Amministratore';
+    }
+  }
+
+  if (kcUser.realmRoles?.includes('Amministratore')) {
+    return 'Amministratore';
+  }
+
+  return 'Standard';
+}
+
+async function syncUser(kcUser) {
+  const email = kcUser.email || kcUser.username;
+
+  if (!email) {
+    console.log(`Saltato utente ${kcUser.id}: nessuna email`);
+    return { status: 'skipped' };
+  }
+
+  try {
+    const ruolo = determineRole(kcUser);
+    const userData = {
+      keycloak_id: kcUser.id,
+      nome: kcUser.firstName || 'Nome',
+      cognome: kcUser.lastName || 'Cognome',
+      email: email,
+      ruolo: ruolo,
+      ultimo_sync: new Date()
+    };
+
+    const existingUser = await Utente.findOne({ where: { email } });
+
+    if (existingUser) {
+      await existingUser.update(userData);
+      console.log(`Aggiornato: ${email} [${ruolo}]`);
+      return { status: 'updated', email, ruolo };
+    } else {
+      await Utente.create(userData);
+      console.log(`Creato: ${email} [${ruolo}]`);
+      return { status: 'created', email, ruolo };
+    }
+  } catch (error) {
+    console.error(`Errore su ${email}:`, error.message);
+    return { status: 'error', email, error: error.message };
+  }
+}
+
+async function syncAllUsers(keycloakUsers) {
+  const stats = {
+    created: 0,
+    updated: 0,
+    skipped: 0,
+    errors: 0
+  };
+
+  console.log('\nInizio sincronizzazione...\n');
 
   for (const kcUser of keycloakUsers) {
-    await processUser(kcUser, stats);
+    const result = await syncUser(kcUser);
+
+    switch (result.status) {
+      case 'created':
+        stats.created++;
+        break;
+      case 'updated':
+        stats.updated++;
+        break;
+      case 'skipped':
+        stats.skipped++;
+        break;
+      case 'error':
+        stats.errors++;
+        break;
+    }
   }
 
   return stats;
 }
 
-async function processUser(kcUser, stats) {
-  try {
-    const email = getEmail(kcUser);
+function printStats(stats) {
+  console.log('\n' + '='.repeat(50));
+  console.log('RIEPILOGO SINCRONIZZAZIONE');
+  console.log('='.repeat(50));
+  console.log(`Creati:     ${stats.created}`);
+  console.log(`Aggiornati: ${stats.updated}`);
+  console.log(`Saltati:    ${stats.skipped}`);
+  console.log(`Errori:     ${stats.errors}`);
+  console.log('='.repeat(50));
+}
 
-    if (!email) {
-      handleSkippedUser(kcUser.id, stats);
-      return;
+// ============================================
+// MAIN
+// ============================================
+async function main() {
+  console.log('\n' + '='.repeat(50));
+  console.log('SINCRONIZZAZIONE UTENTI KEYCLOAK → DATABASE');
+  console.log('='.repeat(50) + '\n');
+
+  try {
+    initDatabase();
+    initKeycloak();
+
+    await connectDatabase();
+
+    await authenticateKeycloak();
+
+    const keycloakUsers = await fetchKeycloakUsers();
+
+    if (keycloakUsers.length === 0) {
+      console.log('\nNessun utente trovato su Keycloak');
+      process.exit(0);
     }
 
-    console.log(`Elaborazione: ${email}`);
-    await syncUserToDatabase(kcUser, email, stats);
+    const stats = await syncAllUsers(keycloakUsers);
+
+    printStats(stats);
+
+    await sequelize.close();
+    console.log('\nSincronizzazione completata con successo\n');
+
+    process.exit(stats.errors > 0 ? 1 : 0);
 
   } catch (error) {
-    console.error(`Errore: ${error.message}\n`);
-    stats.errors++;
+    console.error('\nERRORE FATALE:', error.message);
+
+    if (sequelize) {
+      await sequelize.close();
+    }
+
+    process.exit(1);
   }
 }
 
-function getEmail(kcUser) {
-  return kcUser.email || kcUser.username;
-}
-
-function handleSkippedUser(userId, stats) {
-  console.log(`Utente senza email, saltato (ID: ${userId})`);
-  stats.skipped++;
-}
-
-async function syncUserToDatabase(kcUser, email, stats) {
-  const dbUser = await Utente.findOne({ where: { email } });
-  const ruolo = getRuolo(kcUser);
-
-  if (!dbUser) {
-    await createNewUser(kcUser, email, ruolo, stats);
-  } else if (!dbUser.keycloak_id) {
-    await updateExistingUser(dbUser, kcUser, ruolo, stats);
-  } else {
-    console.log(`Già sincronizzato\n`);
-    stats.skipped++;
-  }
-}
-
-function getRuolo(kcUser) {
-  const ruoloAttribute = kcUser.attributes?.ruolo?.[0] || 'Standard';
-  return ruoloAttribute === 'Amministratore' ? 'Amministratore' : 'Standard';
-}
-
-async function createNewUser(kcUser, email, ruolo, stats) {
-  await Utente.create({
-    keycloak_id: kcUser.id,
-    nome: kcUser.firstName || 'Nome',
-    cognome: kcUser.lastName || 'Cognome',
-    email: email,
-    ruolo: ruolo,
-    ultimo_sync: new Date()
-  });
-
-  console.log(`Creato nel database\n`);
-  stats.created++;
-}
-
-async function updateExistingUser(dbUser, kcUser, ruolo, stats) {
-  await dbUser.update({
-    keycloak_id: kcUser.id,
-    nome: kcUser.firstName || dbUser.nome,
-    cognome: kcUser.lastName || dbUser.cognome,
-    ruolo: ruolo,
-    ultimo_sync: new Date()
-  });
-
-  console.log(`Aggiornato con Keycloak ID\n`);
-  stats.updated++;
-}
-
-function displayResults(stats) {
-  console.log('Risultati importazione:');
-  console.log(`Creati: ${stats.created}`);
-  console.log(`Aggiornati: ${stats.updated}`);
-  console.log(`Saltati: ${stats.skipped}`);
-  console.log(`Errori: ${stats.errors}`);
-}
-
-async function handleFatalError(error) {
-  console.error('Errore fatale:', error.message);
-  await closeGracefully();
-  process.exit(1);
-}
-
-async function closeGracefully() {
-  try {
-    await database.connectionManager.close();
-
-    await new Promise(resolve => setTimeout(resolve, 100));
-  } catch (error) {
-  }
-}
-
-importFromKeycloak();
+main();

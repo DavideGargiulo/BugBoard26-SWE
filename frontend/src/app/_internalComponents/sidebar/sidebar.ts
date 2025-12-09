@@ -17,18 +17,7 @@ import { ProjectDialogComponent } from '../project-dialog/project-dialog';
 
 export class SidebarComponent implements OnInit {
   // Lista progetti
-  projects: string[] = [
-    'Project 1',
-    'Project 2',
-    'Project 3',
-    'Project 4',
-    'Project 5',
-    'Project 6',
-    'Project 7',
-    'Project 8',
-    'Project 9',
-    'Project 10'
-  ];
+  projects: string[] = [];
 
   // Progetti filtrati in base alla ricerca
   filteredProjects: string[] = [];
@@ -65,6 +54,14 @@ export class SidebarComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.projectService.getAllProjects().subscribe({
+      next: (projects) => {
+        this.projects = projects.map(p => p.name);
+        this.filteredProjects = [...this.projects];
+      },
+      error: (err) => console.error('Errore caricamento progetti:', err)
+    });
+
     this.isDarkMode = document.documentElement.classList.contains('dark');
     this.filteredProjects = [...this.projects];
 
@@ -78,6 +75,19 @@ export class SidebarComponent implements OnInit {
         this.user = { name: 'Ospite', role: '' };
       }
     });
+  }
+
+  loadProjects(): void {
+    this.projectService.getAllProjects().subscribe({
+      next: (data) => {
+        console.log('Progetti caricati:', data);
+        this.projects = data.map((project: any) => project.nome);
+        this.filteredProjects = [...this.projects];
+      },
+      error: (err) => {
+        console.log('Errore caricamento progetti:', err);
+      }
+    })
   }
 
   private extractRole(user: any): string {

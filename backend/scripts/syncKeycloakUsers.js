@@ -4,17 +4,17 @@ import 'dotenv/config';
 
 const CONFIG = {
   database: {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    database: process.env.DB_NAME,
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 5433,
+    database: process.env.DB_NAME || 'bugboard',
+    username: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'admin',
   },
   keycloak: {
-    baseUrl: process.env.KEYCLOAK_URL,
-    realm: process.env.KEYCLOAK_REALM,
-    adminUsername: process.env.KEYCLOAK_ADMIN_USERNAME,
-    adminPassword: process.env.KEYCLOAK_ADMIN_PASSWORD,
+    baseUrl: process.env.KEYCLOAK_URL || 'http://localhost:8080',
+    realm: process.env.KEYCLOAK_REALM || 'bugboard-realm',
+    adminUsername: process.env.KEYCLOAK_ADMIN_USERNAME || 'admin',
+    adminPassword: process.env.KEYCLOAK_ADMIN_PASSWORD || 'admin123',
   }
 };
 

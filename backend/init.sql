@@ -35,7 +35,6 @@ CREATE TABLE IF NOT EXISTS "utente" (
 	nome VARCHAR(255) NOT NULL,
 	cognome VARCHAR(255) NOT NULL,
 	email VARCHAR(255) NOT NULL UNIQUE,
-	password VARCHAR(255) NOT NULL,
 	ruolo ruolo NOT NULL
 );
 

@@ -8,6 +8,7 @@ import session from 'express-session';
 import { initKeycloak } from './config/keycloak.js';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import uploadTestRouter from './routes/uploadTest.js';
 
 const app = express();
 
@@ -47,6 +48,8 @@ app.use(keycloak.middleware());
 app.use('/api/auth', authRoutes);
 
 app.use('/api/users', userRoutes);
+
+app.use('/api', uploadTestRouter);
 
 app.get('/', (req, res) => {
   res.send('Backend Express con Keycloak è attivo.');

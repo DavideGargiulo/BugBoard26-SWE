@@ -16,12 +16,12 @@ export const uploader = multer({
   storage: storage,
   fileFilter: function (req, file, cb) {
     if (!allowedTypes.has(file.mimetype)) {
-      return cb({ status: 400, message: 'Unsupported file type' }, false);
+      return cb(new Error(`Tipo di file non supportato: ${file.mimetype}. Sono permessi solo JPEG, PNG e PDF.`), false);
     }
 
     const extension = file.originalname.toLowerCase();
     if (!(extension.endsWith('.jpg') || extension.endsWith('.jpeg') || extension.endsWith('.png') || extension.endsWith('.pdf'))) {
-      return cb({ status: 400, message: 'File extension does not match MIME type' }, false);
+      return cb(new Error(`Estensione file non valida. L'estensione non corrisponde al tipo MIME.`), false);
     }
 
     cb(null, true);

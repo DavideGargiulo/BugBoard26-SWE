@@ -1,15 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { ProjectService } from '../../_services/project/project-service';
 import { AuthService } from '../../_services/auth/auth.service';
 import { User } from '../user-card/user-card';
 import { Subscription } from 'rxjs';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ProjectDialogComponent } from '../project-dialog/project-dialog';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatDialogModule],
   templateUrl: './sidebar.html'
 })
 
@@ -58,7 +60,8 @@ export class SidebarComponent implements OnInit {
   constructor(
     private readonly router: Router,
     private readonly projectService: ProjectService,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    @Inject(MatDialog) public dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -148,19 +151,48 @@ export class SidebarComponent implements OnInit {
   }
 
   /**
-   * Crea un nuovo progetto
-   */
-  createNewProject(): void {
-    console.log('Creazione nuovo progetto');
-
-    // Logica per aprire un modal o navigare a una pagina di creazione
-    // this.router.navigate(['/progetti/nuovo']);
-  }
-
-  /**
    * Effettua il logout
    */
   logout(): void {
     this.authService.logout();
   }
+
+
+  openAddUserDialog(): void {
+    const dialogRef = this.dialog.open(ProjectDialogComponent, {
+      width: '450px',
+      panelClass: 'custom-dialog-container',
+      disableClose: true,
+      autoFocus: true
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log('Dati utente ricevuti:', result);
+        this.createProject(result);
+      } else {
+        console.log('Dialog chiuso senza conferma');
+      }
+    });
+  }
+
+  createProject(projectData: any): void {
+    // this.authService.register(projectData).subscribe({
+    //   next: (response: any) => {
+    //     const password = response.password;
+
+    //     alert(
+    //       `UTENTE CREATO CON SUCCESSO!\n\n` +
+    //       `Email: ${userData.email}\n` +
+    //       `Password: ${password}\n\n` +
+    //       `Copia la password ora, non sarà più visibile.`
+    //     );
+    //   },
+    //   error: (err) => {
+    //     console.error('Errore registrazione:', err);
+    //     alert('Errore: ' + (err.error?.error || 'Impossibile creare utente'));
+    //   }
+    // });
+  }
+
 }

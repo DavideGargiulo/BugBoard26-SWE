@@ -56,7 +56,7 @@ export class SidebarComponent implements OnInit {
   ngOnInit(): void {
     this.projectService.getAllProjects().subscribe({
       next: (projects) => {
-        this.projects = projects.map(p => p.name);
+        this.projects = projects.map(p => p.nome);
         this.filteredProjects = [...this.projects];
       },
       error: (err) => console.error('Errore caricamento progetti:', err)
@@ -187,22 +187,19 @@ export class SidebarComponent implements OnInit {
   }
 
   createProject(projectData: any): void {
-    // this.authService.register(projectData).subscribe({
-    //   next: (response: any) => {
-    //     const password = response.password;
+    this.projectService.createProject(projectData).subscribe({
+      next: (response: any) => {
+        console.log('Progetto creato:', response);
 
-    //     alert(
-    //       `UTENTE CREATO CON SUCCESSO!\n\n` +
-    //       `Email: ${userData.email}\n` +
-    //       `Password: ${password}\n\n` +
-    //       `Copia la password ora, non sarà più visibile.`
-    //     );
-    //   },
-    //   error: (err) => {
-    //     console.error('Errore registrazione:', err);
-    //     alert('Errore: ' + (err.error?.error || 'Impossibile creare utente'));
-    //   }
-    // });
+        this.projects.push(response.nome);
+        this.filterProjects();
+
+        alert(`Progetto "${response.nome}" creato con successo!`);
+      },
+      error: (err) => {
+        console.error('Errore creazione progetto:', err);
+        alert('Errore: ' + (err.error?.error || 'Impossibile creare il progetto'));
+      }
+    });
   }
-
 }

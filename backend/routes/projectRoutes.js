@@ -1,10 +1,14 @@
 import { Router } from 'express';
-import { getAllProjects } from '../controllers/projectController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { getAllProjects, createProject } from '../controllers/projectController.js';
+// Aggiungi extractTokenFromCookie agli import
+import { protect, checkRole, extractTokenFromCookie } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
-// GET /api/projects - Recupera tutti i progetti
+// GET /api/projects
 router.get('/', getAllProjects);
+
+// POST /api/projects
+router.post('/', protect, checkRole('Amministratore'), createProject);
 
 export default router;

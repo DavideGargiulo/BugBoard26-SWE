@@ -1,3 +1,4 @@
+// project-service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
@@ -21,8 +22,8 @@ export class ProjectService {
     return this.selectedProjectSubject.value;
   }
 
-  createProject(projectData: { name: string }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/projects`, projectData);
+  createProject(projectData: { nome: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/projects`, projectData, { withCredentials: true });
   }
 
   getAllProjects(): Observable<any[]> {

@@ -6,7 +6,7 @@ import { tap, catchError, map } from 'rxjs/operators';
 import { User } from '../../_internalComponents/user-card/user-card';
 
 const LOCAL = false; // Imposta a true per bypassare l'autenticazione in locale
-const ISAUTH = true; // Imposta a true per simulare utente autenticato in locale
+const ISAUTH = false; // Imposta a true per simulare utente autenticato in locale
 
 export interface KeycloakTokenPayload {
   given_name: string;

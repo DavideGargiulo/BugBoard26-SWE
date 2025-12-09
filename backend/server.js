@@ -9,6 +9,7 @@ import { initKeycloak } from './config/keycloak.js';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import uploadTestRouter from './routes/uploadTest.js';
+import projectRoutes from './routes/projectRoutes.js';
 
 const app = express();
 
@@ -48,6 +49,8 @@ app.use(keycloak.middleware());
 app.use('/api/auth', authRoutes);
 
 app.use('/api/users', userRoutes);
+
+app.use('/api/projects', projectRoutes);
 
 app.use('/api', uploadTestRouter);
 

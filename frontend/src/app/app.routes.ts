@@ -7,6 +7,7 @@ import { UsersComponent } from './users/users';
 import { ProjectComponent } from './project/project';
 import { AuthGuard } from './_auth/auth-guard';
 import { GuestGuard } from './_auth/guest-guard';
+import { NewIssueComponent } from './_internalComponents/new-issue/new-issue';
 
 export const routes: Routes = [
   {
@@ -25,7 +26,8 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent },
       { path: 'utenti', component: UsersComponent },
-      { path: 'progetto', component: ProjectComponent }
+      { path: 'progetto/:nome', component: ProjectComponent },
+      { path: 'progetto/:nome/nuova-issue', component: NewIssueComponent }
     ]
   },
   { path: '**', redirectTo: 'dashboard' }

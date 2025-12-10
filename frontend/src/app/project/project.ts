@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { TopbarComponent } from "../_internalComponents/topbar/topbar";
 import { IssuesListComponent } from "../_internalComponents/issues-list/issues-list";
 import { Issue } from '../_internalComponents/issue-card/issue-card';
@@ -9,7 +10,19 @@ import { Issue } from '../_internalComponents/issue-card/issue-card';
   templateUrl: './project.html'
 })
 
-export class ProjectComponent {
+export class ProjectComponent implements OnInit {
+
+  projectName: string = '';
+
+  constructor(private route: ActivatedRoute) {}
+
+  ngOnInit(): void {
+    this.route.params.subscribe(params => {
+      this.projectName = params['nome'];
+      console.log('Nome progetto dall\'URL:', this.projectName);
+      // Carica i dati del progetto usando this.projectName
+    });
+  }
 
   issues: Issue[] = [
       {

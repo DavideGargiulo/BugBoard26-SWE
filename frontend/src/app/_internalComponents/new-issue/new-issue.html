@@ -1,0 +1,109 @@
+<div class="min-h-screen flex bg-gray-900 text-gray-100">
+
+  <!-- Main content: deve essere flex-col e occupare lo spazio rimanente -->
+  <main class="flex-1 flex flex-col min-h-0">
+
+    <!-- Header -->
+    <header class="px-6 py-4 border-b border-gray-700 bg-gray-900">
+      <h2 class="text-xl font-semibold text-gray-100">{{ projectName }} - Nuova Issue</h2>
+    </header>
+
+    <!-- Content wrapper: qui NON mettiamo overflow-y-auto; lasciamo che l'editor gestisca lo scroll -->
+    <section class="flex-1 p-6 bg-gray-900 flex flex-col min-h-0">
+
+      <!-- Titolo (non flessibile) -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-300 mb-2">Titolo</label>
+        <input
+          type="text"
+          [(ngModel)]="title"
+          placeholder="Titolo Issue"
+          class="w-full px-3 py-2 border border-gray-700 bg-gray-800 text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <!-- Descrizione: wrapper flessibile che si espande -->
+      <div class="mb-4 flex flex-col flex-1 min-h-0">
+        <label class="block text-sm font-medium text-gray-300 mb-2">Descrizione</label>
+
+        <!-- Toolbar (height definito) -->
+        <div class="border border-gray-700 rounded-t-lg bg-gray-800 px-3 py-2">
+          <div class="flex items-center gap-2">
+            <!-- bottoni toolbar -->
+            <button type="button" (click)="formatDoc('bold')" class="p-2 rounded text-gray-200 font-bold">B</button>
+            <button type="button" (click)="formatDoc('italic')" class="p-2 rounded text-gray-200 italic">I</button>
+            <button type="button" (click)="formatDoc('underline')" class="p-2 rounded text-gray-200 underline">U</button>
+            <button type="button" (click)="formatDoc('strikeThrough')" class="p-2 rounded text-gray-200 line-through">S</button>
+            <!-- separatore -->
+            <div class="w-px h-6 bg-gray-700 mx-1"></div>
+            <!-- allineamenti -->
+            <button type="button" (click)="formatDoc('justifyLeft')" class="p-2 rounded text-gray-200">L</button>
+            <button type="button" (click)="formatDoc('justifyCenter')" class="p-2 rounded text-gray-200">C</button>
+            <button type="button" (click)="formatDoc('justifyRight')" class="p-2 rounded text-gray-200">R</button>
+            <button type="button" (click)="formatDoc('justifyFull')" class="p-2 rounded text-gray-200">J</button>
+            <div class="w-px h-6 bg-gray-700 mx-1"></div>
+            <button type="button" (click)="triggerImageUpload()" class="p-2 rounded text-gray-200">📷</button>
+          </div>
+        </div>
+
+        <!-- EDITOR: questo è il PUNTO CRITICO -->
+        <!-- - flex-1: occuperà lo spazio residuo
+             - min-h-0: necessario per permettere overflow interno in flex parent
+             - overflow-y-auto: scroll interno quando il contenuto è troppo -->
+        <div
+          #content
+          contenteditable="true"
+          spellcheck="false"
+          class="border border-t-0 border-gray-700 rounded-b-lg p-4 flex-1 min-h-0 overflow-y-auto bg-gray-800 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        ></div>
+
+      </div>
+
+      <!-- Immagini caricate (opzionale) -->
+      <div class="mb-4" *ngIf="uploadedImages.length > 0">
+        <label class="block text-sm font-medium text-gray-300 mb-2">
+          File allegati ({{ uploadedImages.length }}/3)
+        </label>
+        <div class="flex flex-wrap gap-2">
+          <div *ngFor="let image of uploadedImages; let i = index" class="relative group">
+            <div class="w-20 h-20 border-2 border-gray-700 rounded-lg overflow-hidden bg-gray-800 flex items-center justify-center">
+              <img [src]="getImagePreview(image)" [alt]="image.name" class="max-w-full max-h-full object-contain"/>
+            </div>
+            <button type="button" (click)="removeImage(i)" class="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">×</button>
+            <span class="block text-xs text-gray-400 mt-1 truncate w-20" [title]="image.name">{{ image.name }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tipo, Priorità e Azioni -->
+      <div class="flex items-end gap-4 mt-4">
+        <div class="flex-1">
+          <label class="block text-sm font-medium text-gray-300 mb-2">Tipo</label>
+          <select [(ngModel)]="tipo" class="w-full px-3 py-2 border border-gray-700 bg-gray-800 text-gray-100 rounded-lg">
+            <option value="" disabled selected>Seleziona tipo</option>
+            <option value="bug">Bug</option>
+            <option value="feature">Feature</option>
+            <option value="question">Question</option>
+            <option value="documentation">Documentation</option>
+          </select>
+        </div>
+
+        <div class="flex-1">
+          <label class="block text-sm font-medium text-gray-300 mb-2">Priorità</label>
+          <select [(ngModel)]="priorita" class="w-full px-3 py-2 border border-gray-700 bg-gray-800 text-gray-100 rounded-lg">
+            <option value="" disabled selected>Seleziona priorità</option>
+            <option value="bassa">Bassa</option>
+            <option value="media">Media</option>
+            <option value="alta">Alta</option>
+          </select>
+        </div>
+
+        <div class="flex gap-3">
+          <button type="button" (click)="onCancel()" class="px-4 py-2 border border-gray-700 rounded-lg">Annulla</button>
+          <button type="button" (click)="onConfirm()" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Conferma</button>
+        </div>
+      </div>
+
+    </section>
+  </main>
+</div>

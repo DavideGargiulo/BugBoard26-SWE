@@ -17,7 +17,9 @@ import { ProjectDialogComponent } from '../project-dialog/project-dialog';
 
 export class SidebarComponent implements OnInit {
   // Lista progetti
-  projects: string[] = [];
+  projects: string[] = [
+    'Test',
+  ];
 
   // Progetti filtrati in base alla ricerca
   filteredProjects: string[] = [];
@@ -77,19 +79,6 @@ export class SidebarComponent implements OnInit {
     });
   }
 
-  loadProjects(): void {
-    this.projectService.getAllProjects().subscribe({
-      next: (data) => {
-        console.log('Progetti caricati:', data);
-        this.projects = data.map((project: any) => project.nome);
-        this.filteredProjects = [...this.projects];
-      },
-      error: (err) => {
-        console.log('Errore caricamento progetti:', err);
-      }
-    })
-  }
-
   private extractRole(user: any): string {
     const roles = user.realm_access?.roles || [];
 
@@ -120,7 +109,17 @@ export class SidebarComponent implements OnInit {
    * Verifica se la rotta corrente è attiva
    */
   isActive(route: string): boolean {
+    if (route.startsWith('/progetto/')) {
+      return this.router.url.startsWith('/progetto/');
+    }
     return this.router.url === route;
+  }
+
+  /**
+   * Verifica se un progetto specifico è attivo
+   */
+  isProjectActive(projectName: string): boolean {
+    return this.router.url.startsWith(`/progetto/${projectName}`);
   }
 
   /**
@@ -156,8 +155,8 @@ export class SidebarComponent implements OnInit {
 
     this.projectService.setSelectedProject(project);
 
-    // Naviga alla pagina del progetto
-    this.router.navigate(['/progetto']);
+    // Naviga alla pagina del progetto con il nome come parametro
+    this.router.navigate(['/progetto', project]);
   }
 
   /**

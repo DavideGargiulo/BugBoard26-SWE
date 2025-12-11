@@ -14,7 +14,22 @@ import { UserService } from "../_services/user/user.service";
 export class UsersComponent implements OnInit {
   private userService = inject(UserService);
 
-  users: User[] = [];
+  users: User[] = [
+    // Esempio di utenti hardcoded
+    // { name: 'Mario Rossi', role: 'Amministratore' },
+    // { name: 'Luigi Bianchi', role: 'Standard' },
+    // { name: 'Giulia Verdi', role: 'Amministratore' },
+    // { name: 'Anna Neri', role: 'Standard' },
+    // { name: 'Paolo Gialli', role: 'Standard' },
+    // { name: 'Sara Blu', role: 'Amministratore' },
+    // { name: 'Luca Viola', role: 'Standard' },
+    // { name: 'Elena Arancioni', role: 'Amministratore' },
+    // { name: 'Marco Grigi', role: 'Standard' },
+    // { name: 'Laura Rosa', role: 'Standard' },
+    // { name: 'Francesco Celesti', role: 'Amministratore' },
+    // { name: 'Chiara Marroni', role: 'Standard' },
+    // { name: 'Davide Turchesi', role: 'Amministratore' }
+  ];
 
   ngOnInit(): void {
     this.loadUsers();

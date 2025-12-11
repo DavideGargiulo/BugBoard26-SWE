@@ -1,7 +1,9 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, Input, OnInit } from '@angular/core';
 import { UserDialogComponent } from '../user-dialog/user-dialog';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../_services/auth/auth.service';
+import { User } from '../user-card/user-card';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-user-topbar',
@@ -10,9 +12,37 @@ import { AuthService } from '../../_services/auth/auth.service';
   templateUrl: './user-topbar.html'
 })
 
-export class UserTopbar {
+export class UserTopbar implements OnInit {
 
-  constructor(@Inject(MatDialog) public dialog: MatDialog, private readonly authService: AuthService) {}
+  @Input() currentUser!: User;
+  private userSubscription: Subscription | null = null;
+
+  constructor(
+    @Inject(MatDialog) public dialog: MatDialog,
+    private readonly authService: AuthService,
+  ) {}
+
+  ngOnInit(): void {
+
+    this.userSubscription = this.authService.currentUser$.subscribe(backendUser => {
+      if (backendUser) {
+        this.currentUser = {
+          name: backendUser.name || `${backendUser.given_name} ${backendUser.family_name}`,
+          role: this.extractRole(backendUser)
+        };
+      } else {
+        this.currentUser = { name: 'Ospite', role: '' };
+      }
+    });
+
+  }
+
+  private extractRole(user: any): string {
+    const roles = user.realm_access?.roles || [];
+
+    if (roles.includes('Amministratore')) return 'Amministratore';
+    return 'Standard';
+  }
 
   openAddUserDialog(): void {
     const dialogRef = this.dialog.open(UserDialogComponent, {
@@ -50,4 +80,9 @@ export class UserTopbar {
       }
     });
   }
+
+  canCreateUser(): boolean {
+    return this.currentUser.role === 'Amministratore'
+  }
+  
 }

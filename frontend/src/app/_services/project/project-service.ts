@@ -29,4 +29,8 @@ export class ProjectService {
   getAllProjects(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/projects`);
   }
+
+  createIssue(issueData: FormData): Observable<any> {
+    return this.http.post(`${this.apiUrl}/issues`, issueData, { withCredentials: true });
+  }
 }

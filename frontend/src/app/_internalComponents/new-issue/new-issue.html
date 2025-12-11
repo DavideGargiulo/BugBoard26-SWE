@@ -67,7 +67,7 @@
         <div class="flex flex-wrap gap-2">
           <div *ngFor="let image of uploadedImages; let i = index" class="relative group">
             <div class="w-20 h-20 border-2 border-gray-700 rounded-lg overflow-hidden bg-gray-800 flex items-center justify-center">
-              <img [src]="getImagePreview(image)" [alt]="image.name" class="max-w-full max-h-full object-contain"/>
+              <img [src]="imagePreviewUrls[i]" [alt]="image.name" class="max-w-full max-h-full object-contain"/>
             </div>
             <button type="button" (click)="removeImage(i)" class="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">×</button>
             <span class="block text-xs text-gray-400 mt-1 truncate w-20" [title]="image.name">{{ image.name }}</span>

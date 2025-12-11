@@ -16,7 +16,19 @@ export const extractTokenFromCookie = (req, res, next) => {
  * Middleware di protezione: valida il token JWT
  */
 export const protect = async (req, res, next) => {
-  const token = req.cookies['access_token'] || req.accessToken;
+  let token = null;
+
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token && req.cookies['access_token']) {
+    token = req.cookies['access_token'];
+  }
+
+  if (!token && req.accessToken) {
+    token = req.accessToken;
+  }
 
   if (!token) {
     console.error('Nessun token trovato');
@@ -24,14 +36,12 @@ export const protect = async (req, res, next) => {
   }
 
   try {
-    // Decodifica senza verifica (per ora)
     const decoded = jwt.decode(token);
 
     if (!decoded) {
       throw new Error('Token non decodificabile');
     }
 
-    // Verifica manualmente la scadenza
     const now = Math.floor(Date.now() / 1000);
     if (decoded.exp && decoded.exp < now) {
       throw new Error('Token scaduto');

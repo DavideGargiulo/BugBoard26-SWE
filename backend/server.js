@@ -10,6 +10,7 @@ import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import uploadTestRouter from './routes/uploadTest.js';
 import projectRoutes from './routes/projectRoutes.js';
+import issueRoutes from './routes/issueRoutes.js';
 
 const app = express();
 
@@ -51,6 +52,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
 app.use('/api/projects', projectRoutes);
+
+app.use('/api/issues', issueRoutes);
 
 app.use('/api', uploadTestRouter);
 

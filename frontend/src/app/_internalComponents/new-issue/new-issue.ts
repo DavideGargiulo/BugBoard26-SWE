@@ -109,7 +109,8 @@ export class NewIssueComponent implements OnInit {
       description: this.content.nativeElement.innerHTML,
       tipo: this.tipo,
       priorita: this.priorita,
-      images: this.uploadedImages
+      images: this.uploadedImages,
+      progetto: this.projectName
     };
 
     console.log('Nuova issue creata:', issue);

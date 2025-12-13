@@ -15,8 +15,7 @@
   </h3>
 
   <!-- Description -->
-  <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-6 flex-1 overflow-hidden line-clamp-3">
-    {{ issue.description }}
+  <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-6 flex-1 overflow-hidden line-clamp-3" [innerHTML]="issue.description">
   </p>
 
   <!-- Footer -->

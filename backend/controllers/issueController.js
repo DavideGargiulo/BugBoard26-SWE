@@ -1,4 +1,5 @@
-import { Issue, Progetto, Utente, Allegato, database } from '../data/remote/Database.js';
+import { Issue, Progetto, Utente, Allegato, Commento, database } from '../data/remote/Database.js';
+import { countCommentsByIssueId } from './commentController.js';
 import fs from 'fs';
 import { promisify } from 'util';
 import crypto from 'crypto';
@@ -37,7 +38,17 @@ export const getAllIssues = async (req, res) => {
       ]
     });
 
-    res.status(200).json(issues);
+    const issuesWithCount = await Promise.all(
+      issues.map(async (issue) => {
+        const numeroCommenti = await countCommentsByIssueId(issue.id);
+        return {
+          ...issue.toJSON(),
+          numeroCommenti
+        };
+      })
+    );
+
+    res.status(200).json(issuesWithCount);
   } catch (error) {
     res.status(500).json({ message: 'Errore nel recupero delle issue', error: error.message });
   }
@@ -68,7 +79,17 @@ export const getIssuesByProject = async (req, res) => {
       ]
     });
 
-    res.status(200).json(issues);
+    const issuesWithCount = await Promise.all(
+      issues.map(async (issue) => {
+        const numeroCommenti = await countCommentsByIssueId(issue.id);
+        return {
+          ...issue.toJSON(),
+          numeroCommenti
+        };
+      })
+    );
+
+    res.status(200).json(issuesWithCount);
   } catch (error) {
     res.status(500).json({ message: 'Errore nel recupero delle issue', error: error.message });
   }

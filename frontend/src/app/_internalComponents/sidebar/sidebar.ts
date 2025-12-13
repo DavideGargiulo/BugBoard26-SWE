@@ -33,6 +33,7 @@ export class SidebarComponent implements OnInit {
   // Informazioni utente
   user: User = {
     name: 'Caricamento...',
+    email: '',
     role: ''
   };
 
@@ -71,10 +72,11 @@ export class SidebarComponent implements OnInit {
       if (backendUser) {
         this.user = {
           name: backendUser.name || `${backendUser.given_name} ${backendUser.family_name}`,
+          email: '',
           role: this.extractRole(backendUser)
         };
       } else {
-        this.user = { name: 'Ospite', role: '' };
+        this.user = { name: 'Ospite', email: '', role: '' };
       }
     });
   }

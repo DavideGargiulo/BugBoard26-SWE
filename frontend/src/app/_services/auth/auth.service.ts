@@ -5,8 +5,8 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
 import { User } from '../../_internalComponents/user-card/user-card';
 
-const LOCAL = false; // Imposta a true per bypassare l'autenticazione in locale
-const ISAUTH = false; // Imposta a true per simulare utente autenticato in locale
+const LOCAL = false;
+const ISAUTH = false;
 
 export interface KeycloakTokenPayload {
   given_name: string;
@@ -15,7 +15,7 @@ export interface KeycloakTokenPayload {
   realm_access: {
     roles: string[];
   };
-  sub: string; // ID utente
+  sub: string;
 }
 
 @Injectable({
@@ -25,20 +25,16 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
 
-  // Assicurati che questa URL corrisponda al tuo backend
   private readonly apiUrl = 'http://localhost:3000/api/auth';
+  private readonly usersApiUrl = 'http://localhost:3000/api/users';
 
   private userProfileSubject = new BehaviorSubject<any | null>(null);
   public currentUser$ = this.userProfileSubject.asObservable();
 
   constructor() {
-    // Al caricamento, controlliamo se c'è una sessione attiva (cookie)
     this.checkSession().subscribe();
   }
 
-  /**
-   * Login tramite Backend (BFF Pattern)
-   */
   login(email: string, password: string, rememberMe: boolean): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, { email, password, rememberMe }, { withCredentials: true }).pipe(
       tap(() => {
@@ -55,7 +51,6 @@ export class AuthService {
   }
 
   checkSession(): Observable<boolean> {
-
     if (LOCAL){
       return of(ISAUTH);
     }else{
@@ -73,7 +68,6 @@ export class AuthService {
         })
       );
     }
-
   }
 
   isAuthenticated(): Observable<boolean> {
@@ -85,7 +79,6 @@ export class AuthService {
       }
       return this.checkSession();
     }
-
   }
 
   hasRole(role: string): boolean {
@@ -98,6 +91,13 @@ export class AuthService {
 
   register(userData: { nome: string; cognome: string; email: string; ruolo: string }): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, userData, {
+      withCredentials: true
+    });
+  }
+
+  // NUOVO METODO per eliminare un utente
+  deleteUser(email: string): Observable<any> {
+    return this.http.delete(`${this.usersApiUrl}/${encodeURIComponent(email)}`, {
       withCredentials: true
     });
   }

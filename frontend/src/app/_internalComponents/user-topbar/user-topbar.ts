@@ -28,10 +28,11 @@ export class UserTopbar implements OnInit {
       if (backendUser) {
         this.currentUser = {
           name: backendUser.name || `${backendUser.given_name} ${backendUser.family_name}`,
+          email: '',
           role: this.extractRole(backendUser)
         };
       } else {
-        this.currentUser = { name: 'Ospite', role: '' };
+        this.currentUser = { name: 'Ospite', email: '', role: '' };
       }
     });
 
@@ -84,5 +85,5 @@ export class UserTopbar implements OnInit {
   canCreateUser(): boolean {
     return this.currentUser.role === 'Amministratore'
   }
-  
+
 }

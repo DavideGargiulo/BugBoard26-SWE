@@ -5,6 +5,7 @@ import { AuthService } from '../../_services/auth/auth.service';
 
 export interface User {
   name: string;
+  email: string;
   role: string;
 }
 
@@ -34,10 +35,11 @@ export class UserCardComponent implements OnInit {
       if (backendUser) {
         this.currentUser = {
           name: backendUser.name || `${backendUser.given_name} ${backendUser.family_name}`,
+          email: backendUser.email,
           role: this.extractRole(backendUser)
         };
       } else {
-        this.currentUser = { name: 'Ospite', role: '' };
+        this.currentUser = { name: 'Ospite', email: '', role: '' };
       }
     });
 
@@ -58,8 +60,9 @@ export class UserCardComponent implements OnInit {
 
   onDelete(): void {
     this.showDeleteModal = false;
+    console.log(`Emitting delete event for user: ${this.user.name}`);
     this.deleteUser.emit(this.user);
-    console.log(`Utente eliminato: ${this.user.name} with role ${this.user.role}`);
+    console.log(`Utente eliminato: ${this.user.name} with role ${this.user.role} with email ${this.user.email}`);
     // TODO: Aggiungi logica di eliminazione effettiva qui
   }
 

@@ -4,6 +4,7 @@
     <app-user-card
       *ngFor="let user of paginatedUsers"
       [user]="user"
+      (deleteUser)="onUserDelete($event)"
     />
   </div>
 

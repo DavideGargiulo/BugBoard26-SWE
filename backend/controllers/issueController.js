@@ -1,4 +1,4 @@
-import { Issue, Progetto, Utente, Allegato } from '../data/remote/Database.js';
+import { Issue, Progetto, Utente, Allegato, database } from '../data/remote/Database.js';
 import fs from 'fs';
 import { promisify } from 'util';
 import crypto from 'crypto';
@@ -23,7 +23,20 @@ const getProjectIdByName = async (projectName) => {
 
 export const getAllIssues = async (req, res) => {
   try {
-    const issues = await Issue.findAll();
+    const issues = await Issue.findAll({
+      attributes: { exclude: ['id_creatore'] },
+      include: [
+        {
+          model: Utente,
+          as: 'Creatore',
+          attributes: [
+            [database.fn('CONCAT', database.col('nome'), ' ', database.col('cognome')), 'nome'],
+            'email'
+          ]
+        }
+      ]
+    });
+
     res.status(200).json(issues);
   } catch (error) {
     res.status(500).json({ message: 'Errore nel recupero delle issue', error: error.message });
@@ -41,7 +54,18 @@ export const getIssuesByProject = async (req, res) => {
     }
 
     const issues = await Issue.findAll({
-      where: { id_progetto: projectId }
+      where: { id_progetto: projectId },
+      attributes: { exclude: ['id_creatore'] },
+      include: [
+        {
+          model: Utente,
+          as: 'Creatore',
+          attributes: [
+            [database.fn('CONCAT', database.col('nome'), ' ', database.col('cognome')), 'nome'],
+            'email'
+          ]
+        }
+      ]
     });
 
     res.status(200).json(issues);

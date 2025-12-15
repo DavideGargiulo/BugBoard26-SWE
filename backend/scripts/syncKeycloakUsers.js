@@ -287,4 +287,9 @@ async function main() {
   }
 }
 
-main();
+try {
+  main();
+} catch (err) {
+  console.error('Errore nello script di sincronizzazione:', err);
+  process.exit(1);
+}

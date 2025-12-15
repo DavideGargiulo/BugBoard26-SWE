@@ -45,9 +45,7 @@ export const deleteUser = async (req, res) => {
     }
 
     // 3. Verifica che l'utente abbia un keycloak_id
-    if (!user.keycloak_id) {
-      console.warn(`Utente ${email} non ha keycloak_id, elimino solo dal DB locale`);
-    } else {
+    if (user.keycloak_id) {
       // 4. Elimina l'utente da Keycloak
       try {
         await KeycloakService.deleteUser(user.keycloak_id);
@@ -65,6 +63,8 @@ export const deleteUser = async (req, res) => {
         }
         console.log('Utente non trovato su Keycloak, procedo con eliminazione locale');
       }
+    } else {
+      console.warn(`Utente ${email} non ha keycloak_id, elimino solo dal DB locale`);
     }
 
     // 5. Elimina l'utente dal database locale

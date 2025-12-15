@@ -272,10 +272,10 @@ export const register = async (req, res) => {
       process.env.KEYCLOAK_REALM
     );
 
-    if (!syncResult.success) {
-      console.warn('Utente creato su Keycloak ma sincronizzazione DB fallita:', syncResult);
-    } else {
+    if (syncResult.success) {
       console.log('Utente sincronizzato nel database locale');
+    } else {
+      console.warn('Utente creato su Keycloak ma sincronizzazione DB fallita:', syncResult);
     }
 
     return res.status(201).json({

@@ -15,10 +15,10 @@ class SyncService {
 
       console.log(`Sincronizzazione utente: ${email}`);
 
-      // Controlla se l'utente esiste già nel DB
+      // 1. Prepare Data
       const dbUser = await Utente.findOne({ where: { email } });
-
       const ruolo = this.extractRuolo(keycloakUser);
+
       const userData = {
         keycloak_id: keycloakUser.id,
         nome: keycloakUser.firstName || 'Nome',
@@ -28,23 +28,24 @@ class SyncService {
         ultimo_sync: new Date()
       };
 
+      // 2. CASE: Create New User (Guard Clause)
       if (!dbUser) {
-        // Crea nuovo utente
         await Utente.create(userData);
         console.log(`Utente creato nel database locale`);
         return { success: true, action: 'created' };
-      } else if (!dbUser.keycloak_id) {
-        // Aggiorna utente esistente con keycloak_id
-        await dbUser.update(userData);
-        console.log(`Utente aggiornato con Keycloak ID`);
-        return { success: true, action: 'updated' };
-      } else {
-        // Utente già sincronizzato, aggiorna comunque i dati
-        await dbUser.update(userData);
-        console.log(`Utente già sincronizzato, dati aggiornati`);
-        return { success: true, action: 'refreshed' };
       }
 
+      // 3. CASE: Update Existing User
+      const actionType = dbUser.keycloak_id ? 'refreshed' : 'updated';
+
+      await dbUser.update(userData);
+
+      console.log(
+        actionType === 'updated'
+        ? `Utente aggiornato con Keycloak ID`
+        : `Utente già sincronizzato, dati aggiornati`
+      );
+      return { success: true, action: actionType };ù
     } catch (error) {
       console.error('Errore sincronizzazione utente:', error.message);
       return { success: false, error: error.message };

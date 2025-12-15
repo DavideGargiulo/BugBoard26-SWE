@@ -1,9 +1,8 @@
 import { Commento, Allegato, Utente, Issue } from '../data/remote/Database.js';
-import fs from 'fs';
-import { promisify } from 'util';
-import crypto from 'crypto';
+import fs from 'node:fs';
+import { promisify } from 'node:util';
+import crypto from 'node:crypto';
 
-// Definiamo le versioni promise-based delle funzioni fs
 const readFile = promisify(fs.readFile);
 const unlinkFile = promisify(fs.unlink);
 
@@ -21,9 +20,8 @@ export const countCommentsByIssueId = async (issueId) => {
 
 export const getCommentByIssueId = async (req, res) => {
   try {
-    // Ensure issueId is an integer
-    const id = parseInt(req.params.issueId, 10);
-    if (isNaN(id)) {
+    const id = Number.parseInt(req.params.issueId, 10);
+    if (Number.isNaN(id)) {
       return res.status(400).json({
         success: false,
         message: 'Invalid issue ID provided'
@@ -35,7 +33,7 @@ export const getCommentByIssueId = async (req, res) => {
       include: [
         {
           model: Allegato,
-          required: false // LEFT JOIN: prende il commento anche se non ha allegati
+          required: false
         }
       ],
       order: [['id', 'ASC']]
@@ -60,37 +58,31 @@ export const createComment = async (req, res) => {
   try {
     const { testo, id_issue } = req.body;
 
-    // Controllo se l'utente è autenticato (req.user popolato dal middleware protect)
     if (!req.user || !req.user.sub) {
-       throw new Error("Utente non autenticato o token non valido.");
+      throw new Error("Utente non autenticato o token non valido.");
     }
     const keycloakId = req.user.sub;
 
-    // 1. Validazione input base
     if (!testo || !id_issue) {
       throw new Error("Campi obbligatori mancanti: 'testo' e 'id_issue' sono richiesti.");
     }
 
-    // 2. Recupera l'utente locale (per avere l'ID numerico)
     const user = await Utente.findOne({ where: { keycloak_id: keycloakId } });
     if (!user) {
       throw new Error("Utente non trovato nel database locale.");
     }
 
-    // 3. Verifica che l'issue esista
     const issue = await Issue.findByPk(id_issue);
     if (!issue) {
       throw new Error("Issue non trovata.");
     }
 
-    // 4. Crea il Commento
     const newComment = await Commento.create({
       testo,
       id_utente: user.id,
-      id_issue: parseInt(id_issue, 10)
+      id_issue: Number.parseInt(id_issue, 10)
     });
 
-    // 5. Gestione Allegati (se presenti)
     let allegatiCreati = [];
     if (uploadedFiles.length > 0) {
       const allegatoPromises = uploadedFiles.map(async (file) => {
@@ -104,7 +96,7 @@ export const createComment = async (req, res) => {
           tipo_mime: file.mimetype,
           dimensione_byte: file.size,
           hash_sha256: hash,
-          id_issue: null,        // NULL perché è allegato a un commento
+          id_issue: null,
           id_commento: newComment.id
         });
       });
@@ -112,7 +104,6 @@ export const createComment = async (req, res) => {
       allegatiCreati = await Promise.all(allegatoPromises);
     }
 
-    // 6. Risposta successo
     res.status(201).json({
       success: true,
       message: 'Commento creato con successo',
@@ -125,10 +116,8 @@ export const createComment = async (req, res) => {
   } catch (error) {
     console.error('Errore creazione commento:', error);
 
-    // Rollback manuale file: se qualcosa fallisce, cancelliamo i file caricati
     if (uploadedFiles.length > 0) {
       uploadedFiles.forEach(file => {
-        // Usa la funzione definita in alto (promisify)
         unlinkFile(file.path).catch(err => console.error('Errore pulizia file:', err));
       });
     }

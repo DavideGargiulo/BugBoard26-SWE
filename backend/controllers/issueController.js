@@ -1,8 +1,8 @@
-import { Issue, Progetto, Utente, Allegato, Commento, database } from '../data/remote/Database.js';
+import { Issue, Progetto, Utente, Allegato, database } from '../data/remote/Database.js';
 import { countCommentsByIssueId } from './commentController.js';
-import fs from 'fs';
-import { promisify } from 'util';
-import crypto from 'crypto';
+import fs from 'node:fs';
+import { promisify } from 'node:util';
+import crypto from 'node:crypto';
 
 const readFile = promisify(fs.readFile);
 
@@ -195,18 +195,18 @@ export const updateIssue = async (req, res) => {
     const issueId = req.params.id;
     const { titolo, descrizione, tipo, stato, priorita } = req.body;
 
-    // Trova l'issue
     const issue = await Issue.findByPk(issueId);
 
     if (!issue) {
       return res.status(404).json({ message: 'Issue non trovata' });
     }
 
-    // Prepara i dati da aggiornare
     const updateData = {};
 
     if (titolo !== undefined) updateData.titolo = titolo;
     if (descrizione !== undefined) updateData.descrizione = descrizione;
+
+    // Valida e aggiorna tipo
     if (tipo !== undefined) {
       const tipiValidi = ['Question', 'Bug', 'Documentation', 'Feature'];
       if (!tipiValidi.includes(tipo)) {
@@ -217,6 +217,7 @@ export const updateIssue = async (req, res) => {
       }
       updateData.tipo = tipo;
     }
+
     if (stato !== undefined) {
       const statiValidi = ['TODO', 'In-Progress', 'Done'];
       if (!statiValidi.includes(stato)) {
@@ -227,20 +228,20 @@ export const updateIssue = async (req, res) => {
       }
       updateData.stato = stato;
     }
-    if (priorita !== undefined) {
-      if (priorita !== null) {
-        const prioritaValide = ['Alta', 'Media', 'Bassa'];
-        if (!prioritaValide.includes(priorita)) {
-          return res.status(400).json({
-            message: 'Priorità non valida',
-            validPriorities: prioritaValide
-          });
-        }
+
+    if (priorita !== undefined && priorita !== null) {
+      const prioritaValide = ['Alta', 'Media', 'Bassa'];
+      if (!prioritaValide.includes(priorita)) {
+        return res.status(400).json({
+          message: 'Priorità non valida',
+          validPriorities: prioritaValide
+        });
       }
+      updateData.priorita = priorita;
+    } else if (priorita === null) {
       updateData.priorita = priorita;
     }
 
-    // Aggiorna l'issue
     await issue.update(updateData);
 
     res.status(200).json({

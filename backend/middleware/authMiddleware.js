@@ -54,64 +54,90 @@ export const extractTokenFromCookie = (req, res, next) => {
 };
 
 /**
+ * Helper: Estrae il token da diverse sorgenti
+ */
+const extractToken = (req) => {
+  if (req.headers.authorization?.startsWith('Bearer ')) {
+    return req.headers.authorization.split(' ')[1];
+  }
+  return req.cookies['access_token'] || req.accessToken || null;
+};
+
+/**
+ * Helper: Imposta i cookie per access e refresh token
+ */
+const setCookies = (res, accessToken, refreshToken, expiresIn) => {
+  res.cookie('access_token', accessToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: 'lax',
+    maxAge: expiresIn * 1000
+  });
+
+  res.cookie('refresh_token', refreshToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: 'lax',
+    maxAge: 24 * 60 * 60 * 1000
+  });
+};
+
+/**
+ * Helper: Gestisce il refresh del token
+ */
+const handleTokenRefresh = async (req, res, refreshToken, reason) => {
+  console.log(`${reason}, provo refresh...`);
+
+  const refreshResult = await refreshAccessToken(refreshToken);
+
+  if (!refreshResult.success) {
+    console.error('❌ Impossibile rinnovare il token');
+    res.clearCookie('access_token');
+    res.clearCookie('refresh_token');
+    return { success: false };
+  }
+
+  setCookies(res, refreshResult.access_token, refreshResult.refresh_token, refreshResult.expires_in);
+  req.accessToken = refreshResult.access_token;
+  console.log('✅ Token rinnovato con successo');
+
+  return { success: true, token: refreshResult.access_token };
+};
+
+/**
+ * Helper: Verifica se il token è scaduto o in scadenza
+ */
+const isTokenExpired = (decoded) => {
+  if (!decoded.exp) return false;
+  const now = Math.floor(Date.now() / 1000);
+  return decoded.exp < now + 30;
+};
+
+/**
  * Middleware di protezione: valida il token JWT e lo rinnova se scaduto
  */
 export const protect = async (req, res, next) => {
-  let token = null;
+  let token = extractToken(req);
 
-  // Estrai il token da varie sorgenti
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
-    token = req.headers.authorization.split(' ')[1];
-  }
-
-  if (!token && req.cookies['access_token']) {
-    token = req.cookies['access_token'];
-  }
-
-  if (!token && req.accessToken) {
-    token = req.accessToken;
-  }
-
+  // Se manca il token, prova il refresh
   if (!token) {
-    // Se non c'è access token ma c'è refresh token, prova a rinnovare
     const refreshToken = req.cookies['refresh_token'];
 
-    if (refreshToken) {
-      console.log('Access token mancante, provo refresh automatico...');
-      const refreshResult = await refreshAccessToken(refreshToken);
-
-      if (refreshResult.success) {
-        // Aggiorna i cookie
-        res.cookie('access_token', refreshResult.access_token, {
-          httpOnly: true,
-          secure: false,
-          sameSite: 'lax',
-          maxAge: refreshResult.expires_in * 1000
-        });
-
-        res.cookie('refresh_token', refreshResult.refresh_token, {
-          httpOnly: true,
-          secure: false,
-          sameSite: 'lax',
-          maxAge: 24 * 60 * 60 * 1000
-        });
-
-        token = refreshResult.access_token;
-        req.accessToken = token;
-        console.log('✅ Token rinnovato con successo (token mancante)');
-      } else {
-        console.error('❌ Refresh token non valido o scaduto');
-        res.clearCookie('access_token');
-        res.clearCookie('refresh_token');
-        return res.status(401).json({ error: 'Sessione scaduta, effettua nuovamente il login' });
-      }
-    } else {
+    if (!refreshToken) {
       console.error('Nessun token trovato');
       return res.status(401).json({ error: 'Token mancante' });
     }
+
+    const result = await handleTokenRefresh(req, res, refreshToken, 'Access token mancante');
+
+    if (!result.success) {
+      return res.status(401).json({ error: 'Sessione scaduta, effettua nuovamente il login' });
+    }
+
+    token = result.token;
   }
 
-  // Ora valida il token
+  // Valida il token
   try {
     const decoded = jwt.decode(token);
 
@@ -119,62 +145,32 @@ export const protect = async (req, res, next) => {
       throw new Error('Token non decodificabile');
     }
 
-    const now = Math.floor(Date.now() / 1000);
-
-    // Se il token è scaduto o sta per scadere (< 30 secondi), prova a rinnovarlo
-    if (decoded.exp && decoded.exp < now + 30) {
-      console.log('Token scaduto o in scadenza, provo refresh...');
-
+    // Se il token è scaduto, prova il refresh
+    if (isTokenExpired(decoded)) {
       const refreshToken = req.cookies['refresh_token'];
 
       if (!refreshToken) {
         throw new Error('Token scaduto e nessun refresh token disponibile');
       }
 
-      const refreshResult = await refreshAccessToken(refreshToken);
+      const result = await handleTokenRefresh(req, res, refreshToken, 'Token scaduto o in scadenza');
 
-      if (refreshResult.success) {
-        // Aggiorna i cookie
-        res.cookie('access_token', refreshResult.access_token, {
-          httpOnly: true,
-          secure: false,
-          sameSite: 'lax',
-          maxAge: refreshResult.expires_in * 1000
-        });
-
-        res.cookie('refresh_token', refreshResult.refresh_token, {
-          httpOnly: true,
-          secure: false,
-          sameSite: 'lax',
-          maxAge: 24 * 60 * 60 * 1000
-        });
-
-        // Usa il nuovo token
-        token = refreshResult.access_token;
-        req.accessToken = token;
-        req.user = jwt.decode(token);
-        console.log('✅ Token rinnovato con successo (token scaduto)');
-
-        return next();
-      } else {
-        console.error('❌ Impossibile rinnovare il token');
-        res.clearCookie('access_token');
-        res.clearCookie('refresh_token');
+      if (!result.success) {
         return res.status(401).json({ error: 'Sessione scaduta, effettua nuovamente il login' });
       }
+
+      req.user = jwt.decode(result.token);
+      return next();
     }
 
-    // Token valido, procedi normalmente
+    // Token valido
     req.user = decoded;
     next();
 
   } catch (error) {
     console.error('Errore validazione token:', error.message);
-
-    // In caso di errore, cancella i cookie e richiedi nuovo login
     res.clearCookie('access_token');
     res.clearCookie('refresh_token');
-
     return res.status(401).json({ error: 'Token non valido o scaduto' });
   }
 };

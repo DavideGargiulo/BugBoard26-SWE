@@ -1,21 +1,24 @@
-import { Component, Inject, Input, OnInit } from '@angular/core';
+import { Component, Inject, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { UserDialogComponent } from '../user-dialog/user-dialog';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../_services/auth/auth.service';
 import { User } from '../user-card/user-card';
 import { Subscription } from 'rxjs';
 import { ToastService } from '../../_services/toast/toast.service';
+import { FormsModule } from '@angular/forms'; // Aggiungi questo
 
 @Component({
   selector: 'app-user-topbar',
   standalone: true,
-  imports: [MatDialogModule],
+  imports: [MatDialogModule, FormsModule], // Aggiungi FormsModule
   templateUrl: './user-topbar.html'
 })
-
 export class UserTopbar implements OnInit {
 
   @Input() currentUser!: User;
+  @Output() searchChange = new EventEmitter<string>(); // Nuovo output
+
+  searchTerm: string = ''; // Nuovo
   private userSubscription: Subscription | null = null;
 
   constructor(
@@ -25,7 +28,6 @@ export class UserTopbar implements OnInit {
   ) {}
 
   ngOnInit(): void {
-
     this.userSubscription = this.authService.currentUser$.subscribe(backendUser => {
       if (backendUser) {
         this.currentUser = {
@@ -37,40 +39,15 @@ export class UserTopbar implements OnInit {
         this.currentUser = { name: 'Ospite', email: '', role: '' };
       }
     });
+  }
 
-    this.toastService.success(
-      'Successo!',
-      `messaggio di successo.`,
-      false,
-      'Succeesso'
-    );
-
-    this.toastService.error(
-      'Errore!',
-      `messaggio di errore.`,
-      false,
-      'Errore'
-    );
-
-    this.toastService.info(
-      'Info!',
-      `messaggio di info.`,
-      false,
-      'Info'
-    );
-
-    this.toastService.warning(
-      'Attenzione!',
-      `messaggio di attenzione.`,
-      false,
-      'Attenzione'
-    );
-
+  // Nuovo metodo
+  onSearchChange(): void {
+    this.searchChange.emit(this.searchTerm);
   }
 
   private extractRole(user: any): string {
     const roles = user.realm_access?.roles || [];
-
     if (roles.includes('Amministratore')) return 'Amministratore';
     return 'Standard';
   }
@@ -97,10 +74,11 @@ export class UserTopbar implements OnInit {
     this.authService.register(userData).subscribe({
       next: (response: any) => {
         const password = response.password;
-
         this.toastService.success(
           'Utente creato con successo!',
-          `Email: ${userData.email}\nPassword: ${password}\n\nCopia la password ora, non sarà più visibile.`
+          `Email: ${userData.email}\nPassword: ${password}\n\nCopia la password ora, non sarà più visibile.`,
+          false,
+          password
         );
       },
       error: (err) => {
@@ -116,5 +94,4 @@ export class UserTopbar implements OnInit {
   canCreateUser(): boolean {
     return this.currentUser.role === 'Amministratore'
   }
-
 }

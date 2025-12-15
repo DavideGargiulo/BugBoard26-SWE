@@ -45,7 +45,7 @@ class SyncService {
         ? `Utente aggiornato con Keycloak ID`
         : `Utente già sincronizzato, dati aggiornati`
       );
-      return { success: true, action: actionType };ù
+      return { success: true, action: actionType };
     } catch (error) {
       console.error('Errore sincronizzazione utente:', error.message);
       return { success: false, error: error.message };

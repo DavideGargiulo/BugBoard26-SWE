@@ -4,6 +4,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
+import helmet from 'helmet';
 
 import { initKeycloak } from './config/keycloak.js';
 import authRoutes from './routes/authRoutes.js';
@@ -13,6 +14,8 @@ import issueRoutes from './routes/issueRoutes.js';
 import commentRoutes from './routes/commentRoutes.js';
 
 const app = express();
+app.disable('x-powered-by');
+app.use(helmet());
 
 const PORT = process.env.PORT || 3000;
 
@@ -36,9 +39,10 @@ app.use(session({
   saveUninitialized: true,
   store: memoryStore,
   cookie: {
-    secure: false, // Metti true in produzione con HTTPS
+    secure: true,
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 ore
+    sameSite: 'strict',
+    maxAge: 24 * 60 * 60 * 1000
   }
 }));
 

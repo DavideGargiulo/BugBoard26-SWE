@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getAllIssues, getIssuesByProject, createIssue, updateIssue } from '../controllers/issueController.js';
-import { uploader } from '../data/local/multerStorage/uploader.js';
+import { uploadImages } from '../middleware/uploaderMiddleware.js';
 import { protect, checkRole } from '../middleware/authMiddleware.js';
 import { canModifyIssue } from '../middleware/issueOwnershipMiddleware.js';
 
@@ -13,7 +13,7 @@ router.get('/', getAllIssues);
 router.get('/project/:projectName', getIssuesByProject);
 
 // POST /api/issues - Crea una nuova issue
-router.post('/', protect, checkRole("Amministratore"), uploader.array('images', 3), createIssue);
+router.post('/', protect, checkRole("Amministratore"), uploadImages, createIssue);
 
 // PUT /api/issues/:id - Modifica un'issue (amministratori o creatore)
 router.put('/:id', protect, canModifyIssue, updateIssue);

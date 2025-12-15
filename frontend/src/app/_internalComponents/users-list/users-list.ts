@@ -12,12 +12,13 @@ import { AuthService } from '../../_services/auth/auth.service';
 export class UserListComponent implements OnInit, OnChanges {
 
   @Input() users: User[] = [];
-  @Input() searchTerm: string = ''; // Nuovo input
+  @Input() searchTerm: string = '';
+  @Input() roleFilter: string = ''; // Nuovo input
   @Input() itemsPerPage: number = 4;
 
   currentPage: number = 1;
   paginatedUsers: User[] = [];
-  filteredUsers: User[] = []; // Nuovo
+  filteredUsers: User[] = [];
   totalPages: number = 1;
 
   constructor(private readonly authService: AuthService) {}
@@ -27,24 +28,30 @@ export class UserListComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['users'] || changes['searchTerm']) {
-      this.currentPage = 1; // Reset alla prima pagina quando cambia la ricerca
+    if (changes['users'] || changes['searchTerm'] || changes['roleFilter']) {
+      this.currentPage = 1;
       this.applyFilters();
     }
   }
 
-  // Nuovo metodo per filtrare
   applyFilters() {
-    if (!this.searchTerm || this.searchTerm.trim() === '') {
-      this.filteredUsers = [...this.users];
-    } else {
+    let filtered = [...this.users];
+
+    // Filtro per ruolo
+    if (this.roleFilter && this.roleFilter.trim() !== '') {
+      filtered = filtered.filter(user => user.role === this.roleFilter);
+    }
+
+    // Filtro per ricerca (solo nome ed email)
+    if (this.searchTerm && this.searchTerm.trim() !== '') {
       const term = this.searchTerm.toLowerCase().trim();
-      this.filteredUsers = this.users.filter(user =>
+      filtered = filtered.filter(user =>
         user.name.toLowerCase().includes(term) ||
-        user.email.toLowerCase().includes(term) ||
-        user.role.toLowerCase().includes(term)
+        user.email.toLowerCase().includes(term)
       );
     }
+
+    this.filteredUsers = filtered;
     this.calculatePagination();
   }
 
@@ -87,7 +94,7 @@ export class UserListComponent implements OnInit, OnChanges {
       next: (response) => {
         console.log('Utente eliminato con successo:', response);
         this.users = this.users.filter(u => u.email !== user.email);
-        this.applyFilters(); // Usa applyFilters invece di calculatePagination
+        this.applyFilters();
 
         if (this.paginatedUsers.length === 0 && this.currentPage > 1) {
           this.currentPage--;

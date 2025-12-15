@@ -15,7 +15,8 @@ export class UsersComponent implements OnInit {
   private userService = inject(UserService);
 
   users: User[] = [];
-  searchTerm: string = ''; // Nuovo
+  searchTerm: string = '';
+  roleFilter: string = ''; // Nuovo
 
   ngOnInit(): void {
     this.loadUsers();
@@ -33,8 +34,12 @@ export class UsersComponent implements OnInit {
     })
   }
 
-  // Nuovo metodo
   onSearchChange(term: string): void {
     this.searchTerm = term;
+  }
+
+  // Nuovo metodo
+  onRoleFilterChange(role: string): void {
+    this.roleFilter = role;
   }
 }

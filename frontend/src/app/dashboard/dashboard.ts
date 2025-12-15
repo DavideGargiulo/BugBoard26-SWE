@@ -63,27 +63,27 @@ export class DashboardComponent implements OnInit {
   }
 
   loadAllIssues(): void {
-  this.issueService.getAllIssues().subscribe({
-    next: (data) => {
-      console.log('Issues caricate dal backend:', data);
+    this.issueService.getAllIssues().subscribe({
+      next: (data) => {
+        console.log('Issues caricate dal backend:', data);
 
-      // Converti i dati del backend nella struttura del frontend
-      this.issues = data.map(backendIssue => ({
-        id: backendIssue.id,
-        title: backendIssue.titolo,
-        description: backendIssue.descrizione,
-        tags: [backendIssue.tipo, backendIssue.priorita, backendIssue.stato],
-        commentsCount: backendIssue.numeroCommenti,
-        assignee: backendIssue.Creatore.nome
-      }));
+        // Converti i dati del backend nella struttura del frontend
+        this.issues = data.map(backendIssue => ({
+          id: backendIssue.id,
+          title: backendIssue.titolo,
+          description: backendIssue.descrizione,
+          tags: [backendIssue.tipo, backendIssue.priorita, backendIssue.stato],
+          commentsCount: backendIssue.numeroCommenti,
+          assignee: backendIssue.Creatore.nome
+        }));
 
-      console.log('Issues convertite:', this.issues);
-    },
-    error: (err) => {
-      console.log('Errore caricamento issues:', err);
-    }
-  });
-}
+        console.log('Issues convertite:', this.issues);
+      },
+      error: (err) => {
+        console.log('Errore caricamento issues:', err);
+      }
+    });
+  }
 
 
 }

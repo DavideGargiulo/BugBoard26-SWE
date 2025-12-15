@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../_services/auth/auth.service';
+import { ToastService } from '../../_services/toast/toast.service';
 
 export interface User {
   name: string;
@@ -24,7 +25,8 @@ export class UserCardComponent implements OnInit {
   private userSubscription: Subscription | null = null;
 
   constructor(
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private toastService: ToastService
   ) {}
 
   showDeleteModal = false;
@@ -63,6 +65,10 @@ export class UserCardComponent implements OnInit {
     console.log(`Emitting delete event for user: ${this.user.name}`);
     this.deleteUser.emit(this.user);
     console.log(`Utente eliminato: ${this.user.name} with role ${this.user.role} with email ${this.user.email}`);
+    this.toastService.success(
+          'Utente eliminato con successo!',
+          `Utente ${this.user.name} eliminato.`
+        );
   }
 
   private extractRole(user: any): string {

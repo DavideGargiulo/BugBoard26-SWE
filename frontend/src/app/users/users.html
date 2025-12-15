@@ -6,13 +6,15 @@
 
       <app-user-topbar
         class="flex-none"
-        (searchChange)="onSearchChange($event)">
+        (searchChange)="onSearchChange($event)"
+        (roleFilterChange)="onRoleFilterChange($event)">
       </app-user-topbar>
 
       <app-users-list
           class="flex-1 overflow-y-auto"
           [users]="users"
           [searchTerm]="searchTerm"
+          [roleFilter]="roleFilter"
           [itemsPerPage]="12">
       </app-users-list>
 

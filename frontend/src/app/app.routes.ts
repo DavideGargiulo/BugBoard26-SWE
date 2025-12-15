@@ -8,6 +8,7 @@ import { ProjectComponent } from './project/project';
 import { AuthGuard } from './_auth/auth-guard';
 import { GuestGuard } from './_auth/guest-guard';
 import { NewIssueComponent } from './_internalComponents/new-issue/new-issue';
+import { IssueDetailComponent } from './_internalComponents/issue-detail/issue-detail';
 
 export const routes: Routes = [
   {
@@ -27,7 +28,8 @@ export const routes: Routes = [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'utenti', component: UsersComponent },
       { path: 'progetto/:nome', component: ProjectComponent },
-      { path: 'progetto/:nome/nuova-issue', component: NewIssueComponent }
+      { path: 'progetto/:nome/nuova-issue', component: NewIssueComponent },
+      { path: 'issue/:id', component: IssueDetailComponent }
     ]
   },
   { path: '**', redirectTo: 'dashboard' }

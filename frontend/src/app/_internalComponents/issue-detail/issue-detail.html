@@ -1,0 +1,182 @@
+<div class="flex flex-col h-screen overflow-hidden bg-gray-100 dark:bg-gray-900">
+
+  <div class="flex-1 overflow-hidden">
+    <!-- Header -->
+    <header class="px-6 py-4 border-b border-gray-700 bg-gray-900">
+      <h2 class="text-xl font-semibold text-gray-100">
+        {{ issue.title }} - {{ issue.project }}
+      </h2>
+    </header>
+
+    <!-- Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 h-[calc(100%-80px)] overflow-hidden">
+
+      <!-- LEFT COLUMN -->
+      <div class="flex flex-col flex-1 min-h-0 gap-4">
+
+        <!-- ISSUE DISPLAY (2/3) -->
+        <div class="flex-[2] min-h-0">
+
+          <div
+            *ngIf="issue"
+            class="h-full flex flex-col bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-6">
+
+            <!-- FIXED HEADER -->
+            <div class="flex items-start justify-between mb-4 flex-shrink-0">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                  <span class="text-base font-semibold text-gray-700 dark:text-gray-200">
+                    {{ getInitials(issue.assignee) }}
+                  </span>
+                </div>
+                <div class="font-semibold text-gray-900 dark:text-gray-100">
+                  {{ issue.assignee }}
+                </div>
+              </div>
+
+              <div class="flex gap-2 flex-wrap">
+                <span
+                  *ngFor="let tag of issue.tags"
+                  class="px-3 py-1 text-xs font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
+                  {{ tag }}
+                </span>
+              </div>
+            </div>
+
+            <!-- SCROLLABLE DESCRIPTION -->
+            <div
+              class="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-200
+                    dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800 scrollbar-area">
+
+              <div class="pr-4">
+                <div class="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                  {{ issue.description }}
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+        <!-- EDITOR (1/3) -->
+        <div class="flex-[1] flex flex-col min-h-0">
+
+          <!-- Toolbar -->
+          <div class="border border-gray-700 rounded-t-lg bg-gray-800 px-3 py-2 flex-shrink-0">
+            <div class="flex items-center gap-2 text-lg">
+
+              <button (click)="formatDoc('bold')" class="p-2 text-gray-200 font-bold">B</button>
+              <button (click)="formatDoc('italic')" class="p-2 text-gray-200 italic">I</button>
+              <button (click)="formatDoc('underline')" class="p-2 text-gray-200 underline">U</button>
+              <button (click)="formatDoc('strikeThrough')" class="p-2 text-gray-200 line-through">S</button>
+
+              <div class="w-px h-6 bg-gray-700 mx-1"></div>
+
+              <!-- JUSTIFY LEFT -->
+              <button (click)="formatDoc('justifyLeft')" class="editor-btn">
+                <span class="icon-lines items-start">
+                  <span class="line w-full"></span>
+                  <span class="line w-3/4"></span>
+                  <span class="line w-full"></span>
+                </span>
+              </button>
+
+              <!-- JUSTIFY CENTER -->
+              <button (click)="formatDoc('justifyCenter')" class="editor-btn">
+                <span class="icon-lines items-center">
+                  <span class="line w-full"></span>
+                  <span class="line w-3/4"></span>
+                  <span class="line w-full"></span>
+                </span>
+              </button>
+
+              <!-- JUSTIFY RIGHT -->
+              <button (click)="formatDoc('justifyRight')" class="editor-btn">
+                <span class="icon-lines items-end">
+                  <span class="line w-full"></span>
+                  <span class="line w-3/4"></span>
+                  <span class="line w-full"></span>
+                </span>
+              </button>
+
+              <!-- JUSTIFY FULL -->
+              <button (click)="formatDoc('justifyFull')" class="editor-btn">
+                <span class="icon-lines items-stretch">
+                  <span class="line w-full"></span>
+                  <span class="line w-full"></span>
+                  <span class="line w-full"></span>
+                </span>
+              </button>
+
+              <div class="w-px h-6 bg-gray-700 mx-1"></div>
+
+              <button (click)="triggerImageUpload()" class="p-2 text-gray-200">📷</button>
+            </div>
+          </div>
+
+          <!-- Content Editable -->
+          <div
+            class="border border-t-0 border-gray-700 rounded-b-lg flex-1 overflow-y-auto
+                  bg-gray-800 text-gray-100
+                  scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-200
+                  dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800"
+            [style]="{'scrollbar-gutter':'stable'}">
+
+            <!-- WRAPPER INTERNO CON PADDING -->
+            <div
+              #content
+              contenteditable="true"
+              spellcheck="false"
+              class="p-6 min-h-full outline-none">
+            </div>
+
+          </div>
+
+
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN - COMMENTS -->
+      <div class="flex flex-col bg-gray-50 dark:bg-gray-800 rounded-lg p-4 overflow-hidden">
+
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          Commenti
+        </h2>
+
+        <div
+          class="flex-1 overflow-y-auto space-y-4 mb-4 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-200
+                 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800"
+          [style]="{'scrollbar-gutter':'stable'}">
+
+          <div class="space-y-4 pr-4">
+            <div
+              *ngFor="let comment of comments"
+              class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+
+              <div class="flex items-start gap-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                  <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                    {{ getInitials(comment.author) }}
+                  </span>
+                </div>
+
+                <div class="font-semibold text-gray-900 dark:text-gray-100">
+                  {{ comment.author }}
+                </div>
+              </div>
+
+              <p class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                {{ comment.text }}
+              </p>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>

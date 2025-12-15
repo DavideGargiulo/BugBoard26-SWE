@@ -5,20 +5,22 @@ import { AuthService } from '../../_services/auth/auth.service';
 import { User } from '../user-card/user-card';
 import { Subscription } from 'rxjs';
 import { ToastService } from '../../_services/toast/toast.service';
-import { FormsModule } from '@angular/forms'; // Aggiungi questo
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-user-topbar',
   standalone: true,
-  imports: [MatDialogModule, FormsModule], // Aggiungi FormsModule
+  imports: [MatDialogModule, FormsModule],
   templateUrl: './user-topbar.html'
 })
 export class UserTopbar implements OnInit {
 
   @Input() currentUser!: User;
-  @Output() searchChange = new EventEmitter<string>(); // Nuovo output
+  @Output() searchChange = new EventEmitter<string>();
+  @Output() roleFilterChange = new EventEmitter<string>(); // Nuovo output
 
-  searchTerm: string = ''; // Nuovo
+  searchTerm: string = '';
+  selectedRole: string = ''; // Nuovo
   private userSubscription: Subscription | null = null;
 
   constructor(
@@ -41,9 +43,13 @@ export class UserTopbar implements OnInit {
     });
   }
 
-  // Nuovo metodo
   onSearchChange(): void {
     this.searchChange.emit(this.searchTerm);
+  }
+
+  // Nuovo metodo
+  onRoleFilterChange(): void {
+    this.roleFilterChange.emit(this.selectedRole);
   }
 
   private extractRole(user: any): string {

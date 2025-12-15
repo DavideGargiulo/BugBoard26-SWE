@@ -6,7 +6,7 @@ import crypto from 'crypto';
 
 const readFile = promisify(fs.readFile);
 
-const getProjectIdByName = async (projectName) => {
+export const getProjectIdByName = async (projectName) => {
   try {
     const project = await Progetto.findOne({
       where: { nome: projectName }

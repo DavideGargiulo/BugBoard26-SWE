@@ -63,7 +63,6 @@ export class UserCardComponent implements OnInit {
     console.log(`Emitting delete event for user: ${this.user.name}`);
     this.deleteUser.emit(this.user);
     console.log(`Utente eliminato: ${this.user.name} with role ${this.user.role} with email ${this.user.email}`);
-    // TODO: Aggiungi logica di eliminazione effettiva qui
   }
 
   private extractRole(user: any): string {

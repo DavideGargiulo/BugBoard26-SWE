@@ -2,10 +2,11 @@ import { Component, signal, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule } from '@angular/material/dialog';
+import { ToastComponent } from "./_internalComponents/toast/toast";
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, FormsModule, MatDialogModule],
+  imports: [RouterOutlet, FormsModule, MatDialogModule, ToastComponent],
   templateUrl: './app.html'
 })
 export class App implements OnInit {

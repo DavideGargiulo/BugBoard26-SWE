@@ -4,6 +4,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../_services/auth/auth.service';
 import { User } from '../user-card/user-card';
 import { Subscription } from 'rxjs';
+import { ToastService } from '../../_services/toast/toast.service';
 
 @Component({
   selector: 'app-user-topbar',
@@ -20,6 +21,7 @@ export class UserTopbar implements OnInit {
   constructor(
     @Inject(MatDialog) public dialog: MatDialog,
     private readonly authService: AuthService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -35,6 +37,34 @@ export class UserTopbar implements OnInit {
         this.currentUser = { name: 'Ospite', email: '', role: '' };
       }
     });
+
+    this.toastService.success(
+      'Successo!',
+      `messaggio di successo.`,
+      false,
+      'Succeesso'
+    );
+
+    this.toastService.error(
+      'Errore!',
+      `messaggio di errore.`,
+      false,
+      'Errore'
+    );
+
+    this.toastService.info(
+      'Info!',
+      `messaggio di info.`,
+      false,
+      'Info'
+    );
+
+    this.toastService.warning(
+      'Attenzione!',
+      `messaggio di attenzione.`,
+      false,
+      'Attenzione'
+    );
 
   }
 
@@ -68,16 +98,17 @@ export class UserTopbar implements OnInit {
       next: (response: any) => {
         const password = response.password;
 
-        alert(
-          `UTENTE CREATO CON SUCCESSO!\n\n` +
-          `Email: ${userData.email}\n` +
-          `Password: ${password}\n\n` +
-          `Copia la password ora, non sarà più visibile.`
+        this.toastService.success(
+          'Utente creato con successo!',
+          `Email: ${userData.email}\nPassword: ${password}\n\nCopia la password ora, non sarà più visibile.`
         );
       },
       error: (err) => {
         console.error('Errore registrazione:', err);
-        alert('Errore: ' + (err.error?.error || 'Impossibile creare utente'));
+        this.toastService.error(
+          'Errore nella registrazione',
+          err.error?.error || 'Impossibile creare utente'
+        );
       }
     });
   }

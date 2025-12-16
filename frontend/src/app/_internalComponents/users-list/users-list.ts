@@ -2,6 +2,7 @@ import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { UserCardComponent, User } from '../user-card/user-card';
 import { AuthService } from '../../_services/auth/auth.service';
+import { ToastService } from '../../_services/toast/toast.service';
 
 @Component({
   selector: 'app-users-list',
@@ -21,7 +22,10 @@ export class UserListComponent implements OnInit, OnChanges {
   filteredUsers: User[] = [];
   totalPages: number = 1;
 
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly toastService: ToastService
+  ) {}
 
   ngOnInit() {
     this.applyFilters();
@@ -103,7 +107,10 @@ export class UserListComponent implements OnInit, OnChanges {
       },
       error: (error) => {
         console.error('Errore durante l\'eliminazione dell\'utente:', error);
-        alert('Errore durante l\'eliminazione dell\'utente. Riprova.');
+        this.toastService.error(
+          'Errore eliminazione utente',
+          'Si è verificato un errore durante l\'eliminazione dell\'utente. Riprova.'
+        );
       }
     });
   }

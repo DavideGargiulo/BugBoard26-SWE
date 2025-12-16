@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ToastService } from '../../_services/toast/toast.service';
 
 interface Comment {
   id: number;
@@ -24,6 +25,7 @@ export class IssueDetailComponent implements OnInit {
 
   comments: Comment[] = [];
   newComment: string = '';
+
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -147,7 +149,8 @@ export class IssueDetailComponent implements OnInit {
   }
 
   constructor(
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toastService: ToastService
   ) {}
 
   uploadedImages: File[] = [];
@@ -169,7 +172,10 @@ export class IssueDetailComponent implements OnInit {
 
       // Controllo numero massimo
       if (this.uploadedImages.length + files.length > maxFiles) {
-        alert(`Puoi caricare un massimo di ${maxFiles} file`);
+        this.toastService.error(
+          'Errore caricamento file',
+          `Puoi caricare un massimo di ${maxFiles} file`
+        );
         return;
       }
 
@@ -177,12 +183,18 @@ export class IssueDetailComponent implements OnInit {
       for (const file of files) {
         const extension = file.name.split('.').pop()?.toLowerCase();
         if (!extension || !allowedExtensions.includes(extension)) {
-          alert(`Il file "${file.name}" non è valido. Sono ammessi: ${allowedExtensions.join(', ')}`);
+          this.toastService.error(
+            'Errore caricamento file',
+            `Il file "${file.name}" non è valido. Sono ammessi: ${allowedExtensions.join(', ')}`
+          );
           return;
         }
 
         if (file.size > maxSize) {
-          alert(`Il file "${file.name}" supera i 5MB`);
+          this.toastService.error(
+            'Errore caricamento file',
+            `Il file "${file.name}" supera i 5MB di dimensione massima`
+          );
           return;
         }
       }

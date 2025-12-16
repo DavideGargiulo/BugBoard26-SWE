@@ -7,6 +7,7 @@ import { User } from '../user-card/user-card';
 import { Subscription } from 'rxjs';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ProjectDialogComponent } from '../project-dialog/project-dialog';
+import { ToastService } from '../../_services/toast/toast.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -53,7 +54,8 @@ export class SidebarComponent implements OnInit {
     private readonly router: Router,
     private readonly projectService: ProjectService,
     private readonly authService: AuthService,
-    @Inject(MatDialog) public dialog: MatDialog
+    @Inject(MatDialog) public dialog: MatDialog,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -195,11 +197,18 @@ export class SidebarComponent implements OnInit {
         this.projects.push(response.nome);
         this.filterProjects();
 
-        alert(`Progetto "${response.nome}" creato con successo!`);
+        this.toastService.success(
+          'Progetto creato con successo!',
+          `Il progetto "${response.nome}" è stato creato.`
+        );
+
       },
       error: (err) => {
         console.error('Errore creazione progetto:', err);
-        alert('Errore: ' + (err.error?.error || 'Impossibile creare il progetto'));
+        this.toastService.error(
+          'Errore nella creazione del progetto',
+          err.error?.error || 'Impossibile creare il progetto'
+        );
       }
     });
   }

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProjectService } from '../../_services/project/project-service';
+import { ToastService } from '../../_services/toast/toast.service';
 
 @Component({
   selector: 'app-new-issue',
@@ -20,7 +21,8 @@ export class NewIssueComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private route: ActivatedRoute,
     private projectService: ProjectService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toastService: ToastService
   ) {}
 
   title: string = '';
@@ -54,7 +56,10 @@ export class NewIssueComponent implements OnInit, OnDestroy {
 
       // Controllo numero massimo
       if (this.uploadedImages.length + files.length > maxFiles) {
-        alert(`Puoi caricare un massimo di ${maxFiles} file`);
+        this.toastService.error(
+          'Errore caricamento file',
+          `Puoi caricare un massimo di ${maxFiles} file`
+        );
         return;
       }
 
@@ -62,12 +67,18 @@ export class NewIssueComponent implements OnInit, OnDestroy {
       for (const file of files) {
         const extension = file.name.split('.').pop()?.toLowerCase();
         if (!extension || !allowedExtensions.includes(extension)) {
-          alert(`Il file "${file.name}" non è valido. Sono ammessi: ${allowedExtensions.join(', ')}`);
+          this.toastService.error(
+            'Errore caricamento file',
+            `Il file "${file.name}" non è valido. Sono ammessi: ${allowedExtensions.join(', ')}`
+          );
           return;
         }
 
         if (file.size > maxSize) {
-          alert(`Il file "${file.name}" supera i 5MB`);
+          this.toastService.error(
+            'Errore caricamento file',
+            `Il file "${file.name}" supera i 5MB di dimensione massima`
+          );
           return;
         }
       }
@@ -138,19 +149,31 @@ export class NewIssueComponent implements OnInit, OnDestroy {
 
   onConfirm(): void {
     if (!this.title.trim()) {
-      alert('Il titolo è obbligatorio');
+      this.toastService.error(
+        'Errore creazione issue',
+        'Il titolo è obbligatorio'
+      );
+      return;
+    }
+    if (!this.content.nativeElement.innerHTML.trim()) {
+      this.toastService.error(
+        'Errore creazione issue',
+        'La descrizione è obbligatoria'
+      );
       return;
     }
     if (!this.tipo) {
-      alert('Seleziona un tipo');
+      this.toastService.error(
+        'Errore creazione issue',
+        'Seleziona un tipo'
+      );
       return;
     }
     if (!this.priorita) {
-      alert('Seleziona una priorità');
-      return;
-    }
-    if (!this.projectName) {
-      alert('Il nome del progetto è obbligatorio');
+      this.toastService.error(
+        'Errore creazione issue',
+        'Seleziona una priorità'
+      );
       return;
     }
 
@@ -183,14 +206,20 @@ export class NewIssueComponent implements OnInit, OnDestroy {
     this.projectService.createIssue(formData).subscribe({
       next: (response) => {
         console.log('Issue creata con successo:', response);
-        alert('Issue creata con successo!');
+        this.toastService.success(
+          'Issue creata con successo',
+          `L'issue "${this.title}" è stata creata nel progetto "${this.projectName}".`
+        );
         this.confirm.emit(response);
         this.isLoading = false;
         this.resetForm();
       },
       error: (error) => {
         console.error('Errore nella creazione dell\'issue:', error);
-        alert(`Errore nella creazione dell'issue: ${error.error?.message || error.message}`);
+        this.toastService.error(
+          'Errore creazione issue',
+          `Si è verificato un errore durante la creazione dell'issue: ${error.error?.message || error.message}`
+        );
         this.isLoading = false;
       }
     });

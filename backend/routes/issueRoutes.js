@@ -6,16 +6,18 @@ import { canModifyIssue } from '../middleware/issueOwnershipMiddleware.js';
 
 const router = Router();
 
-// GET /api/issues - Tutte le issue
-router.get('/', getAllIssues);
+// GET /api/issues
+router.get('/', protect, getAllIssues);
 
-// GET /api/issues/project/:projectName - Issue di un progetto specifico
-router.get('/project/:projectName', getIssuesByProject);
+// GET /api/issues/project/:projectName
+router.get('/project/:projectName', protect, getIssuesByProject);
 
-// POST /api/issues - Crea una nuova issue
-router.post('/', protect, checkRole("Amministratore"), uploadImages, createIssue);
+// POST /api/issues
+// Crea una nuova issue (solo Amministratori)
+router.post('/', protect, checkRole('Amministratore'), uploadImages, createIssue);
 
-// PUT /api/issues/:id - Modifica un'issue (amministratori o creatore)
+// PUT /api/issues/:id
+// Modifica un'issue (amministratori o creatore)
 router.put('/:id', protect, canModifyIssue, updateIssue);
 
 export default router;

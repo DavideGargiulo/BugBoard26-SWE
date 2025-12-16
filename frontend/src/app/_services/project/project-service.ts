@@ -27,7 +27,7 @@ export class ProjectService {
   }
 
   getAllProjects(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/projects`);
+    return this.http.get<any[]>(`${this.apiUrl}/projects`, { withCredentials: true });
   }
 
   createIssue(issueData: FormData): Observable<any> {

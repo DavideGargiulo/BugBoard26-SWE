@@ -9,16 +9,15 @@ import { protect, checkRole } from '../middleware/authMiddleware.js';
 router.post('/login', login);
 
 // 2. GET /api/auth/me
-// Verifica lo stato di autenticazione leggendo i cookie httpOnly.
-// Se l'access token è scaduto, il controller tenta automaticamente il refresh.
-router.get('/me', checkAuthStatus);
+// Verifica lo stato di autenticazione con token JWT verificato
+router.get('/me', protect, checkAuthStatus);
 
 // 3. POST /api/auth/logout
-// Revoca il refresh token su Keycloak e cancella i cookie di sessione.
-router.post('/logout', logout);
+// Revoca il refresh token su Keycloak e cancella i cookie di sessione
+router.post('/logout', protect, logout);
 
 // 4. POST /api/auth/register
-// Solo un utente loggato (o meglio, un admin) può creare nuovi utenti.
+// Solo un amministratore può creare nuovi utenti
 router.post('/register', protect, checkRole('Amministratore'), register);
 
 export default router;

@@ -5,8 +5,8 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
 import { User } from '../../_internalComponents/user-card/user-card';
 
-const LOCAL = true;
-const ISAUTH = true;
+const LOCAL = false;
+const ISAUTH = false;
 
 export interface KeycloakTokenPayload {
   given_name: string;

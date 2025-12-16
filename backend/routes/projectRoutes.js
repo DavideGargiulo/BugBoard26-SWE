@@ -5,7 +5,7 @@ import { protect, checkRole } from '../middleware/authMiddleware.js';
 const router = Router();
 
 // GET /api/projects
-router.get('/', getAllProjects);
+router.get('/', protect, getAllProjects);
 
 // POST /api/projects
 router.post('/', protect, checkRole('Amministratore'), createProject);

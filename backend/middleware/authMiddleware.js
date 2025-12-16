@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import jwksClient from 'jwks-rsa';
 import axios from 'axios';
 
 const KEYCLOAK_URL = process.env.KEYCLOAK_URL?.trim();
@@ -7,6 +8,57 @@ const CLIENT_ID = process.env.KEYCLOAK_BACKEND_CLIENT_ID?.trim();
 const CLIENT_SECRET = process.env.KEYCLOAK_BACKEND_CLIENT_SECRET?.trim();
 
 const TOKEN_URL = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`;
+const JWKS_URI = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs`;
+
+const jwksClientInstance = jwksClient({
+  jwksUri: JWKS_URI,
+  cache: true,
+  cacheMaxAge: 86400000,
+  rateLimit: true,
+  jwksRequestsPerMinute: 10
+});
+
+/**
+ * Ottiene la chiave pubblica di Keycloak per verificare il token
+ */
+const getKeycloakPublicKey = (header, callback) => {
+  jwksClientInstance.getSigningKey(header.kid, (err, key) => {
+    if (err) {
+      console.error('Errore recupero chiave pubblica:', err.message);
+      callback(err);
+      return;
+    }
+    const signingKey = key.getPublicKey();
+    callback(null, signingKey);
+  });
+};
+
+/**
+ * Verifica il token JWT con la chiave pubblica di Keycloak
+ */
+const verifyKeycloakToken = (token) => {
+  return new Promise((resolve, reject) => {
+    jwt.verify(
+      token,
+      getKeycloakPublicKey,
+      {
+        algorithms: ['RS256'],
+        issuer: [
+          `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}`,
+          `http://localhost:8080/realms/${KEYCLOAK_REALM}`
+        ],
+        audience: CLIENT_ID
+      },
+      (err, decoded) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(decoded);
+        }
+      }
+    );
+  });
+};
 
 /**
  * Funzione helper per rinnovare il token
@@ -69,14 +121,14 @@ const extractToken = (req) => {
 const setCookies = (res, accessToken, refreshToken, expiresIn) => {
   res.cookie('access_token', accessToken, {
     httpOnly: true,
-    secure: false,
+    secure: process.env.NODE_ENV === 'production', // Usa secure in production
     sameSite: 'lax',
     maxAge: expiresIn * 1000
   });
 
   res.cookie('refresh_token', refreshToken, {
     httpOnly: true,
-    secure: false,
+    secure: process.env.NODE_ENV === 'production', // Usa secure in production
     sameSite: 'lax',
     maxAge: 24 * 60 * 60 * 1000
   });
@@ -99,22 +151,13 @@ const handleTokenRefresh = async (req, res, refreshToken, reason) => {
 
   setCookies(res, refreshResult.access_token, refreshResult.refresh_token, refreshResult.expires_in);
   req.accessToken = refreshResult.access_token;
-  console.log('✅ Token rinnovato con successo');
+  console.log('Token rinnovato con successo');
 
   return { success: true, token: refreshResult.access_token };
 };
 
 /**
- * Helper: Verifica se il token è scaduto o in scadenza
- */
-const isTokenExpired = (decoded) => {
-  if (!decoded.exp) return false;
-  const now = Math.floor(Date.now() / 1000);
-  return decoded.exp < now + 30;
-};
-
-/**
- * Middleware di protezione: valida il token JWT e lo rinnova se scaduto
+ * Middleware di protezione: verifica il token JWT con Keycloak
  */
 export const protect = async (req, res, next) => {
   let token = extractToken(req);
@@ -125,7 +168,7 @@ export const protect = async (req, res, next) => {
 
     if (!refreshToken) {
       console.error('Nessun token trovato');
-      return res.status(401).json({ error: 'Token mancante' });
+      return res.status(401).json({ error: 'Autenticazione richiesta' });
     }
 
     const result = await handleTokenRefresh(req, res, refreshToken, 'Access token mancante');
@@ -137,67 +180,102 @@ export const protect = async (req, res, next) => {
     token = result.token;
   }
 
-  // Valida il token
+  // Valida il token con la chiave pubblica di Keycloak
   try {
-    const decoded = jwt.decode(token);
+    const decoded = await verifyKeycloakToken(token);
 
-    if (!decoded) {
-      throw new Error('Token non decodificabile');
+    // Validazioni aggiuntive del payload
+    if (!decoded.sub || !decoded.exp) {
+      throw new Error('Token payload non valido');
     }
 
-    // Se il token è scaduto, prova il refresh
-    if (isTokenExpired(decoded)) {
-      const refreshToken = req.cookies['refresh_token'];
+    // Estrai informazioni utente dal token verificato
+    req.user = {
+      id: decoded.sub,
+      email: decoded.email,
+      username: decoded.preferred_username,
+      name: decoded.name,
+      given_name: decoded.given_name,
+      family_name: decoded.family_name,
+      realm_access: decoded.realm_access,
+      resource_access: decoded.resource_access,
+      ...decoded
+    };
 
-      if (!refreshToken) {
-        throw new Error('Token scaduto e nessun refresh token disponibile');
-      }
-
-      const result = await handleTokenRefresh(req, res, refreshToken, 'Token scaduto o in scadenza');
-
-      if (!result.success) {
-        return res.status(401).json({ error: 'Sessione scaduta, effettua nuovamente il login' });
-      }
-
-      req.user = jwt.decode(result.token);
-      return next();
-    }
-
-    // Token valido
-    req.user = decoded;
     next();
 
   } catch (error) {
     console.error('Errore validazione token:', error.message);
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
-    return res.status(401).json({ error: 'Token non valido o scaduto' });
-  }
-};
 
-/**
- * Middleware per il controllo dei RUOLI
- */
-export const checkRole = (requiredRole) => {
-  return async (req, res, next) => {
-    // Se protect() non è stato chiamato prima, decodifica il token
-    if (!req.user) {
-      const token = req.cookies['access_token'] || req.accessToken;
-      if (!token) {
-        return res.status(401).json({ error: 'Token mancante' });
+    // Gestione specifica per token scaduto
+    if (error.name === 'TokenExpiredError') {
+      const refreshToken = req.cookies['refresh_token'];
+
+      if (!refreshToken) {
+        res.clearCookie('access_token');
+        res.clearCookie('refresh_token');
+        return res.status(401).json({ error: 'Sessione scaduta, effettua nuovamente il login' });
       }
 
-      req.user = jwt.decode(token);
-      if (!req.user) {
+      // Prova il refresh automatico
+      const result = await handleTokenRefresh(req, res, refreshToken, 'Token scaduto');
+
+      if (!result.success) {
+        res.clearCookie('access_token');
+        res.clearCookie('refresh_token');
+        return res.status(401).json({ error: 'Sessione scaduta, effettua nuovamente il login' });
+      }
+
+      // Verifica il nuovo token
+      try {
+        const newDecoded = await verifyKeycloakToken(result.token);
+
+        req.user = {
+          id: newDecoded.sub,
+          email: newDecoded.email,
+          username: newDecoded.preferred_username,
+          name: newDecoded.name,
+          given_name: newDecoded.given_name,
+          family_name: newDecoded.family_name,
+          realm_access: newDecoded.realm_access,
+          resource_access: newDecoded.resource_access,
+          ...newDecoded
+        };
+
+        return next();
+      } catch (verifyError) {
+        console.error('Errore verifica nuovo token:', verifyError.message);
+        res.clearCookie('access_token');
+        res.clearCookie('refresh_token');
         return res.status(401).json({ error: 'Token non valido' });
       }
     }
 
-    // Cerca ruoli in TUTTE le posizioni
+    // Altri errori (firma non valida, issuer sbagliato, ecc.)
+    res.clearCookie('access_token');
+    res.clearCookie('refresh_token');
+    return res.status(401).json({
+      error: 'Token non valido',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+/**
+ * Middleware per il controllo dei RUOLI (usa token VERIFICATO)
+ */
+export const checkRole = (requiredRole) => {
+  return async (req, res, next) => {
+    if (!req.user) {
+      console.error('checkRole chiamato senza protect() - VULNERABILITÀ DI SICUREZZA');
+      return res.status(401).json({
+        error: 'Errore di configurazione: autenticazione non verificata'
+      });
+    }
+
     const realmRoles = req.user.realm_access?.roles || [];
     const resourceAccess = req.user.resource_access || {};
 
-    // Estrai ruoli da TUTTI i client
     const allClientRoles = [];
     for (const [clientId, clientData] of Object.entries(resourceAccess)) {
       console.log(`  Client "${clientId}":`, clientData.roles);
@@ -208,15 +286,99 @@ export const checkRole = (requiredRole) => {
 
     const allRoles = [...realmRoles, ...allClientRoles];
 
+    console.log('Controllo ruolo:', {
+      required: requiredRole,
+      userRoles: allRoles
+    });
+
     if (allRoles.includes(requiredRole)) {
-      console.log('✅✅✅ Accesso CONSENTITO ✅✅✅');
+      console.log('Accesso CONSENTITO');
       return next();
     } else {
+      console.log('Accesso NEGATO - Ruolo mancante');
       return res.status(403).json({
         error: `Accesso negato. Ruolo '${requiredRole}' non trovato.`,
         rolesFound: allRoles,
         realmRoles: realmRoles,
         clientRoles: allClientRoles
+      });
+    }
+  };
+};
+
+/**
+ * Middleware opzionale: verifica multipli ruoli (OR logic)
+ */
+export const checkAnyRole = (...requiredRoles) => {
+  return async (req, res, next) => {
+    if (!req.user) {
+      console.error('checkAnyRole chiamato senza protect()');
+      return res.status(401).json({
+        error: 'Errore di configurazione: autenticazione non verificata'
+      });
+    }
+
+    const realmRoles = req.user.realm_access?.roles || [];
+    const resourceAccess = req.user.resource_access || {};
+
+    const allClientRoles = [];
+    for (const clientData of Object.values(resourceAccess)) {
+      if (clientData.roles) {
+        allClientRoles.push(...clientData.roles);
+      }
+    }
+
+    const allRoles = [...realmRoles, ...allClientRoles];
+    const hasAnyRole = requiredRoles.some(role => allRoles.includes(role));
+
+    if (hasAnyRole) {
+      console.log('Accesso consentito con uno dei ruoli:', requiredRoles);
+      return next();
+    } else {
+      console.log('Accesso negato - Nessuno dei ruoli richiesti trovato');
+      return res.status(403).json({
+        error: `Accesso negato. Richiesto uno dei ruoli: ${requiredRoles.join(', ')}`,
+        rolesFound: allRoles
+      });
+    }
+  };
+};
+
+/**
+ * Middleware opzionale: verifica multipli ruoli (AND logic)
+ */
+export const checkAllRoles = (...requiredRoles) => {
+  return async (req, res, next) => {
+    if (!req.user) {
+      console.error('checkAllRoles chiamato senza protect()');
+      return res.status(401).json({
+        error: 'Errore di configurazione: autenticazione non verificata'
+      });
+    }
+
+    const realmRoles = req.user.realm_access?.roles || [];
+    const resourceAccess = req.user.resource_access || {};
+
+    const allClientRoles = [];
+    for (const clientData of Object.values(resourceAccess)) {
+      if (clientData.roles) {
+        allClientRoles.push(...clientData.roles);
+      }
+    }
+
+    const allRoles = [...realmRoles, ...allClientRoles];
+    const hasAllRoles = requiredRoles.every(role => allRoles.includes(role));
+
+    if (hasAllRoles) {
+      console.log('Accesso consentito con tutti i ruoli:', requiredRoles);
+      return next();
+    } else {
+      const missingRoles = requiredRoles.filter(role => !allRoles.includes(role));
+      console.log('Accesso negato - Ruoli mancanti:', missingRoles);
+      return res.status(403).json({
+        error: `Accesso negato. Mancano i ruoli: ${missingRoles.join(', ')}`,
+        rolesFound: allRoles,
+        missingRoles
       });
     }
   };

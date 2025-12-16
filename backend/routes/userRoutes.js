@@ -4,10 +4,11 @@ import { protect, checkRole } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
-// GET /api/users - Protetto da token
+// GET /api/users
 router.get('/', protect, getAllUsers);
 
-// DELETE /api/users/:email - Protetto da token
+// DELETE /api/users/:email
+// Elimina un utente (solo Amministratori)
 router.delete('/:email', protect, checkRole('Amministratore'), deleteUser);
 
 export default router;

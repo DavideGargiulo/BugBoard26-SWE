@@ -1,6 +1,5 @@
 import axios from 'axios';
 import KeycloakService from '../services/KeycloakService.js';
-import jwt from 'jsonwebtoken';
 import syncService from '../services/syncService.js';
 
 const KEYCLOAK_URL = process.env.KEYCLOAK_URL?.trim();
@@ -11,90 +10,6 @@ const CLIENT_SECRET = process.env.KEYCLOAK_BACKEND_CLIENT_SECRET?.trim();
 const TOKEN_URL = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`;
 const USERINFO_URL = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/userinfo`;
 const LOGOUT_URL = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/logout`;
-
-function userHasRole(accessToken, requiredRole) {
-  try {
-    const decoded = jwt.decode(accessToken);
-    const roles = decoded.realm_access?.roles || [];
-    return roles.includes(requiredRole);
-  } catch (err) {
-    console.error("Errore decode token:", err);
-    return false;
-  }
-}
-
-/**
- * Funzione helper per verificare e rinnovare il token se necessario
- */
-async function ensureValidToken(req, res) {
-  let accessToken = req.cookies.access_token;
-
-  if (!accessToken) {
-    return { valid: false, accessToken: null };
-  }
-
-  try {
-    // Decodifica il token per verificare la scadenza
-    const decoded = jwt.decode(accessToken);
-    const now = Math.floor(Date.now() / 1000);
-
-    // Se il token è valido (scade tra più di 30 secondi), restituiscilo
-    if (decoded.exp && decoded.exp > now + 30) {
-      return { valid: true, accessToken };
-    }
-  } catch (error) {
-    console.log('Errore decodifica token, provo refresh:', error.message);
-  }
-
-  // Token scaduto o in scadenza, prova a fare refresh
-  const refreshToken = req.cookies.refresh_token;
-
-  if (!refreshToken) {
-    return { valid: false, accessToken: null };
-  }
-
-  try {
-    const authString = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64');
-
-    const refreshResponse = await axios.post(
-      TOKEN_URL,
-      new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: refreshToken
-      }),
-      {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': `Basic ${authString}`
-        }
-      }
-    );
-
-    const { access_token, refresh_token: new_refresh_token, expires_in } = refreshResponse.data;
-
-    // Aggiorna i cookie
-    res.cookie('access_token', access_token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
-      maxAge: expires_in * 1000
-    });
-
-    res.cookie('refresh_token', new_refresh_token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
-      maxAge: 24 * 60 * 60 * 1000
-    });
-
-    console.log('Token rinnovato con successo');
-    return { valid: true, accessToken: access_token };
-
-  } catch (refreshError) {
-    console.error('Errore refresh token:', refreshError.response?.data || refreshError.message);
-    return { valid: false, accessToken: null };
-  }
-}
 
 /**
  * Login con username/email e password
@@ -132,19 +47,21 @@ export const login = async (req, res) => {
 
     console.log('Login effettuato con successo per:', email);
 
-    res.cookie('access_token', access_token, {
+    const cookieOptions = {
       httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax'
+    };
+
+    res.cookie('access_token', access_token, {
+      ...cookieOptions,
       maxAge: expires_in * 1000
     });
 
     const refresh_token_maxAge = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
 
     res.cookie('refresh_token', refresh_token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
+      ...cookieOptions,
       maxAge: refresh_token_maxAge
     });
 
@@ -175,27 +92,46 @@ export const login = async (req, res) => {
  * Verifica lo stato di autenticazione e restituisce i dati dell'utente
  */
 export const checkAuthStatus = async (req, res) => {
-  const tokenCheck = await ensureValidToken(req, res);
-
-  if (!tokenCheck.valid) {
+  if (!req.user) {
     return res.status(401).json({ authenticated: false });
   }
 
   try {
+    const accessToken = req.cookies.access_token || req.accessToken;
+
     const response = await axios.get(USERINFO_URL, {
       headers: {
-        'Authorization': `Bearer ${tokenCheck.accessToken}`
+        'Authorization': `Bearer ${accessToken}`
       }
     });
 
     return res.json({
       authenticated: true,
-      user: response.data
+      user: response.data,
+      roles: {
+        realm: req.user.realm_access?.roles || [],
+        client: req.user.resource_access?.[CLIENT_ID]?.roles || []
+      }
     });
 
   } catch (error) {
     console.error('Errore verifica autenticazione:', error.response?.data || error.message);
-    return res.status(401).json({ authenticated: false });
+
+    return res.json({
+      authenticated: true,
+      user: {
+        sub: req.user.sub,
+        email: req.user.email,
+        preferred_username: req.user.preferred_username,
+        name: req.user.name,
+        given_name: req.user.given_name,
+        family_name: req.user.family_name
+      },
+      roles: {
+        realm: req.user.realm_access?.roles || [],
+        client: req.user.resource_access?.[CLIENT_ID]?.roles || []
+      }
+    });
   }
 };
 
@@ -220,6 +156,7 @@ export const logout = async (req, res) => {
           }
         }
       );
+      console.log('Logout su Keycloak completato');
     }
   } catch (error) {
     console.error('Errore durante il logout su Keycloak:', error.response?.data || error.message);
@@ -237,18 +174,11 @@ export const logout = async (req, res) => {
 /**
  * POST /api/auth/register
  * Crea un nuovo utente su Keycloak (Headless)
+ * NOTA: Protetto da protect() e checkRole('Amministratore') middleware
  */
 export const register = async (req, res) => {
-  // Verifica e rinnova il token se necessario
-  const tokenCheck = await ensureValidToken(req, res);
-
-  if (!tokenCheck.valid) {
+  if (!req.user) {
     return res.status(401).json({ error: "Non autenticato" });
-  }
-
-  // Verifica il ruolo con il token valido
-  if (!userHasRole(tokenCheck.accessToken, "Amministratore")) {
-    return res.status(403).json({ error: "Non autorizzato" });
   }
 
   const { nome, cognome, email, ruolo } = req.body;
@@ -258,6 +188,8 @@ export const register = async (req, res) => {
   }
 
   try {
+    console.log(`Amministratore ${req.user.email} sta creando utente ${email}`);
+
     const result = await KeycloakService.registerUser({
       username: email,
       email,
@@ -282,11 +214,14 @@ export const register = async (req, res) => {
       success: true,
       message: 'Utente creato con successo',
       userId: result.userId,
-      password: result.password,
-      temporaryPassword: result.password
+      temporaryPassword: result.password,
+      createdBy: req.user.email
     });
+
   } catch (error) {
     console.error("Errore registrazione:", error.message);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({
+      error: error.message || 'Errore durante la creazione dell\'utente'
+    });
   }
 };

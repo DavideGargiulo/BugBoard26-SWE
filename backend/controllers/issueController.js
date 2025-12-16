@@ -1,5 +1,5 @@
-import { Issue, Progetto, Utente, Allegato, database } from '../data/remote/Database.js';
-import { countCommentsByIssueId } from './commentController.js';
+import { Issue, Progetto, Utente, Allegato, Commento, database } from '../data/remote/Database.js';
+import { countCommentsByIssueId, getCommentByIssueId } from './commentController.js';
 import fs from 'node:fs';
 import { promisify } from 'node:util';
 import crypto from 'node:crypto';
@@ -252,6 +252,90 @@ export const updateIssue = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: 'Errore nell\'aggiornamento della issue',
+      error: error.message
+    });
+  }
+};
+
+export const getIssueById = async (req, res) => {
+  try {
+    const issueId = req.params.id;
+
+    // ... (parte iniziale invariata) ...
+    const issue = await Issue.findByPk(issueId, {
+      attributes: { exclude: ['id_creatore'] },
+      include: [
+        {
+          model: Utente,
+          as: 'Creatore',
+          attributes: [
+            [database.fn('CONCAT', database.col('Creatore.nome'), ' ', database.col('Creatore.cognome')), 'nome'],
+            'email'
+          ]
+        },
+        {
+          model: Progetto,
+          as: 'progetto',
+          attributes: ['id', 'nome']
+        }
+      ]
+    });
+
+    if (!issue) {
+      return res.status(404).json({ message: 'Issue non trovata' });
+    }
+
+    // Recupera i commenti associati all'issue
+    const commenti = await Commento.findAll({
+      where: { id_issue: issueId },
+      include: [
+        {
+          model: Utente,
+          as: 'utente', // Alias minuscolo
+          attributes: [
+            [database.fn('CONCAT', database.col('utente.nome'), ' ', database.col('utente.cognome')), 'nome'],
+            'email'
+          ]
+        },
+        {
+          model: Allegato,
+          as: 'allegatos', // Alias minuscolo
+          required: false,
+          attributes: ['id', 'nome_file_originale', 'tipo_mime', 'dimensione_byte', 'percorso_relativo']
+        }
+      ],
+      order: [['id', 'ASC']]
+    });
+
+    // ... (recupero allegatiIssue invariato) ...
+    const allegatiIssue = await Allegato.findAll({
+      where: {
+        id_issue: issueId,
+        id_commento: null
+      },
+      attributes: ['id', 'nome_file_originale', 'tipo_mime', 'dimensione_byte', 'percorso_relativo']
+    });
+
+    // Costruisci la risposta CORRETTA
+    const issueDettagliata = {
+      ...issue.toJSON(),
+      allegati: allegatiIssue,
+      numeroCommenti: commenti.length,
+      commenti: commenti.map(commento => ({
+        id: commento.id,
+        testo: commento.testo,
+        // CORREZIONE QUI: Usa le proprietà minuscole come definito negli alias 'as'
+        autore: commento.utente,     // Era commento.Utente
+        allegati: commento.allegatos || [] // Era commento.Allegatos
+      }))
+    };
+
+    res.status(200).json(issueDettagliata);
+
+  } catch (error) {
+    console.error('Errore nel recupero dei dettagli dell\'issue:', error);
+    res.status(500).json({
+      message: 'Errore nel recupero dei dettagli dell\'issue',
       error: error.message
     });
   }

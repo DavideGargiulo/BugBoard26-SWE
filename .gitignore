@@ -196,4 +196,4 @@ frontend/.DS_Store
 frontend/Thumbs.db
 
 # backend .env
-backend/.env
+backend/uploads/

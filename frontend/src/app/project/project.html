@@ -4,12 +4,26 @@
 
     <div class="flex flex-col h-screen overflow-hidden">
 
-      <app-topbar class="flex-none"></app-topbar>
+      <app-topbar
+        class="flex-none"
+        [todoPercentage]="todoPercentage"
+        [inProgressPercentage]="inProgressPercentage"
+        [donePercentage]="donePercentage"
+        (searchChange)="onSearchChange($event)"
+        (tipoFilterChange)="onTipoFilterChange($event)"
+        (statoFilterChange)="onStatoFilterChange($event)"
+        (prioritaFilterChange)="onPrioritaFilterChange($event)">
+      </app-topbar>
 
       <app-issues-list
           class="flex-1 overflow-y-auto"
           [issues]="issues"
-          [itemsPerPage]="4">
+          [searchTerm]="searchTerm"
+          [tipoFilter]="tipoFilter"
+          [statoFilter]="statoFilter"
+          [prioritaFilter]="prioritaFilter"
+          [itemsPerPage]="4"
+          (statisticsChange)="onStatisticsChange($event)">
       </app-issues-list>
 
     </div>

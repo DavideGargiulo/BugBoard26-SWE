@@ -1,15 +1,16 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
 import { ProjectService } from '../../_services/project/project-service';
 import { Subject, takeUntil } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-topbar',
   templateUrl: './topbar.html',
   standalone: true,
-  imports: [CommonModule, RouterModule]
+  imports: [CommonModule, RouterModule, FormsModule]
 })
 
 export class TopbarComponent implements OnInit, OnDestroy {
@@ -23,21 +24,27 @@ export class TopbarComponent implements OnInit, OnDestroy {
   priorita: string = '';
   searchTerm: string = '';
 
-  // Opzioni mock (puoi popolarle da API)
-  tipi: string[] = ['Bug', 'Feature', 'Task'];
-  stati: string[] = ['Todo', 'In Progress', 'Done'];
+  // Opzioni
+  tipi: string[] = ['Bug', 'Feature', 'Question', 'Documentation'];
+  stati: string[] = ['TODO', 'In Progress', 'Done'];
   prioritaListe: string[] = ['Alta', 'Media', 'Bassa'];
+
+  // ------------------------------
+  // STATISTICHE
+  // ------------------------------
+
+  @Input() todoPercentage: number = 0;
+  @Input() inProgressPercentage: number = 0;
+  @Input() donePercentage: number = 0;
 
   // ------------------------------
   // OUTPUT VERSO IL COMPONENTE PADRE
   // ------------------------------
 
-  @Output() filterChange = new EventEmitter<any>();
+  @Output() tipoFilterChange = new EventEmitter<string>();
+  @Output() statoFilterChange = new EventEmitter<string>();
+  @Output() prioritaFilterChange = new EventEmitter<string>();
   @Output() searchChange = new EventEmitter<string>();
-
-  todoPercentage: number | undefined;
-  inProgressPercentage: number | undefined;
-  donePercentage: number | undefined;
 
   // ------------------------------
   // COSTRUTTORE
@@ -62,24 +69,23 @@ export class TopbarComponent implements OnInit, OnDestroy {
     }
   }
 
-  onFilterChange(): void {
-    this.filterChange.emit({
-      tipo: this.tipo,
-      stato: this.stato,
-      priorita: this.priorita
-    });
+  onTipoChange(): void {
+    this.tipoFilterChange.emit(this.tipo);
   }
 
-  onSearch(term: string): void {
-    this.searchTerm = term;
+  onStatoChange(): void {
+    this.statoFilterChange.emit(this.stato);
+  }
+
+  onPrioritaChange(): void {
+    this.prioritaFilterChange.emit(this.priorita);
+  }
+
+  onSearchChange(): void {
     this.searchChange.emit(this.searchTerm);
   }
 
   ngOnInit(): void {
-    this.todoPercentage = this.calcultateTodo();
-    this.inProgressPercentage = this.calcultateProgress();
-    this.donePercentage = this.calcultateDone();
-
     // Ascolta i cambiamenti di route
     this.router.events
       .pipe(
@@ -99,7 +105,6 @@ export class TopbarComponent implements OnInit, OnDestroy {
 
     // Inizializza con la route corrente
     this.currentRoute = this.router.url;
-
   }
 
   ngOnDestroy(): void {
@@ -115,16 +120,54 @@ export class TopbarComponent implements OnInit, OnDestroy {
     return this.currentRoute.includes('/progetto');
   }
 
-  calcultateTodo(): number {
-    return 90;
+  // Formatta percentuale con 1 decimale
+  formatPercentage(value: number): string {
+    return value.toFixed(1);
   }
 
-  calcultateProgress(): number {
-    return 5;
+  // Metodo per generare il path SVG del pie chart con percentuali precise
+  getSlicePath(startPercentage: number, slicePercentage: number): string {
+  if (slicePercentage === 0) return '';
+
+  const radius = 48;
+  const centerX = 48;
+  const centerY = 48;
+
+  // Usa le percentuali esatte senza arrotondamenti
+  const totalPercentage = this.todoPercentage + this.inProgressPercentage + this.donePercentage;
+
+  // Normalizza se il totale non è esattamente 100 (per errori di arrotondamento)
+  const normalizedStart = totalPercentage > 0 ? (startPercentage / totalPercentage) * 100 : 0;
+  const normalizedSlice = totalPercentage > 0 ? (slicePercentage / totalPercentage) * 100 : 0;
+
+  // Se la slice è praticamente 100%, disegna un cerchio completo
+  if (normalizedSlice >= 99.9) {
+    return `M ${centerX} ${centerY} m -${radius}, 0 a ${radius},${radius} 0 1,1 ${radius * 2},0 a ${radius},${radius} 0 1,1 -${radius * 2},0`;
   }
 
-  calcultateDone(): number {
-    return 5;
-  }
+  // Converti percentuali in angoli (0% = -90°, inizia dall'alto)
+  const startAngle = -90 + (normalizedStart / 100) * 360;
+  const endAngle = startAngle + (normalizedSlice / 100) * 360;
 
+  // Converti angoli in radianti
+  const startRad = (startAngle * Math.PI) / 180;
+  const endRad = (endAngle * Math.PI) / 180;
+
+  // Calcola le coordinate dei punti
+  const startX = centerX + radius * Math.cos(startRad);
+  const startY = centerY + radius * Math.sin(startRad);
+  const endX = centerX + radius * Math.cos(endRad);
+  const endY = centerY + radius * Math.sin(endRad);
+
+  // Determina se l'arco è maggiore di 180°
+  const largeArc = normalizedSlice > 50 ? 1 : 0;
+
+  // Crea il path SVG
+  return [
+    `M ${centerX} ${centerY}`,
+    `L ${startX} ${startY}`,
+    `A ${radius} ${radius} 0 ${largeArc} 1 ${endX} ${endY}`,
+    'Z'
+  ].join(' ');
+}
 }

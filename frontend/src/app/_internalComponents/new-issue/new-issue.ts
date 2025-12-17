@@ -213,6 +213,7 @@ export class NewIssueComponent implements OnInit, OnDestroy {
         this.confirm.emit(response);
         this.isLoading = false;
         this.resetForm();
+        this.router.navigate(['/progetto/', this.projectName]);
       },
       error: (error) => {
         console.error('Errore nella creazione dell\'issue:', error);
@@ -223,5 +224,6 @@ export class NewIssueComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       }
     });
+
   }
 }

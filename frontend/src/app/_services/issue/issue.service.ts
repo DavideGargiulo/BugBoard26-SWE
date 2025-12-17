@@ -19,4 +19,9 @@ export class IssueService {
     return this.http.get<any[]>(this.apiUrl, { withCredentials: true });
   }
 
+  getIssueById(issueId: number) {
+    const url = `${this.apiUrl}/${issueId}`;
+    return this.http.get<any>(url, { withCredentials: true });
+  }
+
 }

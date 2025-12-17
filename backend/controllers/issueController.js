@@ -261,7 +261,6 @@ export const getIssueById = async (req, res) => {
   try {
     const issueId = req.params.id;
 
-    // ... (parte iniziale invariata) ...
     const issue = await Issue.findByPk(issueId, {
       attributes: { exclude: ['id_creatore'] },
       include: [
@@ -291,7 +290,7 @@ export const getIssueById = async (req, res) => {
       include: [
         {
           model: Utente,
-          as: 'utente', // Alias minuscolo
+          as: 'utente',
           attributes: [
             [database.fn('CONCAT', database.col('utente.nome'), ' ', database.col('utente.cognome')), 'nome'],
             'email'
@@ -299,7 +298,7 @@ export const getIssueById = async (req, res) => {
         },
         {
           model: Allegato,
-          as: 'allegatos', // Alias minuscolo
+          as: 'allegati',
           required: false,
           attributes: ['id', 'nome_file_originale', 'tipo_mime', 'dimensione_byte', 'percorso_relativo']
         }
@@ -307,7 +306,6 @@ export const getIssueById = async (req, res) => {
       order: [['id', 'ASC']]
     });
 
-    // ... (recupero allegatiIssue invariato) ...
     const allegatiIssue = await Allegato.findAll({
       where: {
         id_issue: issueId,
@@ -324,9 +322,8 @@ export const getIssueById = async (req, res) => {
       commenti: commenti.map(commento => ({
         id: commento.id,
         testo: commento.testo,
-        // CORREZIONE QUI: Usa le proprietà minuscole come definito negli alias 'as'
-        autore: commento.utente,     // Era commento.Utente
-        allegati: commento.allegatos || [] // Era commento.Allegatos
+        autore: commento.utente,
+        allegati: commento.allegati || []
       }))
     };
 

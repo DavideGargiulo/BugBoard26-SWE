@@ -122,6 +122,7 @@ function createAssociations() {
     onDelete: 'CASCADE'
   });
   Commento.hasMany(Allegato, {
+    as: 'allegati',
     foreignKey: { name: 'id_commento', allowNull: true },
     onDelete: 'CASCADE'
   });

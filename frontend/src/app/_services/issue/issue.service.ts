@@ -8,6 +8,7 @@ import { inject, Injectable } from '@angular/core';
 export class IssueService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:3000/api/issues'; // URL del backend
+  private commentApiUrl = 'http://localhost:3000/api/comments'; // URL del backend
 
   getIssuesByProject(projectName: string) {
     const url = `${this.apiUrl}/project/${projectName}`;
@@ -24,4 +25,31 @@ export class IssueService {
     return this.http.get<any>(url, { withCredentials: true });
   }
 
+  createComment(issueId: number, commentData: any) {
+    const url = `${this.commentApiUrl}`;
+    const formData = new FormData();
+
+    formData.append('testo', commentData.testo);
+    formData.append('id_issue', issueId.toString());
+
+    // IMPORTANTE: Appendi ogni file separatamente
+    if (commentData.attachments && commentData.attachments.length > 0) {
+      commentData.attachments.forEach((file: File) => {
+        formData.append('attachments', file, file.name);
+      });
+    }
+
+    // Debug per verificare cosa stai inviando
+    console.log('=== FORMDATA DEBUG ===');
+    console.log('Numero di file:', commentData.attachments?.length || 0);
+    formData.forEach((value, key) => {
+      if (value instanceof File) {
+        console.log(key, '-> File:', value.name, value.type, value.size);
+      } else {
+        console.log(key, '->', value);
+      }
+    });
+
+    return this.http.post<any>(url, formData, { withCredentials: true });
+  }
 }

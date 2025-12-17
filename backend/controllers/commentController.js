@@ -33,7 +33,21 @@ export const getCommentByIssueId = async (req, res) => {
       include: [
         {
           model: Allegato,
-          required: false
+          as: 'allegati',
+          required: false,
+          attributes: [
+            'id',
+            'nome_file_originale',
+            'tipo_mime',
+            'dimensione_byte',
+            'percorso_relativo'
+          ]
+        },
+        {
+          model: Utente,
+          as: 'utente',
+          required: false,
+          attributes: ['id', 'nome', 'email']
         }
       ],
       order: [['id', 'ASC']]
@@ -114,8 +128,6 @@ export const createComment = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Errore creazione commento:', error);
-
     if (uploadedFiles.length > 0) {
       uploadedFiles.forEach(file => {
         unlinkFile(file.path).catch(err => console.error('Errore pulizia file:', err));

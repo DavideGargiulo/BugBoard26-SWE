@@ -15,6 +15,7 @@ interface Comment {
     nome_file_originale: string;
     tipo_mime: string;
     percorso_relativo: string;
+    dimensione_byte: number;
   }>;
 }
 
@@ -54,6 +55,14 @@ export class IssueDetailComponent implements OnInit {
     });
   }
 
+  onImageError(event: any): void {
+    console.error('Errore caricamento immagine:', event.target.src);
+    // Imposta un'immagine placeholder
+    event.target.src = 'assets/image-error.png'; // O usa un'icona
+    // Oppure nascondi l'immagine
+    event.target.style.display = 'none';
+  }
+
   loadIssueDetail(): void {
     this.loading = true;
 
@@ -66,15 +75,16 @@ export class IssueDetailComponent implements OnInit {
           tags: [data.tipo, data.stato, data.priorita],
           commentsCount: data.numeroCommenti,
           assignee: data.Creatore.nome,
-          project: data.progetto.nome
+          project: data.progetto.nome,
+          attachments: data.allegati || []
         };
 
         this.comments = data.commenti.map((comment: any) => ({
           id: comment.id,
-          author: comment.autore.nome,
+          author: comment.autore?.nome || 'Utente sconosciuto',
           text: comment.testo,
           date: new Date(),
-          attachments: comment.allegati
+          attachments: comment.allegati || []
         }));
 
         this.loading = false;
@@ -187,22 +197,38 @@ export class IssueDetailComponent implements OnInit {
       files: this.uploadedImages
     });
 
-    // TODO chiamata backend
-    // this.issueService.addComment(this.issueId, commentHtml, this.uploadedImages)
+    this.issueService.createComment(this.issueId, {
+      testo: commentHtml,
+      attachments: this.uploadedImages
+    }).subscribe({
+      next: (response) => {
+        console.log('Commento creato con successo:', response);
 
-    // Reset editor
-    this.content.nativeElement.innerHTML = '';
-    this.uploadedImages = [];
+        // Reset editor solo dopo il successo
+        this.content.nativeElement.innerHTML = '';
+        this.uploadedImages = [];
 
-    this.imagePreviewUrls.forEach(url => {
-      if (url) URL.revokeObjectURL(url);
+        this.imagePreviewUrls.forEach(url => {
+
+        });
+        this.imagePreviewUrls = [];
+
+        this.toastService.success(
+          'Commento inviato',
+          'Il tuo commento è stato pubblicato'
+        );
+
+        // Opzionale: ricarica i commenti per mostrare quello nuovo
+        this.loadIssueDetail();
+      },
+      error: (error) => {
+        console.error('Errore durante l\'invio del commento:', error);
+        this.toastService.error(
+          'Errore',
+          'Impossibile inviare il commento'
+        );
+      }
     });
-    this.imagePreviewUrls = [];
-
-    this.toastService.success(
-      'Commento inviato',
-      'Il tuo commento è stato pubblicato'
-    );
   }
 
   goBack(): void {
@@ -228,5 +254,39 @@ export class IssueDetailComponent implements OnInit {
   closeIssue(): void {
     // Implementa la logica per chiudere l'issue
     console.log('Chiudi issue');
+  }
+
+  getAttachmentUrl(attachment: any): string {
+    if (!attachment || !attachment.percorso_relativo) {
+      console.error('Attachment mancante o percorso non valido:', attachment);
+      return '';
+    }
+
+    // Corregge i percorsi Windows (\) trasformandoli in web (/)
+    const normalizedPath = attachment.percorso_relativo.replace(/\\/g, '/');
+
+    const url = `http://localhost:3000/${normalizedPath}`;
+    console.log('URL generato per attachment:', url);
+
+    return url;
+  }
+
+  isImageAttachment(mimeType: string): boolean {
+    return mimeType.startsWith('image/');
+  }
+
+  isPdfAttachment(mimeType: string): boolean {
+    return mimeType === 'application/pdf';
+  }
+
+  formatFileSize(bytes: number): string {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  downloadAttachment(attachment: any): void {
+    const url = this.getAttachmentUrl(attachment);
+    window.open(url, '_blank');
   }
 }

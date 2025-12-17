@@ -5,6 +5,8 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import helmet from 'helmet';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
 import { initKeycloak } from './config/keycloak.js';
 import authRoutes from './routes/authRoutes.js';
@@ -13,9 +15,14 @@ import projectRoutes from './routes/projectRoutes.js';
 import issueRoutes from './routes/issueRoutes.js';
 import commentRoutes from './routes/commentRoutes.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 app.disable('x-powered-by');
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: false,
+}));
 
 const PORT = process.env.PORT || 3000;
 
@@ -51,6 +58,8 @@ const keycloak = initKeycloak(memoryStore);
 app.use(keycloak.middleware());
 
 // Routes
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 app.use('/api/auth', authRoutes);
 
 app.use('/api/users', userRoutes);

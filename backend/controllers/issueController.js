@@ -1,5 +1,5 @@
 import { Issue, Progetto, Utente, Allegato, Commento, database } from '../data/remote/Database.js';
-import { countCommentsByIssueId, getCommentByIssueId } from './commentController.js';
+import { countCommentsByIssueId } from './commentController.js';
 import fs from 'node:fs';
 import { promisify } from 'node:util';
 import crypto from 'node:crypto';
@@ -112,7 +112,6 @@ export const createIssue = async (req, res) => {
 
     const id_creatore = user.id;
 
-    // Validazione campi obbligatori
     if (!titolo || !descrizione || !tipo || !progetto) {
       return res.status(400).json({
         message: 'Campi obbligatori mancanti',
@@ -120,14 +119,12 @@ export const createIssue = async (req, res) => {
       });
     }
 
-    // Ottieni l'ID del progetto dal nome
     const projectId = await getProjectIdByName(progetto);
 
     if (!projectId) {
       return res.status(404).json({ message: 'Progetto non trovato' });
     }
 
-    // Crea la nuova issue
     const newIssue = await Issue.create({
       titolo,
       descrizione,
@@ -138,7 +135,6 @@ export const createIssue = async (req, res) => {
       id_progetto: projectId
     });
 
-    // Gestione degli allegati
     let allegatiCreati = [];
     if (req.files && req.files.length > 0) {
       const allegatoPromises = req.files.map(async (file) => {
@@ -193,63 +189,95 @@ export const createIssue = async (req, res) => {
 export const updateIssue = async (req, res) => {
   try {
     const issueId = req.params.id;
-    const { titolo, descrizione, tipo, stato, priorita } = req.body;
+    const { descrizione } = req.body;
 
     const issue = await Issue.findByPk(issueId);
 
     if (!issue) {
+      if (req.files) {
+        req.files.forEach(file => fs.unlink(file.path, () => {}));
+      }
       return res.status(404).json({ message: 'Issue non trovata' });
     }
 
-    const updateData = {};
-
-    if (titolo !== undefined) updateData.titolo = titolo;
-    if (descrizione !== undefined) updateData.descrizione = descrizione;
-
-    // Valida e aggiorna tipo
-    if (tipo !== undefined) {
-      const tipiValidi = ['Question', 'Bug', 'Documentation', 'Feature'];
-      if (!tipiValidi.includes(tipo)) {
-        return res.status(400).json({
-          message: 'Tipo non valido',
-          validTypes: tipiValidi
-        });
+    const existingAttachmentsCount = await Allegato.count({
+      where: {
+        id_issue: issueId,
+        id_commento: null
       }
-      updateData.tipo = tipo;
+    });
+
+    const newFilesCount = req.files ? req.files.length : 0;
+
+    if (existingAttachmentsCount + newFilesCount > 3) {
+      if (req.files) {
+        req.files.forEach(file => fs.unlink(file.path, () => {}));
+      }
+      return res.status(400).json({
+        message: `Limite superato. L'issue ha già ${existingAttachmentsCount} allegati e ne stai inviando ${newFilesCount}. Il massimo totale consentito è 3.`
+      });
     }
 
-    if (stato !== undefined) {
-      const statiValidi = ['TODO', 'In-Progress', 'Done'];
-      if (!statiValidi.includes(stato)) {
-        return res.status(400).json({
-          message: 'Stato non valido',
-          validStates: statiValidi
+    if (req.files && req.files.length > 0) {
+      const allegatoPromises = req.files.map(async (file) => {
+        const fileBuffer = await readFile(file.path);
+        const hash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+
+        return Allegato.create({
+          nome_file_originale: file.originalname,
+          nome_file_storage: file.filename,
+          percorso_relativo: file.path,
+          tipo_mime: file.mimetype,
+          dimensione_byte: file.size,
+          hash_sha256: hash,
+          id_issue: issueId,
+          id_commento: null
         });
-      }
-      updateData.stato = stato;
+      });
+
+      await Promise.all(allegatoPromises);
     }
 
-    if (priorita !== undefined && priorita !== null) {
-      const prioritaValide = ['Alta', 'Media', 'Bassa'];
-      if (!prioritaValide.includes(priorita)) {
-        return res.status(400).json({
-          message: 'Priorità non valida',
-          validPriorities: prioritaValide
-        });
-      }
-      updateData.priorita = priorita;
-    } else if (priorita === null) {
-      updateData.priorita = priorita;
+    if (descrizione && descrizione.trim() !== '') {
+      const now = new Date();
+      const timestamp = now.toLocaleString('it-IT', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+
+      const updateHeader = `
+        <br>
+        <hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">
+        <p><strong>🔄 Aggiornamento del ${timestamp}:</strong></p>
+      `;
+
+      const oldDescription = issue.descrizione || '';
+      const finalDescription = oldDescription
+        ? `${oldDescription}${updateHeader}${descrizione}`
+        : `${updateHeader}${descrizione}`;
+
+      await issue.update({ descrizione: finalDescription });
     }
 
-    await issue.update(updateData);
+    const updatedIssue = await Issue.findByPk(issueId, {
+       include: [{
+         model: Allegato,
+         as: 'allegati',
+         where: { id_commento: null },
+         required: false
+       }]
+    });
 
     res.status(200).json({
       message: 'Issue aggiornata con successo',
-      issue: issue
+      issue: updatedIssue
     });
 
   } catch (error) {
+    console.error('Errore update:', error);
+    if (req.files) {
+      req.files.forEach(file => fs.unlink(file.path, () => {}).catch(() => {}));
+    }
     res.status(500).json({
       message: 'Errore nell\'aggiornamento della issue',
       error: error.message
@@ -284,7 +312,6 @@ export const getIssueById = async (req, res) => {
       return res.status(404).json({ message: 'Issue non trovata' });
     }
 
-    // Recupera i commenti associati all'issue
     const commenti = await Commento.findAll({
       where: { id_issue: issueId },
       include: [
@@ -314,7 +341,6 @@ export const getIssueById = async (req, res) => {
       attributes: ['id', 'nome_file_originale', 'tipo_mime', 'dimensione_byte', 'percorso_relativo']
     });
 
-    // Costruisci la risposta CORRETTA
     const issueDettagliata = {
       ...issue.toJSON(),
       allegati: allegatiIssue,
@@ -333,6 +359,40 @@ export const getIssueById = async (req, res) => {
     console.error('Errore nel recupero dei dettagli dell\'issue:', error);
     res.status(500).json({
       message: 'Errore nel recupero dei dettagli dell\'issue',
+      error: error.message
+    });
+  }
+};
+
+export const completeIssue = async (req, res) => {
+  try {
+    const issueId = req.params.id;
+
+    const issue = await Issue.findByPk(issueId);
+    if (!issue) {
+      return res.status(404).json({
+        message: 'Issue non trovata'
+      });
+    }
+
+    if (issue.stato === 'Done') {
+      return res.status(400).json({
+        message: 'Issue già completata'
+      });
+    }
+
+    await issue.update({
+      stato: 'Done'
+    });
+
+    res.status(200).json({
+      message: 'Issue completata con successo',
+      issue
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: 'Errore nel completamento della issue',
       error: error.message
     });
   }

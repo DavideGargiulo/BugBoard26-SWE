@@ -275,8 +275,19 @@ export class IssueDetailComponent implements OnInit {
   }
 
   completeIssue(): void {
-    // TODO: Implementa la logica per completare l'issue
-    console.log('Completamento issue non ancora implementato');
+    this.issueService.completeIssue(this.issue.id).subscribe({
+      next: (res) => {
+        console.log('Issue completata', res);
+
+        this.issue.stato = 'Done';
+
+        this.toastService.success('Fatto', 'Issue completata con successo');
+      },
+      error: (err) => {
+        console.error('Errore completamento issue', err);
+        this.toastService.error('Errore', err.error?.message || 'Errore nel completamento della issue');
+      }
+    });
   }
 
   getAttachmentUrl(attachment: any): string {
@@ -285,7 +296,6 @@ export class IssueDetailComponent implements OnInit {
       return '';
     }
 
-    // Corregge i percorsi Windows (\) trasformandoli in web (/)
     const normalizedPath = attachment.percorso_relativo.replace(/\\/g, '/');
 
     const url = `http://localhost:3000/${normalizedPath}`;

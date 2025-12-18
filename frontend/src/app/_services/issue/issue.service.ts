@@ -32,32 +32,31 @@ export class IssueService {
     formData.append('testo', commentData.testo);
     formData.append('id_issue', issueId.toString());
 
-    // IMPORTANTE: Appendi ogni file separatamente
     if (commentData.attachments && commentData.attachments.length > 0) {
       commentData.attachments.forEach((file: File) => {
         formData.append('attachments', file, file.name);
       });
     }
 
-    // Debug per verificare cosa stai inviando
-    console.log('=== FORMDATA DEBUG ===');
-    console.log('Numero di file:', commentData.attachments?.length || 0);
-    formData.forEach((value, key) => {
-      if (value instanceof File) {
-        console.log(key, '-> File:', value.name, value.type, value.size);
-      } else {
-        console.log(key, '->', value);
-      }
-    });
-
     return this.http.post<any>(url, formData, { withCredentials: true });
   }
 
-  updateIssue(issueId: number, arg1: { descrizione: string; removedAttachments: number[]; newAttachments: File[]; }) {
-    // TODO
+  updateIssue(issueId: number, data: { descrizione: string; newAttachments: File[] }) {
     const url = `${this.apiUrl}/${issueId}`;
     const formData = new FormData();
-    return this.http.post<any>(url, formData, { withCredentials: true });
+
+    formData.append('descrizione', data.descrizione);
+
+    if (data.newAttachments && data.newAttachments.length > 0) {
+      data.newAttachments.forEach((file) => {
+        formData.append('attachments', file, file.name);
+      });
+    }
+    return this.http.put<any>(url, formData, { withCredentials: true });
   }
 
+  completeIssue(issueId: number) {
+    const url = `${this.apiUrl}/${issueId}/complete`;
+    return this.http.put<any>(url, {}, { withCredentials: true });
+  }
 }

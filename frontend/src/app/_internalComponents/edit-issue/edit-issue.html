@@ -1,7 +1,6 @@
 <div class="flex flex-col h-screen overflow-hidden bg-gray-100 dark:bg-gray-900">
 
   <div class="flex-1 overflow-hidden">
-    <!-- Header -->
     <header class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
       <div class="flex items-center justify-between">
         <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
@@ -10,17 +9,14 @@
       </div>
     </header>
 
-    <!-- Content Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 flex-1 min-h-0-[calc(100%-80px)] overflow-hidden min-w-0">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 h-[calc(100%-80px)] overflow-hidden min-w-0">
 
-      <!-- LEFT COLUMN : ISSUE -->
       <div class="h-full flex flex-col gap-4 min-w-0">
 
         <div
           *ngIf="issue"
           class="h-full flex flex-col bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-6">
 
-          <!-- FIXED HEADER -->
           <div class="flex items-start justify-between mb-4 flex-shrink-0">
             <div class="flex items-center gap-3">
               <div class="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
@@ -42,7 +38,6 @@
             </div>
           </div>
 
-          <!-- SCROLLABLE DESCRIPTION -->
           <div
             class="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200
                    dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800"
@@ -53,17 +48,43 @@
                 <p [innerHTML]="issue.description"></p>
               </div>
 
-              <!-- ALLEGATI -->
               <div *ngIf="issue.attachments?.length"
                 class="pt-4 border-t border-gray-200 dark:border-gray-600">
                 <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
                   File allegati ({{ issue.attachments.length }})
                 </h4>
+
                 <div class="flex flex-wrap gap-3">
-                  <div *ngFor="let attachment of issue.attachments">
-                    <!-- preview invariato -->
+                  <div *ngFor="let attachment of issue.attachments" class="group relative">
+
+                    <div *ngIf="isImageAttachment(attachment.tipo_mime)"
+                      class="w-32 h-32 border-2 border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden cursor-pointer hover:border-blue-500 transition-colors"
+                      (click)="downloadAttachment(attachment)">
+                      <img class="w-full h-full object-cover max-w-full"
+                        [src]="getAttachmentUrl(attachment)"
+                        [alt]="attachment.nome_file_originale"
+                        (error)="onImageError($event)"/>
+                    </div>
+
+                    <div *ngIf="isPdfAttachment(attachment.tipo_mime)"
+                      class="w-32 h-32 border-2 border-gray-300 dark:border-gray-600 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      (click)="downloadAttachment(attachment)">
+                      <span class="text-5xl">📄</span>
+                      <span class="text-xs text-gray-500 dark:text-gray-400 mt-2">PDF</span>
+                    </div>
+
+                    <div class="mt-2 max-w-32">
+                      <p class="text-xs text-gray-600 dark:text-gray-400 truncate" [title]="attachment.nome_file_originale">
+                        {{ attachment.nome_file_originale }}
+                      </p>
+                      <p class="text-xs text-gray-500 dark:text-gray-500">
+                        {{ formatFileSize(attachment.dimensione_byte) }}
+                      </p>
+                    </div>
+
                   </div>
                 </div>
+
               </div>
             </div>
 
@@ -71,54 +92,92 @@
         </div>
       </div>
 
-      <!-- RIGHT COLUMN : EDITOR -->
       <div class="h-full flex flex-col min-w-0 overflow-hidden">
 
-        <!-- Toolbar (senza container esterno) -->
+        <div class="mb-3 px-1">
+            <h3 class="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                Aggiungi Aggiornamento
+            </h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Scrivi qui sotto. Il testo verrà aggiunto alla descrizione esistente con la data odierna.
+            </p>
+        </div>
+
         <div class="border border-gray-300 dark:border-gray-700 rounded-t-lg bg-gray-100 dark:bg-gray-800 px-3 py-2 flex-shrink-0">
           <div class="flex items-center gap-2 text-lg">
-            <button (click)="formatDoc('bold')" class="editor-btn font-bold">B</button>
-            <button (click)="formatDoc('italic')" class="editor-btn italic">I</button>
-            <button (click)="formatDoc('underline')" class="editor-btn underline">U</button>
-            <button (click)="formatDoc('strikeThrough')" class="editor-btn line-through">S</button>
+            <button (click)="formatDoc('bold')" class="p-2 text-gray-700 dark:text-gray-200 font-bold hover:bg-gray-200 dark:hover:bg-gray-700 rounded">B</button>
+            <button (click)="formatDoc('italic')" class="p-2 text-gray-700 dark:text-gray-200 italic hover:bg-gray-200 dark:hover:bg-gray-700 rounded">I</button>
+            <button (click)="formatDoc('underline')" class="p-2 text-gray-700 dark:text-gray-200 underline hover:bg-gray-200 dark:hover:bg-gray-700 rounded">U</button>
+            <button (click)="formatDoc('strikeThrough')" class="p-2 text-gray-700 dark:text-gray-200 line-through hover:bg-gray-200 dark:hover:bg-gray-700 rounded">S</button>
 
             <div class="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
 
-            <button (click)="formatDoc('justifyLeft')" class="editor-btn">L</button>
-            <button (click)="formatDoc('justifyCenter')" class="editor-btn">C</button>
-            <button (click)="formatDoc('justifyRight')" class="editor-btn">R</button>
-            <button (click)="formatDoc('justifyFull')" class="editor-btn">J</button>
+            <button (click)="formatDoc('justifyLeft')" class="p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">L</button>
+            <button (click)="formatDoc('justifyCenter')" class="p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">C</button>
+            <button (click)="formatDoc('justifyRight')" class="p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">R</button>
+            <button (click)="formatDoc('justifyFull')" class="p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">J</button>
 
             <div class="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
 
-            <button (click)="triggerImageUpload()" class="editor-btn">📷</button>
+            <button (click)="triggerImageUpload()" class="p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">📷</button>
           </div>
         </div>
 
-        <!-- Editor -->
         <div
           class="flex-1 min-h-0 overflow-y-auto border border-t-0 border-gray-300 dark:border-gray-700
                  bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+          [class.rounded-b-lg]="uploadedImages.length === 0"
           [style]="{'scrollbar-gutter':'stable'}">
 
           <div
             #content
             contenteditable="true"
             spellcheck="false"
-            class="p-6 min-h-full outline-none">
+            class="p-6 min-h-full outline-none focus:bg-gray-50 dark:focus:bg-gray-900 transition-colors">
           </div>
         </div>
 
-        <!-- Allegati upload -->
-        <div *ngIf="uploadedImages.length"
-          class="border border-t-0 border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-3 py-2">
-          <!-- contenuto invariato -->
+        <div *ngIf="uploadedImages.length > 0"
+          class="border border-t-0 border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-b-lg">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              File da caricare ({{ uploadedImages.length }})
+            </label>
+            <div class="flex flex-wrap gap-2 max-w-full overflow-hidden">
+              <div *ngFor="let file of uploadedImages; let i = index" class="relative group">
+                <div class="w-20 h-20 border-2 border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                  <img *ngIf="isImage(file)"
+                    [src]="imagePreviewUrls[i]"
+                    [alt]="file.name"
+                    class="w-full h-full object-cover"/>
+
+                  <div *ngIf="!isImage(file)" class="flex flex-col items-center justify-center">
+                    <span class="text-3xl">📄</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  (click)="removeImage(i)"
+                  class="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  ×
+                </button>
+                <span class="block text-xs text-gray-600 dark:text-gray-400 mt-1 truncate w-20" [title]="file.name">{{ file.name }}</span>
+              </div>
+            </div>
         </div>
 
-        <!-- Actions -->
-        <div class="flex justify-between px-3 py-2 flex-shrink-0">
-          <button (click)="goBack()" class="btn-secondary">Annulla</button>
-          <button (click)="submitEdit()" class="btn-primary">Modifica</button>
+        <div class="flex justify-between px-3 py-2 flex-shrink-0 mt-2">
+          <button
+            type="button"
+            (click)="goBack()"
+            class="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+            Annulla
+          </button>
+          <button
+            type="button"
+            (click)="submitEdit()"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm">
+            Aggiungi Aggiornamento
+          </button>
         </div>
 
       </div>

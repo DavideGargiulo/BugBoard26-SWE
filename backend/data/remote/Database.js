@@ -16,8 +16,8 @@ if (!process.env.DB_CONNECTION_URI) {
   const __dirname = dirname(__filename);
 
   const possibleEnvPaths = [
-    join(__dirname, '../../../.env'),  // Root del progetto
-    join(__dirname, '../../.env'),     // Backend folder
+    join(__dirname, '../../../.env'),
+    join(__dirname, '../../.env'),
   ];
 
   for (const envPath of possibleEnvPaths) {
@@ -28,13 +28,10 @@ if (!process.env.DB_CONNECTION_URI) {
   }
 }
 
-console.log('DB_CONNECTION_URI in Database.js:', process.env.DB_CONNECTION_URI ? 'OK' : 'MISSING');
-
 export const database = new Sequelize(process.env.DB_CONNECTION_URI, {
   dialect: process.env.DIALECT || 'postgres',
   logging: false,
   dialectOptions: {
-    // Opzioni per PostgreSQL
     ssl: process.env.DB_SSL === 'true' ? {
       require: true,
       rejectUnauthorized: false
@@ -70,7 +67,47 @@ try {
 }
 
 function setUpTriggers() {
-  console.log("Setting up database triggers...");
+  Commento.addHook('beforeCreate', async (commento, options) => {
+    const issue = await Issue.findByPk(commento.id_issue, {
+      transaction: options.transaction,
+    });
+
+    if (!issue) {
+      throw new Error(`Issue ${commento.id_issue} non trovata`);
+    }
+
+    if (issue.stato === 'Done') {
+      throw new Error(
+        `Non è possibile aggiungere commenti: la issue ${issue.id} è in stato DONE`
+      );
+    }
+  });
+
+  Commento.addHook('afterCreate', async (commento, options) => {
+    const issue = await Issue.findByPk(commento.id_issue, {
+      transaction: options.transaction,
+    });
+
+    if (!issue) {
+      console.warn(`Issue ${commento.id_issue} non trovata per il commento ${commento.id}`);
+      return;
+    }
+
+    if (issue.stato === 'TODO') {
+      const commentCount = await Commento.count({
+        where: { id_issue: commento.id_issue },
+        transaction: options.transaction,
+      });
+
+      if (commentCount === 1) {
+        await issue.update(
+          { stato: 'In-Progress' },
+          { transaction: options.transaction }
+        );
+        console.log(`Issue ${issue.id} spostata in stato 'In-Progress' dopo il primo commento`);
+      }
+    }
+  });
 }
 
 function createAssociations() {
@@ -134,6 +171,7 @@ function createAssociations() {
     onDelete: 'CASCADE'
   });
   Issue.hasMany(Allegato, {
+    as: 'allegati',
     foreignKey: { name: 'id_issue', allowNull: true },
     onDelete: 'CASCADE'
   });

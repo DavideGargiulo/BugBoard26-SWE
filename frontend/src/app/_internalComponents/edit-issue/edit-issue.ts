@@ -45,10 +45,7 @@ export class EditIssueComponent implements OnInit {
   }
 
   onImageError(event: any): void {
-    console.error('Errore caricamento immagine:', event.target.src);
-    // Imposta un'immagine placeholder
-    event.target.src = 'assets/image-error.png'; // O usa un'icona
-    // Oppure nascondi l'immagine
+    event.target.src = 'assets/image-error.png';
     event.target.style.display = 'none';
   }
 
@@ -78,6 +75,12 @@ export class EditIssueComponent implements OnInit {
           return;
         }
 
+        setTimeout(() => {
+          if (this.content && this.content.nativeElement) {
+            this.content.nativeElement.innerHTML = '';
+          }
+        });
+
         this.loading = false;
       },
       error: (err) => {
@@ -102,16 +105,14 @@ export class EditIssueComponent implements OnInit {
       const maxSize = 5 * 1024 * 1024;
       const allowedExtensions = ['png', 'jpg', 'jpeg', 'pdf'];
 
-      // Controllo numero massimo
       if (this.uploadedImages.length + files.length > maxFiles) {
         this.toastService.error(
           'Errore caricamento file',
-          `Puoi caricare un massimo di ${maxFiles} file`
+          `Puoi caricare un massimo di ${maxFiles} file per volta`
         );
         return;
       }
 
-      // Controlli su tutti i file PRIMA di caricare
       for (const file of files) {
         const extension = file.name.split('.').pop()?.toLowerCase();
         if (!extension || !allowedExtensions.includes(extension)) {
@@ -131,26 +132,20 @@ export class EditIssueComponent implements OnInit {
         }
       }
 
-      // Se tutti validi → li aggiungo in una volta sola
       this.uploadedImages.push(...files);
 
-      // Genero gli URL per l'anteprima (solo per immagini, NON per PDF)
       files.forEach(file => {
         if (file.type.startsWith('image/')) {
           const url = URL.createObjectURL(file);
           this.imagePreviewUrls.push(url);
         } else {
-          // Per i PDF aggiungo una stringa vuota per mantenere gli indici allineati
           this.imagePreviewUrls.push('');
         }
       });
 
-      // Change detection
       setTimeout(() => {
         this.cdr.detectChanges();
       });
-
-      console.log('File caricati:', this.uploadedImages);
     }
   }
 
@@ -167,63 +162,53 @@ export class EditIssueComponent implements OnInit {
     if (this.imagePreviewUrls[index]) {
       URL.revokeObjectURL(this.imagePreviewUrls[index]);
     }
-
     this.uploadedImages.splice(index, 1);
     this.imagePreviewUrls.splice(index, 1);
   }
 
   submitEdit(): void {
+    const descriptionHtml = this.content.nativeElement.innerHTML.trim();
 
-    console.log('submitEdit called');
-    // TODO: implementa la logica per inviare l'aggiornamento della issue
+    if (!descriptionHtml && this.uploadedImages.length === 0) {
+      this.toastService.error(
+        'Attenzione',
+        'Inserisci un testo o allega un file per aggiornare l\'issue'
+      );
+      return;
+    }
 
-    // const commentHtml = this.content.nativeElement.innerHTML.trim();
+    const existingCount = this.issue.attachments ? this.issue.attachments.length : 0;
+    const newCount = this.uploadedImages.length;
 
-    // if (!commentHtml) {
-    //   this.toastService.error(
-    //     'Commento vuoto',
-    //     'Inserisci un testo'
-    //   );
-    //   return;
-    // }
+    if (existingCount + newCount > 3) {
+      this.toastService.error(
+        'Limite allegati superato',
+        `L'issue ha già ${existingCount} allegati. Ne stai aggiungendo ${newCount}. Il massimo totale è 3.`
+      );
+      return;
+    }
 
-    // console.log('Invio commento:', {
-    //   text: commentHtml,
-    //   files: this.uploadedImages
-    // });
 
-    // this.issueService.createComment(this.issueId, {
-    //   testo: commentHtml,
-    //   attachments: this.uploadedImages
-    // }).subscribe({
-    //   next: (response) => {
-    //     console.log('Commento creato con successo:', response);
+    this.issueService.updateIssue(this.issueId, {
+      descrizione: descriptionHtml,
+      newAttachments: this.uploadedImages
+    }).subscribe({
+      next: (response) => {
+        console.log('Issue aggiornata:', response);
+        this.toastService.success('Successo', 'Aggiornamento aggiunto correttamente');
 
-    //     // Reset editor solo dopo il successo
-    //     this.content.nativeElement.innerHTML = '';
-    //     this.uploadedImages = [];
+        // Reset
+        this.uploadedImages = [];
+        this.imagePreviewUrls = [];
 
-    //     this.imagePreviewUrls.forEach(url => {
-
-    //     });
-    //     this.imagePreviewUrls = [];
-
-    //     this.toastService.success(
-    //       'Commento inviato',
-    //       'Il tuo commento è stato pubblicato'
-    //     );
-
-    //     // Opzionale: ricarica i commenti per mostrare quello nuovo
-    //     this.loadIssueDetail();
-    //   },
-    //   error: (error) => {
-    //     console.error('Errore durante l\'invio del commento:', error);
-    //     this.toastService.error(
-    //       'Errore',
-    //       'Impossibile inviare il commento'
-    //     );
-    //   }
-    // });
+        this.router.navigate(['/issue', this.issueId]);
+      },
+      error: (error) => {
+        console.error('Errore update:', error);
+        const msg = error.error?.message || 'Impossibile aggiornare la issue';
+        this.toastService.error('Errore', msg);
+      }
+    });
   }
 
   goBack(): void {
@@ -231,11 +216,7 @@ export class EditIssueComponent implements OnInit {
   }
 
   getInitials(name: string): string {
-    return name
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase())
-      .join('')
-      .substring(0, 2);
+    return name ? name.split(' ').map(word => word.charAt(0).toUpperCase()).join('').substring(0, 2) : '??';
   }
 
   getFileName(file: File): string {
@@ -255,23 +236,13 @@ export class EditIssueComponent implements OnInit {
         };
       }
     });
-
     return this.currentUser.email === this.issue.creatorEmail || this.currentUser.isAdmin;
   }
 
   getAttachmentUrl(attachment: any): string {
-    if (!attachment || !attachment.percorso_relativo) {
-      console.error('Attachment mancante o percorso non valido:', attachment);
-      return '';
-    }
-
-    // Corregge i percorsi Windows (\) trasformandoli in web (/)
+    if (!attachment || !attachment.percorso_relativo) return '';
     const normalizedPath = attachment.percorso_relativo.replace(/\\/g, '/');
-
-    const url = `http://localhost:3000/${normalizedPath}`;
-    console.log('URL generato per attachment:', url);
-
-    return url;
+    return `http://localhost:3000/${normalizedPath}`;
   }
 
   isImageAttachment(mimeType: string): boolean {
@@ -292,5 +263,4 @@ export class EditIssueComponent implements OnInit {
     const url = this.getAttachmentUrl(attachment);
     window.open(url, '_blank');
   }
-
 }

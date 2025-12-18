@@ -4,9 +4,9 @@ import { Subject } from 'rxjs';
 // src/app/services/toast.service.ts
 export interface Toast {
   id: string;
-  type: 'success' | 'error' | 'info' | 'warning';
   title: string;
   message: string;
+  type: 'success' | 'error' | 'info' | 'warning';
   autoDismiss?: boolean;
   copyText?: string;
 }

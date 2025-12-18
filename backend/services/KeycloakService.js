@@ -62,6 +62,7 @@ class KeycloakService {
 
   /**
    * Crea un utente, imposta la password e assegna il ruolo.
+   * Se password non viene passata, ne genera una automaticamente.
    */
   async registerUser(userData) {
     await this.authenticate();
@@ -71,7 +72,8 @@ class KeycloakService {
       throw new Error('User already exists');
     }
 
-    const generatedPassword = this.generatePassword();
+    // Usa la password passata o genera una nuova
+    const passwordToUse = userData.password || this.generatePassword();
 
     // Crea utente
     const createdUser = await this.kcAdminClient.users.create({
@@ -85,13 +87,13 @@ class KeycloakService {
       attributes: { ruolo: [userData.role] }
     });
 
-    // Imposta password
+    // Imposta password (PERMANENTE)
     await this.kcAdminClient.users.resetPassword({
       realm,
       id: createdUser.id,
       credential: {
         type: 'password',
-        value: generatedPassword,
+        value: passwordToUse,
         temporary: false
       }
     });
@@ -119,8 +121,8 @@ class KeycloakService {
     }
 
     return {
-      userId: createdUser.id,
-      password: generatedPassword
+      userId: createdUser.id
+      // Non restituiamo la password qui, viene gestita dal controller
     };
   }
 

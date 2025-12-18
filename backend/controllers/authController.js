@@ -1,4 +1,5 @@
 import axios from 'axios';
+import crypto from 'crypto';
 import KeycloakService from '../services/KeycloakService.js';
 import syncService from '../services/syncService.js';
 
@@ -10,6 +11,35 @@ const CLIENT_SECRET = process.env.KEYCLOAK_BACKEND_CLIENT_SECRET?.trim();
 const TOKEN_URL = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`;
 const USERINFO_URL = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/userinfo`;
 const LOGOUT_URL = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/logout`;
+
+/**
+ * Genera una password sicura
+ * @param {number} length - Lunghezza della password (default: 16)
+ * @returns {string} Password sicura generata
+ */
+const generateSecurePassword = (length = 16) => {
+  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const numbers = '0123456789';
+  const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+
+  const allChars = lowercase + uppercase + numbers + symbols;
+
+  // Assicuriamoci di avere almeno un carattere di ogni tipo
+  let password = '';
+  password += lowercase[crypto.randomInt(0, lowercase.length)];
+  password += uppercase[crypto.randomInt(0, uppercase.length)];
+  password += numbers[crypto.randomInt(0, numbers.length)];
+  password += symbols[crypto.randomInt(0, symbols.length)];
+
+  // Riempi il resto della password
+  for (let i = password.length; i < length; i++) {
+    password += allChars[crypto.randomInt(0, allChars.length)];
+  }
+
+  // Mescola i caratteri per randomizzare la posizione
+  return password.split('').sort(() => crypto.randomInt(-1, 2)).join('');
+};
 
 /**
  * Login con username/email e password
@@ -190,12 +220,15 @@ export const register = async (req, res) => {
   try {
     console.log(`Amministratore ${req.user.email} sta creando utente ${email}`);
 
+    const securePassword = generateSecurePassword(16);
+
     const result = await KeycloakService.registerUser({
       username: email,
       email,
       firstName: nome,
       lastName: cognome,
-      role: ruolo || 'Standard'
+      role: ruolo || 'Standard',
+      password: securePassword
     });
 
     const syncResult = await syncService.syncUserById(
@@ -214,7 +247,7 @@ export const register = async (req, res) => {
       success: true,
       message: 'Utente creato con successo',
       userId: result.userId,
-      temporaryPassword: result.password,
+      password: securePassword,
       createdBy: req.user.email
     });
 

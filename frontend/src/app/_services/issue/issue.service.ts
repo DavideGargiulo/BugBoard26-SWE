@@ -52,4 +52,12 @@ export class IssueService {
 
     return this.http.post<any>(url, formData, { withCredentials: true });
   }
+
+  updateIssue(issueId: number, arg1: { descrizione: string; removedAttachments: number[]; newAttachments: File[]; }) {
+    // TODO
+    const url = `${this.apiUrl}/${issueId}`;
+    const formData = new FormData();
+    return this.http.post<any>(url, formData, { withCredentials: true });
+  }
+
 }

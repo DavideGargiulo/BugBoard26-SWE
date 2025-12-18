@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, Inject, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -7,37 +7,21 @@ import { IssueService } from '../../_services/issue/issue.service';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../_services/auth/auth.service';
 
-interface Comment {
-  id: number;
-  author: string;
-  text: string;
-  date: Date;
-  attachments?: Array<{
-    id: number;
-    nome_file_originale: string;
-    tipo_mime: string;
-    percorso_relativo: string;
-    dimensione_byte: number;
-  }>;
-}
-
 @Component({
-  selector: 'app-issue-detail',
+  selector: 'app-edit-issue',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './issue-detail.html'
+  templateUrl: './edit-issue.html'
 })
-export class IssueDetailComponent implements OnInit {
-  @ViewChild('content') content!: ElementRef<HTMLDivElement>;
+export class EditIssueComponent implements OnInit {
 
+  @ViewChild('content') content!: ElementRef<HTMLDivElement>;
 
   issueId: number = 0;
   issue: any = null;
-  comments: Comment[] = [];
   loading: boolean = true;
   error: string = '';
 
-  newComment: string = '';
   uploadedImages: File[] = [];
   imagePreviewUrls: string[] = [];
 
@@ -85,13 +69,14 @@ export class IssueDetailComponent implements OnInit {
           attachments: data.allegati || []
         };
 
-        this.comments = data.commenti.map((comment: any) => ({
-          id: comment.id,
-          author: comment.autore?.nome || 'Utente sconosciuto',
-          text: comment.testo,
-          date: new Date(),
-          attachments: comment.allegati || []
-        }));
+        if (!this.canEditIssue()) {
+          this.toastService.error(
+            'Accesso negato',
+            'Non hai i permessi per modificare questa issue'
+          );
+          this.router.navigate(['/']);
+          return;
+        }
 
         this.loading = false;
       },
@@ -187,58 +172,62 @@ export class IssueDetailComponent implements OnInit {
     this.imagePreviewUrls.splice(index, 1);
   }
 
-  submitComment(): void {
-    const commentHtml = this.content.nativeElement.innerHTML.trim();
+  submitEdit(): void {
 
-    if (!commentHtml) {
-      this.toastService.error(
-        'Commento vuoto',
-        'Inserisci un testo'
-      );
-      return;
-    }
+    console.log('submitEdit called');
+    // TODO: implementa la logica per inviare l'aggiornamento della issue
 
-    console.log('Invio commento:', {
-      text: commentHtml,
-      files: this.uploadedImages
-    });
+    // const commentHtml = this.content.nativeElement.innerHTML.trim();
 
-    this.issueService.createComment(this.issueId, {
-      testo: commentHtml,
-      attachments: this.uploadedImages
-    }).subscribe({
-      next: (response) => {
-        console.log('Commento creato con successo:', response);
+    // if (!commentHtml) {
+    //   this.toastService.error(
+    //     'Commento vuoto',
+    //     'Inserisci un testo'
+    //   );
+    //   return;
+    // }
 
-        // Reset editor solo dopo il successo
-        this.content.nativeElement.innerHTML = '';
-        this.uploadedImages = [];
+    // console.log('Invio commento:', {
+    //   text: commentHtml,
+    //   files: this.uploadedImages
+    // });
 
-        this.imagePreviewUrls.forEach(url => {
+    // this.issueService.createComment(this.issueId, {
+    //   testo: commentHtml,
+    //   attachments: this.uploadedImages
+    // }).subscribe({
+    //   next: (response) => {
+    //     console.log('Commento creato con successo:', response);
 
-        });
-        this.imagePreviewUrls = [];
+    //     // Reset editor solo dopo il successo
+    //     this.content.nativeElement.innerHTML = '';
+    //     this.uploadedImages = [];
 
-        this.toastService.success(
-          'Commento inviato',
-          'Il tuo commento è stato pubblicato'
-        );
+    //     this.imagePreviewUrls.forEach(url => {
 
-        // Opzionale: ricarica i commenti per mostrare quello nuovo
-        this.loadIssueDetail();
-      },
-      error: (error) => {
-        console.error('Errore durante l\'invio del commento:', error);
-        this.toastService.error(
-          'Errore',
-          'Impossibile inviare il commento'
-        );
-      }
-    });
+    //     });
+    //     this.imagePreviewUrls = [];
+
+    //     this.toastService.success(
+    //       'Commento inviato',
+    //       'Il tuo commento è stato pubblicato'
+    //     );
+
+    //     // Opzionale: ricarica i commenti per mostrare quello nuovo
+    //     this.loadIssueDetail();
+    //   },
+    //   error: (error) => {
+    //     console.error('Errore durante l\'invio del commento:', error);
+    //     this.toastService.error(
+    //       'Errore',
+    //       'Impossibile inviare il commento'
+    //     );
+    //   }
+    // });
   }
 
   goBack(): void {
-    this.router.navigate(['/dashboard']);
+    this.router.navigate(['/issue', this.issueId]);
   }
 
   getInitials(name: string): string {
@@ -268,15 +257,6 @@ export class IssueDetailComponent implements OnInit {
     });
 
     return this.currentUser.email === this.issue.creatorEmail || this.currentUser.isAdmin;
-  }
-
-  editIssue(): void {
-    this.router.navigate(['/issue', this.issueId, 'modifica']);
-  }
-
-  completeIssue(): void {
-    // TODO: Implementa la logica per completare l'issue
-    console.log('Completamento issue non ancora implementato');
   }
 
   getAttachmentUrl(attachment: any): string {
@@ -312,4 +292,5 @@ export class IssueDetailComponent implements OnInit {
     const url = this.getAttachmentUrl(attachment);
     window.open(url, '_blank');
   }
+
 }

@@ -1,0 +1,127 @@
+<div class="flex flex-col h-screen overflow-hidden bg-gray-100 dark:bg-gray-900">
+
+  <div class="flex-1 overflow-hidden">
+    <!-- Header -->
+    <header class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+          {{ issue?.project }} - {{ issue?.title }} #{{issue?.id}} - Modifica
+        </h2>
+      </div>
+    </header>
+
+    <!-- Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 flex-1 min-h-0-[calc(100%-80px)] overflow-hidden min-w-0">
+
+      <!-- LEFT COLUMN : ISSUE -->
+      <div class="h-full flex flex-col gap-4 min-w-0">
+
+        <div
+          *ngIf="issue"
+          class="h-full flex flex-col bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-6">
+
+          <!-- FIXED HEADER -->
+          <div class="flex items-start justify-between mb-4 flex-shrink-0">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                <span class="text-base font-semibold text-gray-700 dark:text-gray-200">
+                  {{ getInitials(issue.assignee) }}
+                </span>
+              </div>
+              <div class="font-semibold text-gray-900 dark:text-gray-100">
+                {{ issue.assignee }}
+              </div>
+            </div>
+
+            <div class="flex gap-2 flex-wrap">
+              <span
+                *ngFor="let tag of issue.tags"
+                class="px-3 py-1 text-xs font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
+                {{ tag }}
+              </span>
+            </div>
+          </div>
+
+          <!-- SCROLLABLE DESCRIPTION -->
+          <div
+            class="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200
+                   dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800"
+            [style]="{'scrollbar-gutter':'stable'}">
+
+            <div class="pr-4 space-y-4">
+              <div class="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap break-words">
+                <p [innerHTML]="issue.description"></p>
+              </div>
+
+              <!-- ALLEGATI -->
+              <div *ngIf="issue.attachments?.length"
+                class="pt-4 border-t border-gray-200 dark:border-gray-600">
+                <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                  File allegati ({{ issue.attachments.length }})
+                </h4>
+                <div class="flex flex-wrap gap-3">
+                  <div *ngFor="let attachment of issue.attachments">
+                    <!-- preview invariato -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN : EDITOR -->
+      <div class="h-full flex flex-col min-w-0 overflow-hidden">
+
+        <!-- Toolbar (senza container esterno) -->
+        <div class="border border-gray-300 dark:border-gray-700 rounded-t-lg bg-gray-100 dark:bg-gray-800 px-3 py-2 flex-shrink-0">
+          <div class="flex items-center gap-2 text-lg">
+            <button (click)="formatDoc('bold')" class="editor-btn font-bold">B</button>
+            <button (click)="formatDoc('italic')" class="editor-btn italic">I</button>
+            <button (click)="formatDoc('underline')" class="editor-btn underline">U</button>
+            <button (click)="formatDoc('strikeThrough')" class="editor-btn line-through">S</button>
+
+            <div class="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
+
+            <button (click)="formatDoc('justifyLeft')" class="editor-btn">L</button>
+            <button (click)="formatDoc('justifyCenter')" class="editor-btn">C</button>
+            <button (click)="formatDoc('justifyRight')" class="editor-btn">R</button>
+            <button (click)="formatDoc('justifyFull')" class="editor-btn">J</button>
+
+            <div class="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
+
+            <button (click)="triggerImageUpload()" class="editor-btn">📷</button>
+          </div>
+        </div>
+
+        <!-- Editor -->
+        <div
+          class="flex-1 min-h-0 overflow-y-auto border border-t-0 border-gray-300 dark:border-gray-700
+                 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+          [style]="{'scrollbar-gutter':'stable'}">
+
+          <div
+            #content
+            contenteditable="true"
+            spellcheck="false"
+            class="p-6 min-h-full outline-none">
+          </div>
+        </div>
+
+        <!-- Allegati upload -->
+        <div *ngIf="uploadedImages.length"
+          class="border border-t-0 border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-3 py-2">
+          <!-- contenuto invariato -->
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-between px-3 py-2 flex-shrink-0">
+          <button (click)="goBack()" class="btn-secondary">Annulla</button>
+          <button (click)="submitEdit()" class="btn-primary">Modifica</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

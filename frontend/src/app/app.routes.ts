@@ -9,6 +9,7 @@ import { AuthGuard } from './_auth/auth-guard';
 import { GuestGuard } from './_auth/guest-guard';
 import { NewIssueComponent } from './_internalComponents/new-issue/new-issue';
 import { IssueDetailComponent } from './_internalComponents/issue-detail/issue-detail';
+import { EditIssueComponent } from './_internalComponents/edit-issue/edit-issue';
 
 export const routes: Routes = [
   {
@@ -29,7 +30,8 @@ export const routes: Routes = [
       { path: 'utenti', component: UsersComponent },
       { path: 'progetto/:nome', component: ProjectComponent },
       { path: 'progetto/:nome/nuova-issue', component: NewIssueComponent },
-      { path: 'issue/:id', component: IssueDetailComponent }
+      { path: 'issue/:id', component: IssueDetailComponent },
+      { path: 'issue/:id/modifica', component: EditIssueComponent }
     ]
   },
   { path: '**', redirectTo: 'dashboard' }

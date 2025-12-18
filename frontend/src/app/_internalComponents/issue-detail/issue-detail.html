@@ -2,11 +2,42 @@
 
   <div class="flex-1 overflow-hidden">
     <!-- Header -->
-    <header class="px-6 py-4 border-b border-gray-700 bg-gray-900">
-      <h2 class="text-xl font-semibold text-gray-100">
-        {{ issue?.title }} - {{ issue?.project }}
-      </h2>
+    <header class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+          {{ issue?.project }} - {{ issue?.title }} #{{ issue?.id }}
+        </h2>
+
+        <!-- Bottoni a destra -->
+        <div class="flex items-center gap-2" *ngIf="canEditIssue()">
+
+          <!-- Completa Issue -->
+          <button
+            (click)="completeIssue()"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clip-rule="evenodd" />
+            </svg>
+            Completa Issue
+          </button>
+
+          <!-- Modifica Issue -->
+          <button
+            (click)="editIssue()"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path
+                d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+            </svg>
+            Modifica Issue
+          </button>
+
+        </div>
+      </div>
     </header>
+
 
     <!-- Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 h-[calc(100%-80px)] overflow-hidden min-w-0">
@@ -45,7 +76,7 @@
 
             <!-- SCROLLABLE DESCRIPTION -->
             <div
-              class="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-200
+              class="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200
                     dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800"
               [style]="{'scrollbar-gutter':'stable'}">
 
@@ -107,15 +138,15 @@
         <div class="flex-1 min-h-0 flex flex-col">
 
           <!-- Toolbar -->
-          <div class="border border-gray-700 rounded-t-lg bg-gray-800 px-3 py-2 flex-shrink-0">
+          <div class="border border-gray-300 dark:border-gray-700 rounded-t-lg bg-gray-100 dark:bg-gray-800 px-3 py-2 flex-shrink-0">
             <div class="flex items-center gap-2 text-lg">
 
-              <button (click)="formatDoc('bold')" class="p-2 text-gray-200 font-bold hover:bg-gray-700 rounded">B</button>
-              <button (click)="formatDoc('italic')" class="p-2 text-gray-200 italic hover:bg-gray-700 rounded">I</button>
-              <button (click)="formatDoc('underline')" class="p-2 text-gray-200 underline hover:bg-gray-700 rounded">U</button>
-              <button (click)="formatDoc('strikeThrough')" class="p-2 text-gray-200 line-through hover:bg-gray-700 rounded">S</button>
+              <button (click)="formatDoc('bold')" class="p-2 text-gray-700 dark:text-gray-200 font-bold hover:bg-gray-200 dark:hover:bg-gray-700 rounded">B</button>
+              <button (click)="formatDoc('italic')" class="p-2 text-gray-700 dark:text-gray-200 italic hover:bg-gray-200 dark:hover:bg-gray-700 rounded">I</button>
+              <button (click)="formatDoc('underline')" class="p-2 text-gray-700 dark:text-gray-200 underline hover:bg-gray-200 dark:hover:bg-gray-700 rounded">U</button>
+              <button (click)="formatDoc('strikeThrough')" class="p-2 text-gray-700 dark:text-gray-200 line-through hover:bg-gray-200 dark:hover:bg-gray-700 rounded">S</button>
 
-              <div class="w-px h-6 bg-gray-700 mx-1"></div>
+              <div class="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
 
               <!-- JUSTIFY LEFT -->
               <button (click)="formatDoc('justifyLeft')" class="editor-btn">
@@ -153,17 +184,17 @@
                 </span>
               </button>
 
-              <div class="w-px h-6 bg-gray-700 mx-1"></div>
+              <div class="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
 
-              <button (click)="triggerImageUpload()" class="p-2 text-gray-200 hover:bg-gray-700 rounded">📷</button>
+              <button (click)="triggerImageUpload()" class="p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">📷</button>
             </div>
           </div>
 
           <!-- Content Editable -->
           <div
-            class="border border-t-0 border-gray-700 flex-1 min-h-0 overflow-y-auto
-                  bg-gray-800 text-gray-100
-                  scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-200
+            class="border border-t-0 border-gray-300 dark:border-gray-700 flex-1 min-h-0 overflow-y-auto
+                  bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
+                  scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200
                   dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800"
             [class.rounded-b-lg]="uploadedImages.length === 0"
             [style]="{'scrollbar-gutter':'stable'}">
@@ -179,13 +210,13 @@
           </div>
 
           <!-- File allegati -->
-          <div class="flex-shrink-0 border border-t-0 border-gray-700 rounded-b-lg bg-gray-800 px-3 py-2" *ngIf="uploadedImages.length > 0">
-            <label class="block text-sm font-medium text-gray-300 mb-2">
+          <div class="flex-shrink-0 border border-t-0 border-gray-300 dark:border-gray-700 rounded-b-lg bg-gray-100 dark:bg-gray-800 px-3 py-2" *ngIf="uploadedImages.length > 0">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               File allegati ({{ uploadedImages.length }}/3)
             </label>
             <div class="flex flex-wrap gap-2 max-w-full overflow-hidden">
               <div *ngFor="let file of uploadedImages; let i = index" class="relative group">
-                <div class="w-20 h-20 border-2 border-gray-700 rounded-lg overflow-hidden bg-gray-700 flex items-center justify-center">
+                <div class="w-20 h-20 border-2 border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                   <!-- Immagine -->
                   <img class="w-full h-full object-cover max-w-full"
                     *ngIf="isImage(file)"
@@ -204,7 +235,7 @@
                   class="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   ×
                 </button>
-                <span class="block text-xs text-gray-400 mt-1 truncate w-20" [title]="file.name">{{ file.name }}</span>
+                <span class="block text-xs text-gray-600 dark:text-gray-400 mt-1 truncate w-20" [title]="file.name">{{ file.name }}</span>
               </div>
             </div>
           </div>
@@ -214,7 +245,7 @@
             <button
               type="button"
               (click)="goBack()"
-              class="px-4 py-2 border border-gray-700 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors">
+              class="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
               Annulla
             </button>
             <button
@@ -237,7 +268,7 @@
         </h2>
 
         <div
-          class="flex-1 min-h-0 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-200
+          class="flex-1 min-h-0 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200
            dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800"
           [style]="{'scrollbar-gutter':'stable'}">
 

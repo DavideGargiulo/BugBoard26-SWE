@@ -108,6 +108,19 @@ function setUpTriggers() {
       }
     }
   });
+
+  Issue.addHook('beforeUpdate', async (issue, options) => {
+    const currentIssue = await Issue.findByPk(issue.id, {
+      attributes: ['stato'],
+      transaction: options.transaction,
+    });
+
+    if (currentIssue && currentIssue.stato === 'Done') {
+      throw new Error(
+        `Non è possibile modificare la issue ${issue.id}: è in stato DONE`
+      );
+    }
+  });
 }
 
 function createAssociations() {

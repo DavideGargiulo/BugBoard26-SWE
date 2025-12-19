@@ -27,3 +27,18 @@ export const createProject = async (req, res) => {
     res.status(500).json({ error: 'Errore nella creazione del progetto' });
   }
 };
+
+export const deleteProject = async (req, res) => {
+  const { nome } = req.params;
+
+  try {
+    const deletedCount = await Progetto.destroy({ where: { nome } });
+    if (deletedCount === 0) {
+      return res.status(404).json({ error: 'Progetto non trovato' });
+    }
+    res.status(200).json({ message: 'Progetto eliminato con successo' });
+  } catch (error) {
+    console.error('Errore eliminazione progetto:', error);
+    res.status(500).json({ error: 'Errore nell\'eliminazione del progetto' });
+  }
+};

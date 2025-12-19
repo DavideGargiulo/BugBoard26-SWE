@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS "issue" (
 CREATE TABLE IF NOT EXISTS "commento" (
   id SERIAL PRIMARY KEY,
   testo TEXT NOT NULL,
+  createdAt timestamp with time zone DEFAULT NOW() NOT NULL,
   id_utente INTEGER NOT NULL REFERENCES "utente"(id) ON DELETE CASCADE,
   id_issue INTEGER NOT NULL REFERENCES "issue"(id) ON DELETE CASCADE
 );

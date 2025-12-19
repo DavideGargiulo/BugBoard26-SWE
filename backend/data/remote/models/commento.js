@@ -11,6 +11,12 @@ export function createCommentoModel(database) {
       type: DataTypes.TEXT,
       allowNull: false
     },
+    createdAt: {
+      type: DataTypes.DATE,
+      field: 'createdAt',
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    },
     id_utente: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -21,6 +27,8 @@ export function createCommentoModel(database) {
     }
   }, {
     tableName: 'commento',
-    timestamps: false
+    timestamps: true,
+    createdAt: 'createdAt',
+    updatedAt: false
   });
 }

@@ -8,6 +8,7 @@ import { Subscription } from 'rxjs';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ProjectDialogComponent } from '../project-dialog/project-dialog';
 import { ToastService } from '../../_services/toast/toast.service';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog';
 
 @Component({
   selector: 'app-sidebar',
@@ -30,6 +31,9 @@ export class SidebarComponent implements OnInit {
 
   // Progetto selezionato
   selectedProject: string | null = null;
+
+  // Progetto su cui si sta hovering
+  hoveredProject: string | null = null;
 
   // Informazioni utente
   user: User = {
@@ -95,10 +99,10 @@ export class SidebarComponent implements OnInit {
 
     if (this.isDarkMode) {
       document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark'); // Salva solo quando l'utente cambia manualmente
+      localStorage.setItem('theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light'); // Salva solo quando l'utente cambia manualmente
+      localStorage.setItem('theme', 'light');
     }
   }
 
@@ -170,7 +174,6 @@ export class SidebarComponent implements OnInit {
     this.authService.logout();
   }
 
-
   openAddProjectDialog(): void {
     const dialogRef = this.dialog.open(ProjectDialogComponent, {
       width: '450px',
@@ -208,6 +211,64 @@ export class SidebarComponent implements OnInit {
         this.toastService.error(
           'Errore nella creazione del progetto',
           err.error?.error || 'Impossibile creare il progetto'
+        );
+      }
+    });
+  }
+
+  /**
+   * Apre il dialog di conferma eliminazione
+   */
+  openDeleteProjectDialog(event: Event, projectName: string): void {
+    event.stopPropagation(); // Previene la selezione del progetto
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      panelClass: 'custom-dialog-container',
+      data: {
+        title: 'Elimina Progetto',
+        message: `Sei sicuro di voler eliminare il progetto "${projectName}"? Questa azione non può essere annullata.`,
+        confirmText: 'Elimina',
+        cancelText: 'Annulla',
+        isDanger: true
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.deleteProject(projectName);
+      }
+    });
+  }
+
+  /**
+   * Elimina un progetto
+   */
+  deleteProject(projectName: string): void {
+    this.projectService.deleteProject(projectName).subscribe({
+      next: () => {
+        console.log('Progetto eliminato:', projectName);
+
+        // Rimuovi il progetto dalla lista
+        this.projects = this.projects.filter(p => p !== projectName);
+        this.filterProjects();
+
+        // Se il progetto eliminato era quello selezionato, naviga alla dashboard
+        if (this.selectedProject === projectName) {
+          this.selectedProject = null;
+          this.router.navigate(['/dashboard']);
+        }
+
+        this.toastService.success(
+          'Progetto eliminato',
+          `Il progetto "${projectName}" è stato eliminato con successo.`
+        );
+      },
+      error: (err) => {
+        console.error('Errore eliminazione progetto:', err);
+        this.toastService.error(
+          'Errore nell\'eliminazione del progetto',
+          err.error?.error || 'Impossibile eliminare il progetto'
         );
       }
     });

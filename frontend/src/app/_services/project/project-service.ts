@@ -33,4 +33,8 @@ export class ProjectService {
   createIssue(issueData: FormData): Observable<any> {
     return this.http.post(`${this.apiUrl}/issues`, issueData, { withCredentials: true });
   }
+
+  deleteProject(projectName: string) {
+    return this.http.delete(`${this.apiUrl}/projects/${encodeURIComponent(projectName)}`, { withCredentials: true });
+  }
 }

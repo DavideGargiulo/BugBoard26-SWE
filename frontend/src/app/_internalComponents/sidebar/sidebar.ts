@@ -123,7 +123,7 @@ export class SidebarComponent implements OnInit {
    * Verifica se un progetto specifico è attivo
    */
   isProjectActive(projectName: string): boolean {
-    return this.router.url.startsWith(`/progetto/${projectName}`);
+    return this.router.url === `/progetto/${projectName}`;
   }
 
   /**
@@ -171,7 +171,7 @@ export class SidebarComponent implements OnInit {
   }
 
 
-  openAddUserDialog(): void {
+  openAddProjectDialog(): void {
     const dialogRef = this.dialog.open(ProjectDialogComponent, {
       width: '450px',
       panelClass: 'custom-dialog-container',
@@ -181,7 +181,7 @@ export class SidebarComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        console.log('Dati utente ricevuti:', result);
+        console.log('Nome progetto ricevuto:', result);
         this.createProject(result);
       } else {
         console.log('Dialog chiuso senza conferma');

@@ -245,11 +245,7 @@ export const updateIssue = async (req, res) => {
         hour: '2-digit', minute: '2-digit'
       });
 
-      const updateHeader = `
-        <br>
-        <hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">
-        <p><strong>🔄 Aggiornamento del ${timestamp}:</strong></p>
-      `;
+      const updateHeader = `<br><br><strong>${timestamp}:</strong><br>`;
 
       const oldDescription = issue.descrizione || '';
       const finalDescription = oldDescription

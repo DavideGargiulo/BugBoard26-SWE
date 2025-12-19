@@ -1,4 +1,4 @@
-import { Component, Inject, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, Inject, Input, OnInit, Output, EventEmitter, inject } from '@angular/core';
 import { UserDialogComponent } from '../user-dialog/user-dialog';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../_services/auth/auth.service';
@@ -6,6 +6,7 @@ import { User } from '../user-card/user-card';
 import { Subscription } from 'rxjs';
 import { ToastService } from '../../_services/toast/toast.service';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-user-topbar',
@@ -22,6 +23,7 @@ export class UserTopbar implements OnInit {
   searchTerm: string = '';
   selectedRole: string = ''; // Nuovo
   private userSubscription: Subscription | null = null;
+  private router = inject(Router);
 
   constructor(
     @Inject(MatDialog) public dialog: MatDialog,
@@ -86,6 +88,9 @@ export class UserTopbar implements OnInit {
           false,
           password
         );
+        this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+          this.router.navigate(['/utenti']);
+        });
       },
       error: (err) => {
         console.error('Errore registrazione:', err);

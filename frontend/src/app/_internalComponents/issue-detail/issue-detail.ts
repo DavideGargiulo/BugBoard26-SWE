@@ -85,6 +85,8 @@ export class IssueDetailComponent implements OnInit {
           attachments: data.allegati || []
         };
 
+        console.log('descrizione:\n', this.issue.description);
+
         this.comments = data.commenti.map((comment: any) => ({
           id: comment.id,
           author: comment.autore?.nome || 'Utente sconosciuto',
@@ -270,6 +272,11 @@ export class IssueDetailComponent implements OnInit {
     return this.currentUser.email === this.issue.creatorEmail || this.currentUser.isAdmin;
   }
 
+  isCompleted(): boolean {
+    return this.issue.tags.includes('Done');
+  }
+
+
   editIssue(): void {
     this.router.navigate(['/issue', this.issueId, 'modifica']);
   }
@@ -282,12 +289,16 @@ export class IssueDetailComponent implements OnInit {
         this.issue.stato = 'Done';
 
         this.toastService.success('Fatto', 'Issue completata con successo');
+        this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+          this.router.navigate(['/issue', this.issueId]);
+        });
       },
       error: (err) => {
         console.error('Errore completamento issue', err);
         this.toastService.error('Errore', err.error?.message || 'Errore nel completamento della issue');
       }
     });
+
   }
 
   getAttachmentUrl(attachment: any): string {

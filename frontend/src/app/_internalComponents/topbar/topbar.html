@@ -47,7 +47,7 @@
         >
           <option value="">Stato</option>
           <option value="TODO">TODO</option>
-          <option value="In Progress">In Progress</option>
+          <option value="In-Progress">In-Progress</option>
           <option value="Done">Done</option>
         </select>
 
@@ -67,13 +67,13 @@
     <!-- Pie chart + labels -->
     <div class="flex items-center gap-3 ml-6">
       <div class="flex flex-col text-xs font-medium gap-1">
-        <span class="px-2 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded">
+        <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded">
           {{ formatPercentage(todoPercentage) }}% TODO
         </span>
-        <span class="px-2 py-0.5 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded">
+        <span class="px-2 py-0.5 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded">
           {{ formatPercentage(inProgressPercentage) }}% IN PROGRESS
         </span>
-        <span class="px-2 py-0.5 bg-gray-400 dark:bg-gray-600 border border-gray-300 dark:border-gray-700 text-gray-100 dark:text-gray-200 rounded">
+        <span class="px-2 py-0.5 bg-gray-300 dark:bg-gray-600 border border-gray-400 dark:border-gray-500 text-gray-800 dark:text-gray-200 rounded">
           {{ formatPercentage(donePercentage) }}% DONE
         </span>
       </div>
@@ -81,11 +81,11 @@
       <!-- SVG Pie Chart -->
       <svg class="w-24 h-24" viewBox="0 0 96 96">
         <ng-container *ngIf="todoPercentage + inProgressPercentage + donePercentage > 0; else emptyChart">
-          <!-- TODO slice (white/gray-800) -->
+          <!-- TODO slice (gray-100/gray-800) -->
           <path
             *ngIf="todoPercentage > 0"
             [attr.d]="getSlicePath(0, todoPercentage)"
-            class="fill-white dark:fill-gray-800"
+            class="fill-gray-100 dark:fill-gray-800"
           />
 
           <!-- In Progress slice (gray-200/gray-700) -->
@@ -95,16 +95,16 @@
             class="fill-gray-200 dark:fill-gray-700"
           />
 
-          <!-- Done slice (gray-400/gray-600) -->
+          <!-- Done slice (gray-300/gray-600) -->
           <path
             *ngIf="donePercentage > 0"
             [attr.d]="getSlicePath(todoPercentage + inProgressPercentage, donePercentage)"
-            class="fill-gray-400 dark:fill-gray-600"
+            class="fill-gray-300 dark:fill-gray-600"
           />
         </ng-container>
 
         <ng-template #emptyChart>
-          <circle cx="48" cy="48" r="48" class="fill-gray-300 dark:fill-gray-700"/>
+          <circle cx="48" cy="48" r="48" class="fill-gray-200 dark:fill-gray-700"/>
         </ng-template>
       </svg>
     </div>

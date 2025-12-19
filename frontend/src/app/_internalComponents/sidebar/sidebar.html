@@ -4,7 +4,11 @@
   <div class="p-4 border-b border-gray-200 dark:border-gray-700">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-lg flex items-center justify-center">
-        <img src="../images/logo.png" alt="Logo" class="w-full h-full object-contain" />
+        <img 
+          [src]="isDarkMode ? '/images/logo-white.svg' : '/images/logo.svg'" 
+          alt="Logo" 
+          class="w-full h-full object-contain" 
+        />
       </div>
       <span class="text-xl font-semibold text-gray-900 dark:text-gray-100">BugBoard26</span>
     </div>

@@ -2,8 +2,8 @@
 
   <div class="flex-1 overflow-hidden">
     <!-- Header -->
-    <header class="px-6 py-4 border-b border-gray-700 bg-gray-900">
-      <h2 class="text-xl font-semibold text-gray-100">{{ projectName }} - Nuova Issue</h2>
+    <header class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+      <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">{{ projectName }} - Nuova Issue</h2>
     </header>
 
     <!-- Content wrapper -->
@@ -13,12 +13,12 @@
 
         <!-- Titolo (non flessibile) -->
         <div class="flex-shrink-0">
-          <label class="block text-sm font-medium text-gray-300 mb-2">Titolo</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Titolo</label>
           <input
             type="text"
             [(ngModel)]="title"
             placeholder="Titolo Issue"
-            class="w-full px-3 py-2 border border-gray-700 bg-gray-800 text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -26,15 +26,15 @@
         <div class="flex-1 min-h-0 flex flex-col">
 
           <!-- Toolbar -->
-          <div class="border border-gray-700 rounded-t-lg bg-gray-800 px-3 py-2 flex-shrink-0">
+          <div class="border border-gray-300 dark:border-gray-700 rounded-t-lg bg-gray-100 dark:bg-gray-800 px-3 py-2 flex-shrink-0">
             <div class="flex items-center gap-2 text-lg">
 
-              <button (click)="formatDoc('bold')" class="p-2 text-gray-200 font-bold">B</button>
-              <button (click)="formatDoc('italic')" class="p-2 text-gray-200 italic">I</button>
-              <button (click)="formatDoc('underline')" class="p-2 text-gray-200 underline">U</button>
-              <button (click)="formatDoc('strikeThrough')" class="p-2 text-gray-200 line-through">S</button>
+              <button (click)="formatDoc('bold')" class="p-2 text-gray-700 dark:text-gray-200 font-bold hover:bg-gray-200 dark:hover:bg-gray-700 rounded">B</button>
+              <button (click)="formatDoc('italic')" class="p-2 text-gray-700 dark:text-gray-200 italic hover:bg-gray-200 dark:hover:bg-gray-700 rounded">I</button>
+              <button (click)="formatDoc('underline')" class="p-2 text-gray-700 dark:text-gray-200 underline hover:bg-gray-200 dark:hover:bg-gray-700 rounded">U</button>
+              <button (click)="formatDoc('strikeThrough')" class="p-2 text-gray-700 dark:text-gray-200 line-through hover:bg-gray-200 dark:hover:bg-gray-700 rounded">S</button>
 
-              <div class="w-px h-6 bg-gray-700 mx-1"></div>
+              <div class="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
 
               <!-- JUSTIFY LEFT -->
               <button (click)="formatDoc('justifyLeft')" class="editor-btn">
@@ -72,17 +72,17 @@
                 </span>
               </button>
 
-              <div class="w-px h-6 bg-gray-700 mx-1"></div>
+              <div class="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
 
-              <button (click)="triggerImageUpload()" class="p-2 text-gray-200">📷</button>
+              <button (click)="triggerImageUpload()" class="p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">📷</button>
             </div>
           </div>
 
           <!-- Content Editable -->
           <div
-            class="border border-t-0 border-gray-700 rounded-b-lg flex-1 min-h-0 overflow-y-auto
-                  bg-gray-800 text-gray-100
-                  scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-200
+            class="border border-t-0 border-gray-300 dark:border-gray-700 rounded-b-lg flex-1 min-h-0 overflow-y-auto
+                  bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
+                  scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200
                   dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800"
             [style]="{'scrollbar-gutter':'stable'}">
 
@@ -100,16 +100,16 @@
 
         <!-- Immagini caricate (opzionale) -->
         <div class="flex-shrink-0" *ngIf="uploadedImages.length > 0">
-          <label class="block text-sm font-medium text-gray-300 mb-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             File allegati ({{ uploadedImages.length }}/3)
           </label>
           <div class="flex flex-wrap gap-2">
             <div *ngFor="let image of uploadedImages; let i = index" class="relative group">
-              <div class="w-20 h-20 border-2 border-gray-700 rounded-lg overflow-hidden bg-gray-800 flex items-center justify-center">
+              <div class="w-20 h-20 border-2 border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
                 <img [src]="imagePreviewUrls[i]" [alt]="image.name" class="max-w-full max-h-full object-contain"/>
               </div>
               <button type="button" (click)="removeImage(i)" class="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">×</button>
-              <span class="block text-xs text-gray-400 mt-1 truncate w-20" [title]="image.name">{{ image.name }}</span>
+              <span class="block text-xs text-gray-600 dark:text-gray-400 mt-1 truncate w-20" [title]="image.name">{{ image.name }}</span>
             </div>
           </div>
         </div>
@@ -117,8 +117,8 @@
         <!-- Tipo, Priorità e Azioni -->
         <div class="flex items-end gap-4 flex-shrink-0">
           <div class="flex-1">
-            <label class="block text-sm font-medium text-gray-300 mb-2">Tipo</label>
-            <select [(ngModel)]="tipo" class="w-full px-3 py-2 border border-gray-700 bg-gray-800 text-gray-100 rounded-lg">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipo</label>
+            <select [(ngModel)]="tipo" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg">
               <option value="" disabled selected>Seleziona tipo</option>
               <option value="bug">Bug</option>
               <option value="feature">Feature</option>
@@ -128,8 +128,8 @@
           </div>
 
           <div class="flex-1">
-            <label class="block text-sm font-medium text-gray-300 mb-2">Priorità</label>
-            <select [(ngModel)]="priorita" class="w-full px-3 py-2 border border-gray-700 bg-gray-800 text-gray-100 rounded-lg">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Priorità</label>
+            <select [(ngModel)]="priorita" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg">
               <option value="" disabled selected>Seleziona priorità</option>
               <option value="bassa">Bassa</option>
               <option value="media">Media</option>
@@ -138,8 +138,8 @@
           </div>
 
           <div class="flex gap-3">
-            <button type="button" (click)="onCancel()" class="px-4 py-2 border border-gray-700 rounded-lg">Annulla</button>
-            <button type="button" (click)="onConfirm()" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Conferma</button>
+            <button type="button" (click)="onCancel()" class="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Annulla</button>
+            <button type="button" (click)="onConfirm()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Conferma</button>
           </div>
         </div>
 

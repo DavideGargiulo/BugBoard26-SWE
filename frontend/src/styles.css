@@ -25,10 +25,19 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .editor-btn {
   padding: 0.5rem;
   border-radius: 0.375rem;
-  color: #e5e7eb;
+  color: #374151; /* Grigio scuro per tema chiaro */
 }
 
 .editor-btn:hover {
+  background-color: #e5e7eb; /* Grigio chiaro per tema chiaro */
+}
+
+/* Stili per tema scuro */
+.dark .editor-btn {
+  color: #e5e7eb; /* Grigio chiaro per tema scuro */
+}
+
+.dark .editor-btn:hover {
   background-color: rgba(255,255,255,0.08);
 }
 

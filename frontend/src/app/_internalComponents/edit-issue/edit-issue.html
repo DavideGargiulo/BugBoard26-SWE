@@ -103,53 +103,95 @@
             </p>
         </div>
 
+        <!-- EDITOR SECTION -->
+
         <div class="border border-gray-300 dark:border-gray-700 rounded-t-lg bg-gray-100 dark:bg-gray-800 px-3 py-2 flex-shrink-0">
-          <div class="flex items-center gap-2 text-lg">
-            <button (click)="formatDoc('bold')" class="p-2 text-gray-700 dark:text-gray-200 font-bold hover:bg-gray-200 dark:hover:bg-gray-700 rounded">B</button>
-            <button (click)="formatDoc('italic')" class="p-2 text-gray-700 dark:text-gray-200 italic hover:bg-gray-200 dark:hover:bg-gray-700 rounded">I</button>
-            <button (click)="formatDoc('underline')" class="p-2 text-gray-700 dark:text-gray-200 underline hover:bg-gray-200 dark:hover:bg-gray-700 rounded">U</button>
-            <button (click)="formatDoc('strikeThrough')" class="p-2 text-gray-700 dark:text-gray-200 line-through hover:bg-gray-200 dark:hover:bg-gray-700 rounded">S</button>
+            <div class="flex items-center gap-2 text-lg">
 
-            <div class="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
+              <button (click)="formatDoc('bold')" class="p-2 text-gray-700 dark:text-gray-200 font-bold hover:bg-gray-200 dark:hover:bg-gray-700 rounded">B</button>
+              <button (click)="formatDoc('italic')" class="p-2 text-gray-700 dark:text-gray-200 italic hover:bg-gray-200 dark:hover:bg-gray-700 rounded">I</button>
+              <button (click)="formatDoc('underline')" class="p-2 text-gray-700 dark:text-gray-200 underline hover:bg-gray-200 dark:hover:bg-gray-700 rounded">U</button>
+              <button (click)="formatDoc('strikeThrough')" class="p-2 text-gray-700 dark:text-gray-200 line-through hover:bg-gray-200 dark:hover:bg-gray-700 rounded">S</button>
 
-            <button (click)="formatDoc('justifyLeft')" class="p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">L</button>
-            <button (click)="formatDoc('justifyCenter')" class="p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">C</button>
-            <button (click)="formatDoc('justifyRight')" class="p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">R</button>
-            <button (click)="formatDoc('justifyFull')" class="p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">J</button>
+              <div class="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
 
-            <div class="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
+              <!-- JUSTIFY LEFT -->
+              <button (click)="formatDoc('justifyLeft')" class="editor-btn">
+                <span class="icon-lines items-start">
+                  <span class="line w-full"></span>
+                  <span class="line w-3/4"></span>
+                  <span class="line w-full"></span>
+                </span>
+              </button>
 
-            <button (click)="triggerImageUpload()" class="p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">📷</button>
+              <!-- JUSTIFY CENTER -->
+              <button (click)="formatDoc('justifyCenter')" class="editor-btn">
+                <span class="icon-lines items-center">
+                  <span class="line w-full"></span>
+                  <span class="line w-3/4"></span>
+                  <span class="line w-full"></span>
+                </span>
+              </button>
+
+              <!-- JUSTIFY RIGHT -->
+              <button (click)="formatDoc('justifyRight')" class="editor-btn">
+                <span class="icon-lines items-end">
+                  <span class="line w-full"></span>
+                  <span class="line w-3/4"></span>
+                  <span class="line w-full"></span>
+                </span>
+              </button>
+
+              <!-- JUSTIFY FULL -->
+              <button (click)="formatDoc('justifyFull')" class="editor-btn">
+                <span class="icon-lines items-stretch">
+                  <span class="line w-full"></span>
+                  <span class="line w-full"></span>
+                  <span class="line w-full"></span>
+                </span>
+              </button>
+
+              <div class="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
+
+              <button (click)="triggerImageUpload()" class="p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">📷</button>
+            </div>
           </div>
-        </div>
 
-        <div
-          class="flex-1 min-h-0 overflow-y-auto border border-t-0 border-gray-300 dark:border-gray-700
-                 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-          [class.rounded-b-lg]="uploadedImages.length === 0"
-          [style]="{'scrollbar-gutter':'stable'}">
-
+          <!-- Content Editable -->
           <div
-            #content
-            contenteditable="true"
-            spellcheck="false"
-            class="p-6 min-h-full outline-none focus:bg-gray-50 dark:focus:bg-gray-900 transition-colors">
-          </div>
-        </div>
+            class="border border-t-0 border-gray-300 dark:border-gray-700 flex-1 min-h-0 overflow-y-auto
+                  bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
+                  scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200
+                  dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800"
+            [class.rounded-b-lg]="uploadedImages.length === 0"
+            [style]="{'scrollbar-gutter':'stable'}">
 
-        <div *ngIf="uploadedImages.length > 0"
-          class="border border-t-0 border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-b-lg">
+            <!-- WRAPPER INTERNO CON PADDING -->
+            <div
+              #content
+              contenteditable="true"
+              spellcheck="false"
+              class="p-6 min-h-full outline-none">
+            </div>
+
+          </div>
+
+          <!-- File allegati -->
+          <div class="flex-shrink-0 border border-t-0 border-gray-300 dark:border-gray-700 rounded-b-lg bg-gray-100 dark:bg-gray-800 px-3 py-2" *ngIf="uploadedImages.length > 0">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              File da caricare ({{ uploadedImages.length }})
+              File allegati ({{ uploadedImages.length }}/3)
             </label>
             <div class="flex flex-wrap gap-2 max-w-full overflow-hidden">
               <div *ngFor="let file of uploadedImages; let i = index" class="relative group">
                 <div class="w-20 h-20 border-2 border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                  <img *ngIf="isImage(file)"
+                  <!-- Immagine -->
+                  <img class="w-full h-full object-cover max-w-full"
+                    *ngIf="isImage(file)"
                     [src]="imagePreviewUrls[i]"
                     [alt]="file.name"
-                    class="w-full h-full object-cover"/>
+                    class="max-w-full max-h-full object-contain"/>
 
+                  <!-- PDF -->
                   <div *ngIf="!isImage(file)" class="flex flex-col items-center justify-center">
                     <span class="text-3xl">📄</span>
                   </div>
@@ -163,22 +205,23 @@
                 <span class="block text-xs text-gray-600 dark:text-gray-400 mt-1 truncate w-20" [title]="file.name">{{ file.name }}</span>
               </div>
             </div>
-        </div>
+          </div>
 
-        <div class="flex justify-between px-3 py-2 flex-shrink-0 mt-2">
-          <button
-            type="button"
-            (click)="goBack()"
-            class="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-            Annulla
-          </button>
-          <button
-            type="button"
-            (click)="submitEdit()"
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm">
-            Aggiungi Aggiornamento
-          </button>
-        </div>
+          <!-- Action Buttons -->
+          <div class="flex items-end justify-between flex-shrink-0 px-3 py-2">
+            <button
+              type="button"
+              (click)="goBack()"
+              class="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+              Annulla
+            </button>
+            <button
+              type="button"
+              (click)="submitEdit()"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              Invia Modifica
+            </button>
+          </div>
 
       </div>
     </div>

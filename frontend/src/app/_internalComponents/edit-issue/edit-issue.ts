@@ -75,6 +75,15 @@ export class EditIssueComponent implements OnInit {
           return;
         }
 
+        if (this.isCompleted()){
+          this.toastService.error(
+            'Accesso negato',
+            'Non puoi modificare una issue completata'
+          );
+          this.router.navigate(['/']);
+          return;
+        }
+
         setTimeout(() => {
           if (this.content && this.content.nativeElement) {
             this.content.nativeElement.innerHTML = '';
@@ -237,6 +246,10 @@ export class EditIssueComponent implements OnInit {
       }
     });
     return this.currentUser.email === this.issue.creatorEmail || this.currentUser.isAdmin;
+  }
+
+  isCompleted(): boolean {
+    return this.issue.tags.includes('Done');
   }
 
   getAttachmentUrl(attachment: any): string {

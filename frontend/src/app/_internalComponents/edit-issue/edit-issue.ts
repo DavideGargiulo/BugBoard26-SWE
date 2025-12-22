@@ -178,10 +178,10 @@ export class EditIssueComponent implements OnInit {
   submitEdit(): void {
     const descriptionHtml = this.content.nativeElement.innerHTML.trim();
 
-    if (!descriptionHtml && this.uploadedImages.length === 0) {
+    if (!descriptionHtml) {
       this.toastService.error(
         'Attenzione',
-        'Inserisci un testo o allega un file per aggiornare l\'issue'
+        'Inserisci un testo per aggiornare l\'issue'
       );
       return;
     }

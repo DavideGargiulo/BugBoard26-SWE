@@ -1,10 +1,10 @@
 import { Issue, Progetto, Utente, Allegato, Commento, database } from '../data/remote/Database.js';
 import { countCommentsByIssueId } from './commentController.js';
-import fs from 'node:fs';
+import { promises as fsPromises } from 'node:fs';
 import { promisify } from 'node:util';
 import crypto from 'node:crypto';
 
-const readFile = promisify(fs.readFile);
+const readFile = fsPromises.readFile;
 
 export const getProjectIdByName = async (projectName) => {
   try {
@@ -172,11 +172,11 @@ export const createIssue = async (req, res) => {
   } catch (error) {
     console.error('Errore nella creazione della issue:', error);
     if (req.files && req.files.length > 0) {
-      req.files.forEach(file => {
-        fs.unlink(file.path, (err) => {
-          if (err) console.error('Errore nell\'eliminazione del file:', err);
-        });
-      });
+      await Promise.all(
+        req.files.map(file =>
+          fsPromises.unlink(file.path).catch(() => {})
+        )
+      );
     }
 
     res.status(500).json({
@@ -191,11 +191,24 @@ export const updateIssue = async (req, res) => {
     const issueId = req.params.id;
     const { descrizione } = req.body;
 
+    const hasDescription = descrizione && descrizione.trim() !== '';
+    const hasFiles = req.files && req.files.length > 0;
+
+    if (!hasDescription) {
+      return res.status(400).json({
+        message: 'Devi fornire almeno una descrizione per aggiornare l\'issue'
+      });
+    }
+
     const issue = await Issue.findByPk(issueId);
 
     if (!issue) {
       if (req.files) {
-        req.files.forEach(file => fs.unlink(file.path, () => {}));
+        await Promise.all(
+          req.files.map(file =>
+            fsPromises.unlink(file.path).catch(() => {})
+          )
+        );
       }
       return res.status(404).json({ message: 'Issue non trovata' });
     }
@@ -211,7 +224,11 @@ export const updateIssue = async (req, res) => {
 
     if (existingAttachmentsCount + newFilesCount > 3) {
       if (req.files) {
-        req.files.forEach(file => fs.unlink(file.path, () => {}));
+        await Promise.all(
+          req.files.map(file =>
+            fsPromises.unlink(file.path).catch(() => {})
+          )
+        );
       }
       return res.status(400).json({
         message: `Limite superato. L'issue ha già ${existingAttachmentsCount} allegati e ne stai inviando ${newFilesCount}. Il massimo totale consentito è 3.`
@@ -238,7 +255,7 @@ export const updateIssue = async (req, res) => {
       await Promise.all(allegatoPromises);
     }
 
-    if (descrizione && descrizione.trim() !== '') {
+    if (hasDescription) {
       const now = new Date();
       const timestamp = now.toLocaleString('it-IT', {
         day: '2-digit', month: '2-digit', year: 'numeric',
@@ -272,7 +289,11 @@ export const updateIssue = async (req, res) => {
   } catch (error) {
     console.error('Errore update:', error);
     if (req.files) {
-      req.files.forEach(file => fs.unlink(file.path, () => {}).catch(() => {}));
+      await Promise.all(
+        req.files.map(file =>
+          fsPromises.unlink(file.path).catch(() => {})
+        )
+      );
     }
     res.status(500).json({
       message: 'Errore nell\'aggiornamento della issue',

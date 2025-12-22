@@ -59,28 +59,3 @@ export const handleFileUpload = (fieldName = 'images', maxFiles = 3) => {
  * Middleware preconfigurato per upload file issue (max 3 file)
  */
 export const uploadImages = handleFileUpload('images', 3);
-
-/**
- * Middleware preconfigurato per upload singola immagine profilo
- */
-export const uploadSingleImage = (fieldName = 'immagine') => {
-  return (req, res, next) => {
-    uploader.single(fieldName)(req, res, (err) => {
-      if (err instanceof multer.MulterError) {
-        if (err.code === 'LIMIT_FILE_SIZE') {
-          return res.status(413).json({
-            message: 'Immagine troppo grande. Massimo 5MB.'
-          });
-        }
-        return res.status(400).json({
-          message: `Errore upload: ${err.message}`
-        });
-      } else if (err) {
-        return res.status(400).json({
-          message: err.message
-        });
-      }
-      next();
-    });
-  };
-};

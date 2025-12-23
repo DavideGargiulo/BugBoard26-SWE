@@ -112,10 +112,10 @@ export const createIssue = async (req, res) => {
 
     const id_creatore = user.id;
 
-    if (!titolo || !descrizione || !tipo || !progetto) {
+    if (!titolo || !descrizione || !tipo || !priorita || !progetto) {
       return res.status(400).json({
         message: 'Campi obbligatori mancanti',
-        required: ['titolo', 'descrizione', 'tipo', 'progetto']
+        required: ['titolo', 'descrizione', 'tipo', 'priorita', 'progetto']
       });
     }
 

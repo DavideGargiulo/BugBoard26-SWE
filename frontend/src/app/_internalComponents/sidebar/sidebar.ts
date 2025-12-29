@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, EventEmitter, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { ProjectService } from '../../_services/project/project-service';
 import { AuthService } from '../../_services/auth/auth.service';
@@ -18,6 +18,13 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog';
 })
 
 export class SidebarComponent implements OnInit {
+
+  @Output() closeSidebar = new EventEmitter<void>();
+
+  onCloseSidebar() {
+    this.closeSidebar.emit();
+  }
+
   // Lista progetti
   projects: string[] = [
     'Test',
@@ -165,6 +172,7 @@ export class SidebarComponent implements OnInit {
 
     // Naviga alla pagina del progetto con il nome come parametro
     this.router.navigate(['/progetto', project]);
+    this.closeSidebar.emit();
   }
 
   /**

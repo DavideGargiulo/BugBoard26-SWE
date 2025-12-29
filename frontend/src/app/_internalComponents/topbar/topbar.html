@@ -1,14 +1,14 @@
-<div class="w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex flex-col gap-4">
+<div class="w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-4 flex flex-col gap-4">
 
   <!-- Title row -->
-  <div class="flex items-start justify-between">
-    <div class="flex flex-col gap-4 flex-1">
+  <div class="flex flex-col lg:flex-row items-start lg:items-start justify-between gap-4">
+    <div class="flex flex-col gap-3 sm:gap-4 flex-1 w-full lg:w-auto">
       <!-- Title -->
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 sm:gap-3 pt-12 lg:pt-0">
         <!-- Dashboard -->
         <ng-container *ngIf="isDashboard()">
-          <h1 class="text-3xl font-semibold text-gray-900 dark:text-gray-100">Dashboard</h1>
-          <svg class="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <h1 class="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-gray-100">Dashboard</h1>
+          <svg class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <rect x="3" y="3" width="7" height="7" stroke-width="2"/>
             <rect x="14" y="3" width="7" height="7" stroke-width="2"/>
             <rect x="3" y="14" width="7" height="7" stroke-width="2"/>
@@ -18,20 +18,20 @@
 
         <!-- Progetto -->
         <ng-container *ngIf="isProject() && selectedProject">
-          <h1 class="text-3xl font-semibold text-gray-900 dark:text-gray-100">{{ selectedProject }}</h1>
-          <svg class="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <h1 class="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-gray-100 truncate">{{ selectedProject }}</h1>
+          <svg class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
           </svg>
         </ng-container>
       </div>
 
-      <!-- 3 dropdown filters -->
-      <div class="flex items-center gap-4">
+      <!-- 3 dropdown filters - Stack su mobile, row su tablet+ -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 w-full">
         <select
           [(ngModel)]="tipo"
           (ngModelChange)="onTipoChange()"
-          class="px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          class="px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:outline-none"
         >
           <option value="">Tipo</option>
           <option value="Bug">Bug</option>
@@ -43,7 +43,7 @@
         <select
           [(ngModel)]="stato"
           (ngModelChange)="onStatoChange()"
-          class="px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          class="px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:outline-none"
         >
           <option value="">Stato</option>
           <option value="TODO">TODO</option>
@@ -54,7 +54,7 @@
         <select
           [(ngModel)]="priorita"
           (ngModelChange)="onPrioritaChange()"
-          class="px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          class="px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:outline-none"
         >
           <option value="">Priorità</option>
           <option value="Alta">Alta</option>
@@ -64,22 +64,22 @@
       </div>
     </div>
 
-    <!-- Pie chart + labels -->
-    <div class="flex items-center gap-3 ml-6">
+    <!-- Pie chart + labels - Nascosto su mobile piccoli, visibile da sm -->
+    <div class="hidden sm:flex items-center gap-3 lg:ml-6">
       <div class="flex flex-col text-xs font-medium gap-1">
-        <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded">
+        <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded whitespace-nowrap">
           {{ formatPercentage(todoPercentage) }}% TODO
         </span>
-        <span class="px-2 py-0.5 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded">
+        <span class="px-2 py-0.5 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded whitespace-nowrap">
           {{ formatPercentage(inProgressPercentage) }}% IN PROGRESS
         </span>
-        <span class="px-2 py-0.5 bg-gray-300 dark:bg-gray-600 border border-gray-400 dark:border-gray-500 text-gray-800 dark:text-gray-200 rounded">
+        <span class="px-2 py-0.5 bg-gray-300 dark:bg-gray-600 border border-gray-400 dark:border-gray-500 text-gray-800 dark:text-gray-200 rounded whitespace-nowrap">
           {{ formatPercentage(donePercentage) }}% DONE
         </span>
       </div>
 
       <!-- SVG Pie Chart -->
-      <svg class="w-24 h-24" viewBox="0 0 96 96">
+      <svg class="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0" viewBox="0 0 96 96">
         <ng-container *ngIf="todoPercentage + inProgressPercentage + donePercentage > 0; else emptyChart">
           <!-- TODO slice (gray-100/gray-800) -->
           <path
@@ -110,11 +110,12 @@
     </div>
   </div>
 
-  <div class="relative flex gap-2 w-full">
+  <!-- Search bar + button row -->
+  <div class="relative flex flex-col sm:flex-row gap-2 w-full">
     <!-- Search bar con larghezza dinamica -->
     <div [class]="isProject() ? 'relative flex-1' : 'relative w-full'">
       <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <circle cx="11" cy="11" r="8" stroke-width="2"/>
           <line x1="21" y1="21" x2="16.65" y2="16.65" stroke-width="2" stroke-linecap="round"/>
         </svg>
@@ -124,7 +125,7 @@
         [(ngModel)]="searchTerm"
         (ngModelChange)="onSearchChange()"
         placeholder="Cerca issue..."
-        class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        class="w-full pl-9 sm:pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-sm sm:text-base rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
       />
     </div>
 
@@ -132,7 +133,7 @@
     <ng-container *ngIf="isProject()">
       <button
         (click)="navigateToNewIssuePage()"
-        class="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors whitespace-nowrap">
+        class="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-sm sm:text-base border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors whitespace-nowrap">
         Aggiungi Issue
       </button>
     </ng-container>

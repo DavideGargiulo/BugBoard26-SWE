@@ -1,6 +1,6 @@
-<div class="w-full h-full bg-gray-50 dark:bg-gray-900 px-10 pt-10 p-5 flex flex-col">
-  <!-- Issues Grid -->
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-10 flex-1 overflow-hidden">
+<div class="w-full h-full bg-gray-50 dark:bg-gray-900 px-4 sm:px-6 lg:px-10 pt-6 sm:pt-8 lg:pt-10 p-4 sm:p-5 flex flex-col">
+  <!-- Issues Grid - Responsive: 1 col mobile, 2 col tablet, 2 col desktop (come originale) -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-10 flex-1 overflow-hidden">
     <app-issue-card
       *ngFor="let issue of paginatedIssues"
       [issue]="issue"
@@ -8,17 +8,17 @@
   </div>
 
   <!-- Pagination -->
-  <div class="flex items-center justify-center gap-2 pt-6 border-gray-200 dark:border-gray-700 flex-shrink-0">
+  <div class="flex flex-wrap items-center justify-center gap-2 pt-4 sm:pt-6 border-gray-200 dark:border-gray-700 flex-shrink-0">
     <!-- Prev Button -->
     <button
       (click)="goToPreviousPage()"
       [disabled]="currentPage === 1"
-      class="px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+      class="px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1 sm:gap-2"
     >
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
       </svg>
-      Prev
+      <span class="hidden sm:inline">Prev</span>
     </button>
 
     <!-- Page Numbers -->
@@ -37,7 +37,7 @@
       [class.dark:hover:bg-gray-200]="currentPage === page"
       [class.hover:bg-gray-50]="currentPage !== page"
       [class.dark:hover:bg-gray-700]="currentPage !== page"
-      class="w-10 h-10 border border-gray-300 dark:border-gray-700 rounded-lg transition-colors font-medium"
+      class="w-8 h-8 sm:w-10 sm:h-10 text-sm sm:text-base border border-gray-300 dark:border-gray-700 rounded-lg transition-colors font-medium"
     >
       {{ page }}
     </button>
@@ -46,9 +46,9 @@
     <button
       (click)="goToNextPage()"
       [disabled]="currentPage === totalPages"
-      class="px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+      class="px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1 sm:gap-2"
     >
-      Next
+      <span class="hidden sm:inline">Next</span>
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
       </svg>

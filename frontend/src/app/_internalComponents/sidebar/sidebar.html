@@ -1,41 +1,55 @@
 <div class="w-64 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col">
 
-  <!-- Header -->
+  <!-- Header con close button su mobile -->
   <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-lg flex items-center justify-center">
-        <img 
-          [src]="isDarkMode ? '/images/logo-white.svg' : '/images/logo.svg'" 
-          alt="Logo" 
-          class="w-full h-full object-contain" 
-        />
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3 flex-1">
+        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center">
+          <img
+            [src]="isDarkMode ? '/images/logo-white.svg' : '/images/logo.svg'"
+            alt="Logo"
+            class="w-full h-full object-contain"
+          />
+        </div>
+        <span class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">BugBoard26</span>
       </div>
-      <span class="text-xl font-semibold text-gray-900 dark:text-gray-100">BugBoard26</span>
+
+      <!-- Close button (solo mobile) -->
+      <button
+        (click)="onCloseSidebar()"
+        class="lg:hidden p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+        aria-label="Chiudi menu"
+      >
+        <svg class="w-6 h-6 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
     </div>
   </div>
 
   <!-- User Profile -->
-  <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-    <div class="flex items-center gap-3">
-      <div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
-        <span class="text-lg font-medium text-gray-700 dark:text-gray-200">{{ getInitials(user.name) }}</span>
+  <div class="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700">
+    <div class="flex items-center gap-2 sm:gap-3">
+      <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+        <span class="text-base sm:text-lg font-medium text-gray-700 dark:text-gray-200">{{ getInitials(user.name) }}</span>
       </div>
-      <div class="flex-1">
-        <div class="font-semibold text-gray-900 dark:text-gray-100">{{ user.name }}</div>
-        <div class="text-sm text-gray-500 dark:text-gray-400">{{ user.role }}</div>
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-sm sm:text-base text-gray-900 dark:text-gray-100 truncate">{{ user.name }}</div>
+        <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">{{ user.role }}</div>
       </div>
     </div>
   </div>
 
-  <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+  <!-- Navigation -->
+  <div class="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700">
 
     <button
-      (click)="selectedProject = null; navigate('/dashboard')"
+      (click)="selectedProject = null; navigate('/dashboard'); onCloseSidebar()"
       [class.bg-gray-100]="isActive('/dashboard')"
       [class.dark:bg-gray-800]="isActive('/dashboard')"
-      class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+      class="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-lg text-sm sm:text-base text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
     >
-      <svg class="w-5 h-5 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="w-5 h-5 flex-shrink-0 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <rect x="3" y="3" width="7" height="7" stroke-width="2"/>
         <rect x="14" y="3" width="7" height="7" stroke-width="2"/>
         <rect x="3" y="14" width="7" height="7" stroke-width="2"/>
@@ -45,21 +59,22 @@
     </button>
 
     <button
-      (click)="selectedProject = null; navigate('/utenti')"
+      (click)="selectedProject = null; navigate('/utenti'); onCloseSidebar()"
       [class.bg-gray-100]="isActive('/utenti')"
       [class.dark:bg-gray-800]="isActive('/utenti')"
-      class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+      class="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-lg text-sm sm:text-base text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
     >
-      <svg class="w-5 h-5 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="w-5 h-5 flex-shrink-0 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
       </svg>
       <span>Utenti</span>
     </button>
 
-    <div class="w-full flex items-center justify-between px-3 py-2">
-      <div class="flex items-center gap-2">
+    <!-- Theme Toggle -->
+    <div class="w-full flex items-center justify-between px-2 sm:px-3 py-2 mt-2">
+      <div class="flex items-center gap-2 flex-1 min-w-0">
         <!-- Icona sole (visibile in light mode) -->
-        <svg class="w-5 h-5 text-gray-700 dark:text-gray-200 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-5 h-5 flex-shrink-0 text-gray-700 dark:text-gray-200 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="4" stroke-width="2"/>
           <line x1="12" y1="1" x2="12" y2="3" stroke-width="2" stroke-linecap="round"/>
           <line x1="12" y1="21" x2="12" y2="23" stroke-width="2" stroke-linecap="round"/>
@@ -71,16 +86,16 @@
           <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke-width="2" stroke-linecap="round"/>
         </svg>
         <!-- Icona luna (visibile in dark mode) -->
-        <svg class="w-5 h-5 text-gray-700 dark:text-gray-200 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-5 h-5 flex-shrink-0 text-gray-700 dark:text-gray-200 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
         </svg>
-        <span class="text-gray-700 dark:text-gray-200">Tema</span>
+        <span class="text-sm sm:text-base text-gray-700 dark:text-gray-200 truncate">Tema</span>
       </div>
       <button
         (click)="toggleTheme()"
         [attr.aria-checked]="isDarkMode"
         role="switch"
-        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex-shrink-0"
         [class.bg-blue-600]="isDarkMode"
         [class.bg-gray-300]="!isDarkMode"
       >
@@ -92,11 +107,12 @@
       </button>
     </div>
 
+    <!-- Logout -->
     <button
       (click)="logout()"
-      class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+      class="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-lg text-sm sm:text-base text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
     >
-      <svg class="w-5 h-5 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="w-5 h-5 flex-shrink-0 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
       </svg>
       <span>Logout</span>
@@ -104,76 +120,77 @@
   </div>
 
   <!-- Projects Section -->
-  <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-  <div class="flex items-center gap-2 px-3 py-2 text-gray-700 dark:text-gray-300">
-    <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
-    </svg>
-    <span class="font-medium">Progetti</span>
-  </div>
+  <div class="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700">
+    <div class="flex items-center gap-2 px-2 sm:px-3 py-2 text-gray-700 dark:text-gray-300">
+      <svg class="w-5 h-5 flex-shrink-0 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+      </svg>
+      <span class="font-medium text-sm sm:text-base">Progetti</span>
+    </div>
 
-  <!-- Search Box -->
-  <div class="px-3 py-2">
-    <div class="relative">
-      <!-- Icona lente -->
-      <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <circle cx="11" cy="11" r="8"/>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-      </span>
+    <!-- Search Box -->
+    <div class="px-2 sm:px-3 py-2">
+      <div class="relative">
+        <!-- Icona lente -->
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </span>
 
-      <input
-        type="text"
-        [value]="searchTerm"
-        (input)="onSearchInput($event)"
-        placeholder="Cerca progetti..."
-        class="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg text-sm
-              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-      />
+        <input
+          type="text"
+          [value]="searchTerm"
+          (input)="onSearchInput($event)"
+          placeholder="Cerca progetti..."
+          class="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg text-xs sm:text-sm
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+      </div>
     </div>
   </div>
-  </div>
 
-  <nav class="flex-1 p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-200 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800">
-      <!-- Project List -->
-      <div class="space-y-1 px-3">
-        <div
-          *ngFor="let project of filteredProjects"
-          (click)="selectProject(project)"
-          (mouseenter)="hoveredProject = project"
-          (mouseleave)="hoveredProject = null"
-          [class.bg-gray-100]="isProjectActive(project)"
-          [class.dark:bg-gray-800]="isProjectActive(project)"
-          class="group relative flex items-center justify-between px-3 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+  <!-- Projects List -->
+  <nav class="flex-1 p-3 sm:p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-200 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800">
+    <!-- Project List -->
+    <div class="space-y-1 px-2 sm:px-3">
+      <div
+        *ngFor="let project of filteredProjects"
+        (click)="selectProject(project); onCloseSidebar()"
+        (mouseenter)="hoveredProject = project"
+        (mouseleave)="hoveredProject = null"
+        [class.bg-gray-100]="isProjectActive(project)"
+        [class.dark:bg-gray-800]="isProjectActive(project)"
+        class="group relative flex items-center justify-between px-2 sm:px-3 py-2 rounded-lg text-sm sm:text-base text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+      >
+        <span class="flex-1 truncate">{{ project }}</span>
+
+        <!-- Bottone Elimina (visibile solo per amministratori e al hover) -->
+        <button
+          *ngIf="user.role === 'Amministratore' && hoveredProject === project"
+          (click)="openDeleteProjectDialog($event, project)"
+          class="ml-2 p-1 rounded-md text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex-shrink-0"
+          title="Elimina progetto"
         >
-          <span class="flex-1 truncate">{{ project }}</span>
-
-          <!-- Bottone Elimina (visibile solo per amministratori e al hover) -->
-          <button
-            *ngIf="user.role === 'Amministratore' && hoveredProject === project"
-            (click)="openDeleteProjectDialog($event, project)"
-            class="ml-2 rounded-md text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex-shrink-0"
-            title="Elimina progetto"
-          >
-            <svg class="w h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-            </svg>
-          </button>
-        </div>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+        </button>
       </div>
+    </div>
   </nav>
 
   <!-- New Project Button -->
-  <div class="p-4 border-t border-gray-200 dark:border-gray-700" *ngIf="user.role === 'Amministratore'">
-  <div class="px-3 py-2">
-    <button
-      (click)="openAddProjectDialog()"
-      class="px-4 py-1.5 text-sm border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-    >
-      + Nuovo Progetto
-    </button>
+  <div class="p-3 sm:p-4 border-t border-gray-200 dark:border-gray-700" *ngIf="user.role === 'Amministratore'">
+    <div class="px-2 sm:px-3 py-2">
+      <button
+        (click)="openAddProjectDialog()"
+        class="w-full px-3 sm:px-4 py-1.5 text-xs sm:text-sm border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+      >
+        + Nuovo Progetto
+      </button>
+    </div>
   </div>
-</div>
 
 </div>

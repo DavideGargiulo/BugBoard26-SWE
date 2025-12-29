@@ -8,4 +8,14 @@ import { ToastComponent } from "../../_internalComponents/toast/toast";
   templateUrl: './main-layout.html',
   imports: [RouterOutlet, SidebarComponent, ToastComponent]
 })
-export class MainLayoutComponent {}
+export class MainLayoutComponent {
+  isSidebarOpen = false;
+
+  toggleSidebar() {
+    this.isSidebarOpen = !this.isSidebarOpen;
+  }
+
+  closeSidebar() {
+    this.isSidebarOpen = false;
+  }
+}

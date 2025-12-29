@@ -1,40 +1,40 @@
 <div
   (click)="navigateToDetail()"
-  class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all h-64 flex flex-col cursor-pointer hover:border-gray-400 dark:hover:border-gray-500">
+  class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-all h-56 sm:h-64 flex flex-col cursor-pointer hover:border-gray-400 dark:hover:border-gray-500">
 
   <!-- Tags -->
-  <div class="flex gap-2 mb-4 flex-shrink-0">
+  <div class="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4 flex-shrink-0">
     <span
       *ngFor="let tag of issue.tags"
-      class="px-3 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full"
+      class="px-2 sm:px-3 py-0.5 sm:py-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full"
     >
       {{ tag }}
     </span>
   </div>
 
   <!-- Title -->
-  <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 flex-shrink-0 line-clamp-1">
+  <h3 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 sm:mb-3 flex-shrink-0 line-clamp-1">
     {{ issue.title }} #{{ issue.id }}
   </h3>
 
   <!-- Description -->
-  <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-6 flex-1 overflow-hidden line-clamp-3" [innerHTML]="issue.description">
+  <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4 sm:mb-6 flex-1 overflow-hidden line-clamp-2 sm:line-clamp-3" [innerHTML]="issue.description">
   </p>
 
   <!-- Footer -->
   <div class="flex items-center justify-between flex-shrink-0">
     <!-- Comments count -->
-    <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="flex items-center gap-1.5 sm:gap-2 text-gray-600 dark:text-gray-400">
+      <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
       </svg>
-      <span class="text-sm font-medium">{{ issue.commentsCount }}</span>
+      <span class="text-xs sm:text-sm font-medium">{{ issue.commentsCount }}</span>
     </div>
 
     <!-- Assignee initials -->
-    <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-      <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+      <span class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-200">
         {{ getInitials(issue.assignee) }}
       </span>
     </div>

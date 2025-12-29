@@ -158,4 +158,72 @@ export class IssuesListComponent implements OnInit, OnChanges {
   getPageNumbers(): number[] {
     return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
+
+  // Restituisce le pagine visibili (max 4)
+getVisiblePages(): number[] {
+  const maxVisible = 4;
+  const pages: number[] = [];
+
+  if (this.totalPages <= maxVisible) {
+    // Se ci sono 4 o meno pagine totali, mostra tutte
+    for (let i = 1; i <= this.totalPages; i++) {
+      pages.push(i);
+    }
+  } else {
+    // Logica per mostrare 4 pagine con la pagina corrente al centro quando possibile
+    let startPage: number;
+    let endPage: number;
+
+    if (this.currentPage <= 2) {
+      // Vicino all'inizio
+      startPage = 2;
+      endPage = Math.min(4, this.totalPages - 1);
+    } else if (this.currentPage >= this.totalPages - 1) {
+      // Vicino alla fine
+      startPage = Math.max(2, this.totalPages - 3);
+      endPage = this.totalPages - 1;
+    } else {
+      // Nel mezzo
+      startPage = this.currentPage - 1;
+      endPage = this.currentPage + 1;
+    }
+
+    // Aggiungi le pagine al range visibile
+    for (let i = startPage; i <= endPage; i++) {
+      if (i > 1 && i < this.totalPages) {
+        pages.push(i);
+      }
+    }
+  }
+
+  return pages;
+}
+
+// Mostra la prima pagina se totalPages > 4 e non è già nelle pagine visibili
+  shouldShowFirstPage(): boolean {
+    if (this.totalPages <= 4) return false;
+    const visiblePages = this.getVisiblePages();
+    return !visiblePages.includes(1);
+  }
+
+  // Mostra l'ultima pagina se totalPages > 4 e non è già nelle pagine visibili
+  shouldShowLastPage(): boolean {
+    if (this.totalPages <= 4) return false;
+    const visiblePages = this.getVisiblePages();
+    return !visiblePages.includes(this.totalPages);
+  }
+
+  // Mostra ellipsis a sinistra
+  shouldShowLeftEllipsis(): boolean {
+    if (this.totalPages <= 4) return false;
+    const visiblePages = this.getVisiblePages();
+    return visiblePages.length > 0 && visiblePages[0] > 2;
+  }
+
+  // Mostra ellipsis a destra
+  shouldShowRightEllipsis(): boolean {
+    if (this.totalPages <= 4) return false;
+    const visiblePages = this.getVisiblePages();
+    return visiblePages.length > 0 && visiblePages[visiblePages.length - 1] < this.totalPages - 1;
+  }
 }

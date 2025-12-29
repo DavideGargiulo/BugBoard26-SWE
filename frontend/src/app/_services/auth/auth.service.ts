@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
-import { User } from '../../_internalComponents/user-card/user-card';
 
 const LOCAL = false;
 const ISAUTH = false;

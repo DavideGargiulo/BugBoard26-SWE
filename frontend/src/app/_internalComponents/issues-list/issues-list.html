@@ -1,6 +1,6 @@
-<div class="w-full h-full bg-gray-50 dark:bg-gray-900 px-4 sm:px-6 lg:px-10 pt-6 sm:pt-8 lg:pt-10 p-4 sm:p-5 flex flex-col">
+<div class="w-full h-full bg-gray-50 dark:bg-gray-900 px-4 sm:px-6 lg:px-10 pt-6 sm:pt-8 lg:pt-10 pb-4 sm:pb-5 flex flex-col">
   <!-- Issues Grid - Responsive: 1 col mobile, 2 col tablet, 2 col desktop (come originale) -->
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-10 flex-1 overflow-hidden">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-10 flex-1 overflow-y-auto overflow-x-hidden pb-4">
     <app-issue-card
       *ngFor="let issue of paginatedIssues"
       [issue]="issue"
@@ -8,7 +8,7 @@
   </div>
 
   <!-- Pagination -->
-  <div class="flex flex-wrap items-center justify-center gap-2 pt-4 sm:pt-6 border-gray-200 dark:border-gray-700 flex-shrink-0">
+  <div class="flex flex-wrap items-center justify-center gap-2 pt-4 sm:pt-6 flex-shrink-0 bg-gray-50 dark:bg-gray-900">
     <!-- Prev Button -->
     <button
       (click)="goToPreviousPage()"
@@ -21,9 +21,38 @@
       <span class="hidden sm:inline">Prev</span>
     </button>
 
-    <!-- Page Numbers -->
+    <!-- First page (always visible if totalPages > 4) -->
     <button
-      *ngFor="let page of getPageNumbers()"
+      *ngIf="shouldShowFirstPage()"
+      (click)="goToPage(1)"
+      [class.bg-gray-900]="currentPage === 1"
+      [class.dark:bg-gray-100]="currentPage === 1"
+      [class.text-white]="currentPage === 1"
+      [class.dark:text-gray-900]="currentPage === 1"
+      [class.bg-white]="currentPage !== 1"
+      [class.dark:bg-gray-800]="currentPage !== 1"
+      [class.text-gray-700]="currentPage !== 1"
+      [class.dark:text-gray-200]="currentPage !== 1"
+      [class.hover:bg-gray-800]="currentPage === 1"
+      [class.dark:hover:bg-gray-200]="currentPage === 1"
+      [class.hover:bg-gray-50]="currentPage !== 1"
+      [class.dark:hover:bg-gray-700]="currentPage !== 1"
+      class="w-8 h-8 sm:w-10 sm:h-10 text-sm sm:text-base border border-gray-300 dark:border-gray-700 rounded-lg transition-colors font-medium"
+    >
+      1
+    </button>
+
+    <!-- Left ellipsis -->
+    <span
+      *ngIf="shouldShowLeftEllipsis()"
+      class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-gray-500 dark:text-gray-400"
+    >
+      ...
+    </span>
+
+    <!-- Page Numbers (max 4 visible) -->
+    <button
+      *ngFor="let page of getVisiblePages()"
       (click)="goToPage(page)"
       [class.bg-gray-900]="currentPage === page"
       [class.dark:bg-gray-100]="currentPage === page"
@@ -40,6 +69,35 @@
       class="w-8 h-8 sm:w-10 sm:h-10 text-sm sm:text-base border border-gray-300 dark:border-gray-700 rounded-lg transition-colors font-medium"
     >
       {{ page }}
+    </button>
+
+    <!-- Right ellipsis -->
+    <span
+      *ngIf="shouldShowRightEllipsis()"
+      class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-gray-500 dark:text-gray-400"
+    >
+      ...
+    </span>
+
+    <!-- Last page (always visible if totalPages > 4) -->
+    <button
+      *ngIf="shouldShowLastPage()"
+      (click)="goToPage(totalPages)"
+      [class.bg-gray-900]="currentPage === totalPages"
+      [class.dark:bg-gray-100]="currentPage === totalPages"
+      [class.text-white]="currentPage === totalPages"
+      [class.dark:text-gray-900]="currentPage === totalPages"
+      [class.bg-white]="currentPage !== totalPages"
+      [class.dark:bg-gray-800]="currentPage !== totalPages"
+      [class.text-gray-700]="currentPage !== totalPages"
+      [class.dark:text-gray-200]="currentPage !== totalPages"
+      [class.hover:bg-gray-800]="currentPage === totalPages"
+      [class.dark:hover:bg-gray-200]="currentPage === totalPages"
+      [class.hover:bg-gray-50]="currentPage !== totalPages"
+      [class.dark:hover:bg-gray-700]="currentPage !== totalPages"
+      class="w-8 h-8 sm:w-10 sm:h-10 text-sm sm:text-base border border-gray-300 dark:border-gray-700 rounded-lg transition-colors font-medium"
+    >
+      {{ totalPages }}
     </button>
 
     <!-- Next Button -->

@@ -4,7 +4,7 @@
   <!-- Issues Grid - Responsive: 1 col mobile, 2 col tablet, 2 col desktop (come originale) -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-10 flex-1 pb-4">
     <app-issue-card
-      *ngFor="let issue of issues"
+      *ngFor="let issue of filteredIssues"
       [issue]="issue"
     />
   </div>

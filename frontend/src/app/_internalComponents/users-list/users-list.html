@@ -1,6 +1,6 @@
-<div class="flex flex-col h-full w-full bg-gray-50 dark:bg-gray-900 px-10 pt-10 p-5">
-  <!-- Issues Grid -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-10 overflow-hidden">
+<div class="flex flex-col h-full w-full bg-gray-50 dark:bg-gray-900 px-4 sm:px-6 lg:px-10 pt-6 sm:pt-8 lg:pt-10 pb-4 sm:pb-5">
+  <!-- Issues Grid - 1 col mobile, 2 col tablet, 3 col desktop large -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 xl:gap-10 overflow-hidden">
     <app-user-card
       *ngFor="let user of paginatedUsers"
       [user]="user"
@@ -9,50 +9,86 @@
   </div>
 
   <!-- Pagination -->
-  <div class="mt-auto flex items-center justify-center gap-2 pt-6 border-gray-200 dark:border-gray-700 flex-shrink-0">
-    <!-- Prev Button -->
-    <button
-      (click)="goToPreviousPage()"
-      [disabled]="currentPage === 1"
-      class="px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-    >
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-      </svg>
-      Prev
-    </button>
+  <div class="mt-auto flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-2 pt-6 border-gray-200 dark:border-gray-700 flex-shrink-0">
 
-    <!-- Page Numbers -->
-    <button
-      *ngFor="let page of getPageNumbers()"
-      (click)="goToPage(page)"
-      [class.bg-gray-900]="currentPage === page"
-      [class.dark:bg-gray-100]="currentPage === page"
-      [class.text-white]="currentPage === page"
-      [class.dark:text-gray-900]="currentPage === page"
-      [class.bg-white]="currentPage !== page"
-      [class.dark:bg-gray-800]="currentPage !== page"
-      [class.text-gray-700]="currentPage !== page"
-      [class.dark:text-gray-200]="currentPage !== page"
-      [class.hover:bg-gray-800]="currentPage === page"
-      [class.dark:hover:bg-gray-200]="currentPage === page"
-      [class.hover:bg-gray-50]="currentPage !== page"
-      [class.dark:hover:bg-gray-700]="currentPage !== page"
-      class="w-10 h-10 border border-gray-300 dark:border-gray-700 rounded-lg transition-colors font-medium"
-    >
-      {{ page }}
-    </button>
+    <!-- Mobile: Compact layout -->
+    <div class="flex sm:hidden items-center gap-2 w-full max-w-sm">
+      <!-- Prev Button -->
+      <button
+        (click)="goToPreviousPage()"
+        [disabled]="currentPage === 1"
+        class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Prev
+      </button>
 
-    <!-- Next Button -->
-    <button
-      (click)="goToNextPage()"
-      [disabled]="currentPage === totalPages"
-      class="px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-    >
-      Next
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-      </svg>
-    </button>
+      <!-- Page indicator -->
+      <div class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">
+        {{ currentPage }} / {{ totalPages }}
+      </div>
+
+      <!-- Next Button -->
+      <button
+        (click)="goToNextPage()"
+        [disabled]="currentPage === totalPages"
+        class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+      >
+        Next
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Desktop: Full pagination -->
+    <div class="hidden sm:flex items-center gap-2">
+      <!-- Prev Button -->
+      <button
+        (click)="goToPreviousPage()"
+        [disabled]="currentPage === 1"
+        class="px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Prev
+      </button>
+
+      <!-- Page Numbers -->
+      <button
+        *ngFor="let page of getPageNumbers()"
+        (click)="goToPage(page)"
+        [class.bg-gray-900]="currentPage === page"
+        [class.dark:bg-gray-100]="currentPage === page"
+        [class.text-white]="currentPage === page"
+        [class.dark:text-gray-900]="currentPage === page"
+        [class.bg-white]="currentPage !== page"
+        [class.dark:bg-gray-800]="currentPage !== page"
+        [class.text-gray-700]="currentPage !== page"
+        [class.dark:text-gray-200]="currentPage !== page"
+        [class.hover:bg-gray-800]="currentPage === page"
+        [class.dark:hover:bg-gray-200]="currentPage === page"
+        [class.hover:bg-gray-50]="currentPage !== page"
+        [class.dark:hover:bg-gray-700]="currentPage !== page"
+        class="w-10 h-10 border border-gray-300 dark:border-gray-700 rounded-lg transition-colors font-medium"
+      >
+        {{ page }}
+      </button>
+
+      <!-- Next Button -->
+      <button
+        (click)="goToNextPage()"
+        [disabled]="currentPage === totalPages"
+        class="px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+      >
+        Next
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
   </div>
 </div>

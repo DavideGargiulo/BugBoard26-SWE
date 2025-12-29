@@ -8,18 +8,29 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 /* Rimuovi padding e background di default di Material */
 .custom-dialog-container .mat-mdc-dialog-container {
   padding: 0 !important;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem; /* Aumentato da 0.5rem per bordi più arrotondati */
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-height: 90vh; /* Previene overflow verticale */
+  overflow: hidden; /* Assicura che il contenuto non sfori dai bordi arrotondati */
 }
 
 /* Rimuovi il background bianco di default */
 .custom-dialog-container .mdc-dialog__surface {
   background-color: transparent !important;
+  border-radius: 0.75rem; /* Stesso border-radius del container */
 }
 
 /* Backdrop scuro */
 .cdk-overlay-dark-backdrop {
   background: rgba(0, 0, 0, 0.5);
+}
+
+/* Responsive: riduce la larghezza su mobile */
+@media (max-width: 640px) {
+  .custom-dialog-container .mat-mdc-dialog-container {
+    max-width: calc(100vw - 2rem) !important;
+    margin: 1rem;
+  }
 }
 
 .editor-btn {

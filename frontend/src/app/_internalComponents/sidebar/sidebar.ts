@@ -185,6 +185,8 @@ export class SidebarComponent implements OnInit {
   openAddProjectDialog(): void {
     const dialogRef = this.dialog.open(ProjectDialogComponent, {
       width: '450px',
+      maxWidth: '95vw', // Previene overflow orizzontale su mobile
+      maxHeight: '90vh', // Previene overflow verticale
       panelClass: 'custom-dialog-container',
       disableClose: true,
       autoFocus: true

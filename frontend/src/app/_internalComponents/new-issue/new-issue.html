@@ -1,17 +1,23 @@
-<div class="flex flex-col h-screen overflow-hidden bg-gray-100 dark:bg-gray-900">
+<div class="flex flex-col min-h-[100dvh] overflow-hidden bg-gray-100 dark:bg-gray-900">
 
-  <div class="flex-1 overflow-hidden">
-    <!-- Header -->
-    <header class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-      <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">{{ projectName }} - Nuova Issue</h2>
-    </header>
+  <!-- Wrapper pagina -->
+  <div class="flex-1 min-h-0 overflow-hidden flex flex-col">
+
+    <!-- Header (FIX hamburger: stesso pattern della topbar -> pt-12 su mobile) -->
+   <header class="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+  <div class="pt-12 lg:pt-0 flex items-center gap-2 sm:gap-3 w-full justify-start">
+    <h2 class="w-full min-w-0 text-left text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">
+      {{ projectName }} - Nuova Issue
+    </h2>
+  </div>
+</header>
+
 
     <!-- Content wrapper -->
-    <div class="h-[calc(100%-80px)] overflow-hidden p-6">
-
+    <div class="flex-1 min-h-0 overflow-hidden p-4 sm:p-6">
       <div class="h-full flex flex-col gap-4">
 
-        <!-- Titolo (non flessibile) -->
+        <!-- Titolo -->
         <div class="flex-shrink-0">
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Titolo</label>
           <input
@@ -22,19 +28,18 @@
           />
         </div>
 
-        <!-- Descrizione: wrapper flessibile che si espande -->
+        <!-- Descrizione -->
         <div class="flex-1 min-h-0 flex flex-col">
 
           <!-- Toolbar -->
-          <div class="border border-gray-300 dark:border-gray-700 rounded-t-lg bg-gray-100 dark:bg-gray-800 px-3 py-2 flex-shrink-0">
-            <div class="flex items-center gap-2 text-lg">
-
+          <div class="border border-gray-300 dark:border-gray-700 rounded-t-lg bg-gray-100 dark:bg-gray-800 px-2 sm:px-3 py-2 flex-shrink-0">
+            <div class="flex items-center gap-1 sm:gap-2 text-base sm:text-lg flex-wrap">
               <button (click)="formatDoc('bold')" class="p-2 text-gray-700 dark:text-gray-200 font-bold hover:bg-gray-200 dark:hover:bg-gray-700 rounded">B</button>
               <button (click)="formatDoc('italic')" class="p-2 text-gray-700 dark:text-gray-200 italic hover:bg-gray-200 dark:hover:bg-gray-700 rounded">I</button>
               <button (click)="formatDoc('underline')" class="p-2 text-gray-700 dark:text-gray-200 underline hover:bg-gray-200 dark:hover:bg-gray-700 rounded">U</button>
               <button (click)="formatDoc('strikeThrough')" class="p-2 text-gray-700 dark:text-gray-200 line-through hover:bg-gray-200 dark:hover:bg-gray-700 rounded">S</button>
 
-              <div class="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
+              <div class="hidden sm:block w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
 
               <!-- JUSTIFY LEFT -->
               <button (click)="formatDoc('justifyLeft')" class="editor-btn">
@@ -72,7 +77,7 @@
                 </span>
               </button>
 
-              <div class="w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
+              <div class="hidden sm:block w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
 
               <button (click)="triggerImageUpload()" class="p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">📷</button>
             </div>
@@ -84,67 +89,102 @@
                   bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
                   scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200
                   dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800"
-            [style]="{'scrollbar-gutter':'stable'}">
-
-            <!-- WRAPPER INTERNO CON PADDING -->
+            [style]="{'scrollbar-gutter':'stable'}"
+          >
             <div
               #content
               contenteditable="true"
               spellcheck="false"
-              class="p-6 min-h-full outline-none">
-            </div>
-
+              class="p-3 sm:p-6 min-h-full outline-none break-words"
+            ></div>
           </div>
 
         </div>
 
-        <!-- Immagini caricate (opzionale) -->
+        <!-- Immagini caricate -->
         <div class="flex-shrink-0" *ngIf="uploadedImages.length > 0">
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             File allegati ({{ uploadedImages.length }}/3)
           </label>
+
           <div class="flex flex-wrap gap-2">
             <div *ngFor="let image of uploadedImages; let i = index" class="relative group">
               <div class="w-20 h-20 border-2 border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
                 <img [src]="imagePreviewUrls[i]" [alt]="image.name" class="max-w-full max-h-full object-contain"/>
               </div>
-              <button type="button" (click)="removeImage(i)" class="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">×</button>
-              <span class="block text-xs text-gray-600 dark:text-gray-400 mt-1 truncate w-20" [title]="image.name">{{ image.name }}</span>
+
+              <!-- su touch: sempre visibile -->
+              <button
+                type="button"
+                (click)="removeImage(i)"
+                class="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full
+                       opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity
+                       flex items-center justify-center"
+                aria-label="Rimuovi allegato"
+              >
+                ×
+              </button>
+
+              <span class="block text-xs text-gray-600 dark:text-gray-400 mt-1 truncate w-20" [title]="image.name">
+                {{ image.name }}
+              </span>
             </div>
           </div>
         </div>
 
         <!-- Tipo, Priorità e Azioni -->
-        <div class="flex items-end gap-4 flex-shrink-0">
-          <div class="flex-1">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipo</label>
-            <select [(ngModel)]="tipo" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg">
-              <option value="" disabled selected>Seleziona tipo</option>
-              <option value="bug">Bug</option>
-              <option value="feature">Feature</option>
-              <option value="question">Question</option>
-              <option value="documentation">Documentation</option>
-            </select>
+        <div class="flex flex-col lg:flex-row lg:items-end gap-4 flex-shrink-0">
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipo</label>
+              <select
+                [(ngModel)]="tipo"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg"
+              >
+                <option value="" disabled selected>Seleziona tipo</option>
+                <option value="bug">Bug</option>
+                <option value="feature">Feature</option>
+                <option value="question">Question</option>
+                <option value="documentation">Documentation</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Priorità</label>
+              <select
+                [(ngModel)]="priorita"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg"
+              >
+                <option value="" disabled selected>Seleziona priorità</option>
+                <option value="bassa">Bassa</option>
+                <option value="media">Media</option>
+                <option value="alta">Alta</option>
+              </select>
+            </div>
           </div>
 
-          <div class="flex-1">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Priorità</label>
-            <select [(ngModel)]="priorita" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg">
-              <option value="" disabled selected>Seleziona priorità</option>
-              <option value="bassa">Bassa</option>
-              <option value="media">Media</option>
-              <option value="alta">Alta</option>
-            </select>
+          <!-- Actions: full-width su mobile -->
+          <div class="flex flex-col-reverse sm:flex-row gap-3 lg:justify-end lg:self-end">
+            <button
+              type="button"
+              (click)="onCancel()"
+              class="w-full sm:w-auto px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              Annulla
+            </button>
+            <button
+              type="button"
+              (click)="onConfirm()"
+              class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Conferma
+            </button>
           </div>
 
-          <div class="flex gap-3">
-            <button type="button" (click)="onCancel()" class="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Annulla</button>
-            <button type="button" (click)="onConfirm()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Conferma</button>
-          </div>
         </div>
 
       </div>
-
     </div>
   </div>
 </div>

@@ -62,19 +62,15 @@ export class UserTopbar implements OnInit {
 
   openAddUserDialog(): void {
     const dialogRef = this.dialog.open(UserDialogComponent, {
-      width: '450px',
+      width: '100%',
+      maxWidth: '32rem',
       panelClass: 'custom-dialog-container',
       disableClose: true,
       autoFocus: true
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        console.log('Dati utente ricevuti:', result);
-        this.createUser(result);
-      } else {
-        console.log('Dialog chiuso senza conferma');
-      }
+      if (result) this.createUser(result);
     });
   }
 

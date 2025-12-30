@@ -1,0 +1,1382 @@
+<svg version="1.1" baseProfile="full" width="7264.8" height="1364.0" viewBox="0 0 7264.75 1364" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events">
+<desc >#.interface: fill=lightblue
+#.enumeration: fill=lightgreen
+#.type: fill=lightgray
+
+[App|\#title: WritableSignal&lt;string&gt;|+ngOnInit(): void]
+[OnInit]&lt;:--[App]
+[DashboardComponent|+issues: Issue\[\];+searchTerm: string;+tipoFilter: string;+statoFilter: string;+prioritaFilter: string;+todoPercentage: number;+inProgressPercentage: number;+donePercentage: number;-issueService: IssueService|+ngOnInit(): void;+loadAllIssues(): void;+onSearchChange(): void;+onTipoFilterChange(): void;+onStatoFilterChange(): void;+onPrioritaFilterChange(): void;+onStatisticsChange(): void]
+[OnInit]&lt;:--[DashboardComponent]
+[DashboardComponent]  - 0..* [Issue]
+[DashboardComponent]  -  [IssueService]
+[LoginComponent|+loginForm: FormGroup&lt;any&gt;;+errorMessage: string;+isLoading: boolean;+showPassword: boolean;-fb: FormBuilder;-authService: AuthService;-router: Router|+togglePasswordVisibility(): void;+onSubmit(): void]
+[LoginComponent]  -  [AuthService]
+[ProjectComponent|+issues: Issue\[\];+projectName: string;+searchTerm: string;+tipoFilter: string;+statoFilter: string;+prioritaFilter: string;+todoPercentage: number;+inProgressPercentage: number;+donePercentage: number;-issueService: IssueService;-route: ActivatedRoute|+ngOnInit(): void;+onSearchChange(): void;+onTipoFilterChange(): void;+onStatoFilterChange(): void;+onPrioritaFilterChange(): void;+onStatisticsChange(): void]
+[OnInit]&lt;:--[ProjectComponent]
+[ProjectComponent]  - 0..* [Issue]
+[ProjectComponent]  -  [IssueService]
+[UsersComponent|-userService: UserService;+users: User\[\];+searchTerm: string;+roleFilter: string|+ngOnInit(): void;+loadUsers(): void;+onSearchChange(): void;+onRoleFilterChange(): void]
+[OnInit]&lt;:--[UsersComponent]
+[UsersComponent]  -  [UserService]
+[UsersComponent]  - 0..* [User]
+[ConfirmDialogComponent|+dialogRef: MatDialogRef&lt;ConfirmDialogComponent, any&gt;;+data: ConfirmDialogData|+onCancel(): void;+onConfirm(): void]
+[&lt;interface&gt;ConfirmDialogData|+title: string;+message: string;+confirmText?: string;+cancelText?: string;+isDanger?: boolean|]
+[ConfirmDialogComponent]  -  [ConfirmDialogData]
+[EditIssueComponent|+content: ElementRef&lt;HTMLDivElement&gt;;+issueId: number;+issue: any;+loading: boolean;+error: string;+uploadedImages: File\[\];+imagePreviewUrls: string\[\];-route: ActivatedRoute;-router: Router;-issueService: IssueService;-userSubscription: Subscription;-currentUser: { email: any; isAdmin: any; };-cdr: ChangeDetectorRef;-authService: AuthService;-toastService: ToastService|+ngOnInit(): void;+onImageError(): void;+loadIssueDetail(): void;+formatDoc(): void;+onImageUpload(): void;+triggerImageUpload(): void;+removeImage(): void;+submitEdit(): void;+goBack(): void;+getInitials(): string;+getFileName(): string;+isImage(): boolean;+canEditIssue(): boolean;+isCompleted(): boolean;+getAttachmentUrl(): string;+isImageAttachment(): boolean;+isPdfAttachment(): boolean;+formatFileSize(): string;+downloadAttachment(): void]
+[OnInit]&lt;:--[EditIssueComponent]
+[EditIssueComponent]  -  [IssueService]
+[EditIssueComponent]  -  [AuthService]
+[EditIssueComponent]  -  [ToastService]
+[IssueCardComponent|+issue: Issue;-router: Router|+getInitials(): string;+navigateToDetail(): void]
+[&lt;interface&gt;Issue|+id: number;+title: string;+description: string;+tags: string\[\];+commentsCount: number;+assignee: string|]
+[IssueCardComponent]  -  [Issue]
+[IssueDetailComponent|+content: ElementRef&lt;HTMLDivElement&gt;;+issueId: number;+issue: any;+comments: Comment\[\];+loading: boolean;+error: string;+newComment: string;+uploadedImages: File\[\];+imagePreviewUrls: string\[\];-route: ActivatedRoute;-router: Router;-issueService: IssueService;-userSubscription: Subscription;-currentUser: { email: any; isAdmin: any; };-cdr: ChangeDetectorRef;-authService: AuthService;-toastService: ToastService|+ngOnInit(): void;+onImageError(): void;+loadIssueDetail(): void;+formatDoc(): void;+onImageUpload(): void;+triggerImageUpload(): void;+removeImage(): void;+submitComment(): void;+goBack(): void;+getInitials(): string;+getFileName(): string;+isImage(): boolean;+canEditIssue(): boolean;+isCompleted(): boolean;+editIssue(): void;+completeIssue(): void;+getAttachmentUrl(): string;+isImageAttachment(): boolean;+isPdfAttachment(): boolean;+formatFileSize(): string;+downloadAttachment(): void]
+[&lt;interface&gt;Comment|+id: number;+author: string;+text: string;+date: Date;+attachments?: { id: number; nome_file_originale: string; tipo_mime: string; percorso_relativo: string; dimensione_byte: number; }\[\]|]
+[OnInit]&lt;:--[IssueDetailComponent]
+[IssueDetailComponent]  - 0..* [Comment]
+[IssueDetailComponent]  -  [IssueService]
+[IssueDetailComponent]  -  [AuthService]
+[IssueDetailComponent]  -  [ToastService]
+[IssuesListComponent|+issues: Issue\[\];+searchTerm: string;+tipoFilter: string;+statoFilter: string;+prioritaFilter: string;+statisticsChange: EventEmitter&lt;{ todo: number; inProgress: number; done: number; }&gt;;+filteredIssues: Issue\[\];-statisticsCalculated: boolean|+ngOnInit(): void;+ngOnChanges(): void;+applyFilters(): void;+calculateStatistics(): void]
+[OnInit]&lt;:--[IssuesListComponent]
+[OnChanges]&lt;:--[IssuesListComponent]
+[IssuesListComponent]  - 0..* [Issue]
+[IssuesListComponent]  - 0..* [Issue]
+[NewIssueComponent|+content: ElementRef&lt;HTMLDivElement&gt;;+cancel: EventEmitter&lt;void&gt;;+confirm: EventEmitter&lt;any&gt;;+title: string;+tipo: string;+priorita: string;+projectName: string;+uploadedImages: File\[\];+isLoading: boolean;+imagePreviewUrls: string\[\];-router: Router;-route: ActivatedRoute;-projectService: ProjectService;-cdr: ChangeDetectorRef;-toastService: ToastService|+ngOnInit(): void;+formatDoc(): void;+onImageUpload(): void;+triggerImageUpload(): void;+removeImage(): void;+onCancel(): void;-resetForm(): void;+ngOnDestroy(): void;+onConfirm(): void]
+[OnInit]&lt;:--[NewIssueComponent]
+[OnDestroy]&lt;:--[NewIssueComponent]
+[NewIssueComponent]  -  [ProjectService]
+[NewIssueComponent]  -  [ToastService]
+[ProjectDialogComponent|+newProjectForm: FormGroup&lt;any&gt;;+errorMessage: string;+isLoading: boolean;+projectData: { nome: string; };+dialogRef: MatDialogRef&lt;ProjectDialogComponent, any&gt;;-fb: FormBuilder|+onSubmit(): void]
+[SidebarComponent|+closeSidebar: EventEmitter&lt;void&gt;;+projects: string\[\];+filteredProjects: string\[\];+searchTerm: string;+selectedProject: string;+hoveredProject: string;+user: User;-userSubscription: Subscription;+isDarkMode: boolean;-router: Router;-projectService: ProjectService;-authService: AuthService;+dialog: MatDialog;-toastService: ToastService|+onCloseSidebar(): void;+getInitials(): string;+ngOnInit(): void;-extractRole(): string;+toggleTheme(): void;+navigate(): void;+isActive(): boolean;+isProjectActive(): boolean;+onSearchInput(): void;+filterProjects(): void;+selectProject(): void;+logout(): void;+openAddProjectDialog(): void;+createProject(): void;+openDeleteProjectDialog(): void;+deleteProject(): void]
+[OnInit]&lt;:--[SidebarComponent]
+[SidebarComponent]  -  [User]
+[SidebarComponent]  -  [ProjectService]
+[SidebarComponent]  -  [AuthService]
+[SidebarComponent]  -  [ToastService]
+[ToastComponent|+toasts: Toast\[\];+copiedIds: Set&lt;string&gt;;-timeouts: Map&lt;string, any&gt;;-toastService: ToastService|+ngOnInit(): void;+removeToast(): void;+copyToClipboard(): void;+trackByToastId(): string;+ngOnDestroy(): void]
+[OnInit]&lt;:--[ToastComponent]
+[OnDestroy]&lt;:--[ToastComponent]
+[ToastComponent]  - 0..* [Toast]
+[ToastComponent]  -  [ToastService]
+[TopbarComponent|+tipo: string;+stato: string;+priorita: string;+searchTerm: string;+tipi: string\[\];+stati: string\[\];+prioritaListe: string\[\];+todoPercentage: number;+inProgressPercentage: number;+donePercentage: number;+tipoFilterChange: EventEmitter&lt;string&gt;;+statoFilterChange: EventEmitter&lt;string&gt;;+prioritaFilterChange: EventEmitter&lt;string&gt;;+searchChange: EventEmitter&lt;string&gt;;+currentRoute: string;+selectedProject: string;-destroy$: Subject&lt;void&gt;;-router: Router;-projectService: ProjectService|+navigateToNewIssuePage(): void;+onTipoChange(): void;+onStatoChange(): void;+onPrioritaChange(): void;+onSearchChange(): void;+ngOnInit(): void;+ngOnDestroy(): void;+isDashboard(): boolean;+isProject(): boolean;+formatPercentage(): string;+getSlicePath(): string]
+[OnInit]&lt;:--[TopbarComponent]
+[OnDestroy]&lt;:--[TopbarComponent]
+[TopbarComponent]  -  [ProjectService]
+[UserCardComponent|+user: User;+currentUser: User;+deleteUser: EventEmitter&lt;User&gt;;-userSubscription: Subscription;+showDeleteModal: boolean;-authService: AuthService;-toastService: ToastService|+ngOnInit(): void;+getInitials(): string;+canDeleteUser(): boolean;+onDelete(): void;-extractRole(): string]
+[&lt;interface&gt;User|+name: string;+email: string;+role: string|]
+[OnInit]&lt;:--[UserCardComponent]
+[UserCardComponent]  -  [User]
+[UserCardComponent]  -  [User]
+[UserCardComponent]  -  [AuthService]
+[UserCardComponent]  -  [ToastService]
+[UserDialogComponent|+newUserForm: FormGroup&lt;any&gt;;+errorMessage: string;+isLoading: boolean;+userData: { nome: string; cognome: string; email: string; ruolo: string; };+dialogRef: MatDialogRef&lt;UserDialogComponent, any&gt;;-fb: FormBuilder|+onSubmit(): void]
+[UserTopbar|+currentUser: User;+searchChange: EventEmitter&lt;string&gt;;+roleFilterChange: EventEmitter&lt;string&gt;;+searchTerm: string;+selectedRole: string;-userSubscription: Subscription;-router: Router;+dialog: MatDialog;-authService: AuthService;-toastService: ToastService|+ngOnInit(): void;+onSearchChange(): void;+onRoleFilterChange(): void;-extractRole(): string;+openAddUserDialog(): void;+createUser(): void;+canCreateUser(): boolean]
+[OnInit]&lt;:--[UserTopbar]
+[UserTopbar]  -  [User]
+[UserTopbar]  -  [AuthService]
+[UserTopbar]  -  [ToastService]
+[UserListComponent|+users: User\[\];+searchTerm: string;+roleFilter: string;+filteredUsers: User\[\];-authService: AuthService;-toastService: ToastService|+ngOnInit(): void;+ngOnChanges(): void;+applyFilters(): void;+onUserDelete(): void]
+[OnInit]&lt;:--[UserListComponent]
+[OnChanges]&lt;:--[UserListComponent]
+[UserListComponent]  - 0..* [User]
+[UserListComponent]  - 0..* [User]
+[UserListComponent]  -  [AuthService]
+[UserListComponent]  -  [ToastService]
+[AuthService|-http: HttpClient;-router: Router;-apiUrl: &quot;http://localhost:3000/api/auth&quot;;-usersApiUrl: &quot;http://localhost:3000/api/users&quot;;-userProfileSubject: BehaviorSubject&lt;any&gt;;+currentUser$: Observable&lt;any&gt;|+login(): Observable&lt;any&gt;;+logout(): void;+checkSession(): Observable&lt;boolean&gt;;+isAuthenticated(): Observable&lt;boolean&gt;;+hasRole(): boolean;+register(): Observable&lt;any&gt;;+deleteUser(): Observable&lt;any&gt;]
+[&lt;interface&gt;KeycloakTokenPayload|+given_name: string;+family_name: string;+email: string;+realm_access: { roles: string\[\]; };+sub: string|]
+[IssueService|-http: HttpClient;-apiUrl: string;-commentApiUrl: string|+getIssuesByProject(): Observable&lt;any\[\]&gt;;+getAllIssues(): Observable&lt;any\[\]&gt;;+getIssueById(): Observable&lt;any&gt;;+createComment(): Observable&lt;any&gt;;+updateIssue(): Observable&lt;any&gt;;+completeIssue(): Observable&lt;any&gt;]
+[ProjectService|-apiUrl: &quot;http://localhost:3000/api&quot;;-selectedProjectSubject: BehaviorSubject&lt;string&gt;;+selectedProject$: Observable&lt;string&gt;;-http: HttpClient|+setSelectedProject(): void;+getSelectedProject(): string;+createProject(): Observable&lt;any&gt;;+getAllProjects(): Observable&lt;any\[\]&gt;;+createIssue(): Observable&lt;any&gt;;+deleteProject(): Observable&lt;Object&gt;]
+[ToastService|-toastSubject: Subject&lt;Toast&gt;;+toasts$: Observable&lt;Toast&gt;;-idCounter: number|+show(): void;+success(): void;+error(): void;+info(): void;+warning(): void]
+[&lt;interface&gt;Toast|+id: string;+title: string;+message: string;+type: &quot;error&quot; \| &quot;success&quot; \| &quot;info&quot; \| &quot;warning&quot;;+autoDismiss?: boolean;+copyText?: string|]
+[UserService|-http: HttpClient;-apiUrl: string|+getAllUsers(): Observable&lt;User\[\]&gt;]
+[LoginLayoutComponent||]
+[MainLayoutComponent|+isSidebarOpen: boolean|+toggleSidebar(): void;+closeSidebar(): void]</desc>
+<g stroke-width="1.0" text-align="left" font="12pt Helvetica, Arial, sans-serif" font-size="12pt" font-family="Helvetica" font-weight="normal" font-style="normal">
+<g font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" stroke-width="3.0" stroke-linejoin="round" stroke-linecap="round" stroke="#33322E">
+<g stroke="transparent" fill="transparent">
+<rect x="0.0" y="0.0" height="1364.0" width="7264.8" stroke="none"></rect>
+</g>
+<g transform="translate(8, 8)" fill="#33322E">
+<g transform="translate(20, 20)" fill="#33322E" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal">
+<g stroke-dasharray="6 6">
+<path d="M3751.2 122.7 L121 262 L121 590 L121.0 590.0 " fill="none"></path>
+</g>
+<path d="M3751.4 128.0 L3751.2 122.7 L3751.0 117.4 L3764.5 122.2 Z"></path>
+<g stroke-dasharray="6 6">
+<path d="M3751.2 123.7 L1417 262 L1417 476.5 L1417.0 476.5 " fill="none"></path>
+</g>
+<path d="M3751.5 129.0 L3751.2 123.7 L3750.9 118.3 L3764.5 122.9 Z"></path>
+<text x="1024.8" y="1125.5" stroke="none">0..*</text>
+<path d="M1417.0 799.5 L1417 1014 L1059.75 1133.5274374001065 L1059.8 1133.5 " fill="none"></path>
+<path d="M1553.0 687.8 L2444 1014 L2395.312101910828 1066 L2395.3 1066.0 " fill="none"></path>
+<path d="M3288.6 742.5 L3526.5 1014 L3511.2133757961783 1034 L3511.2 1034.0 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M3751.2 123.3 L1105 262 L1105 468.5 L1105.0 468.5 " fill="none"></path>
+</g>
+<path d="M3751.5 128.7 L3751.2 123.3 L3750.9 118.0 L3764.5 122.7 Z"></path>
+<text x="989.4" y="1086.5" stroke="none">0..*</text>
+<path d="M1105.0 807.5 L1105 1014 L1024.3718152866243 1094.5 L1024.4 1094.5 " fill="none"></path>
+<path d="M1241.0 680.7 L2302.5 1014 L2300.6783439490446 1066 L2300.7 1066.0 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M3751.2 124.4 L1934 262 L1934 541 L1934.0 541.0 " fill="none"></path>
+</g>
+<path d="M3751.6 129.7 L3751.2 124.4 L3750.8 119.1 L3764.5 123.4 Z"></path>
+<path d="M1934.0 735.0 L1934 1014 L1934 1115 L1934.0 1115.0 " fill="none"></path>
+<text x="4265.8" y="1150.2" stroke="none">0..*</text>
+<path d="M2053.0 652.8 L4954.5 1014 L4257.75 1158.1710049423393 L4257.8 1158.2 " fill="none"></path>
+<path d="M1684.0 185.0 L1684 262 L1684 569.5 L1684.0 569.5 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M3800.1 150.2 L3816 262 L3816 314.5 L3816.0 314.5 " fill="none"></path>
+</g>
+<path d="M3805.4 149.5 L3800.1 150.2 L3794.9 151.0 L3798.3 137.0 Z"></path>
+<path d="M3645.5 679.3 L2262.5 1014 L2273.9267515923566 1066 L2273.9 1066.0 " fill="none"></path>
+<path d="M3645.5 832.6 L3486.5 1014 L3476.308917197452 1034 L3476.3 1034.0 " fill="none"></path>
+<path d="M3986.5 671.9 L5709.25 1014 L5423 1122.8824954572985 L5423.0 1122.9 " fill="none"></path>
+<path d="M822.0 702.0 L822 1014 L886.4769108280254 1094.5 L886.5 1094.5 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M3751.3 126.9 L2731 262 L2731 282 L2731.0 282.0 " fill="none"></path>
+</g>
+<path d="M3752.0 132.2 L3751.3 126.9 L3750.6 121.6 L3764.5 125.2 Z"></path>
+<text x="2596.0" y="1054.0" stroke="none">0..*</text>
+<path d="M2636.3 994.0 L2631 1014 L2631 1062 L2631.0 1062.0 " fill="none"></path>
+<path d="M2560.5 745.7 L2135.5 1014 L2188.9904458598726 1066 L2189.0 1066.0 " fill="none"></path>
+<path d="M2901.5 891.4 L2984 1014 L3219.5 1101.5112426035503 L3219.5 1101.5 " fill="none"></path>
+<path d="M2901.5 659.8 L5669.25 1014 L5423 1117.7189805499665 L5423.0 1117.7 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M3751.2 123.1 L771.75 262 L598.2177526595744 484.5 L598.2 484.5 " fill="none"></path>
+</g>
+<path d="M3751.4 128.4 L3751.2 123.1 L3750.9 117.8 L3764.5 122.5 Z"></path>
+<g stroke-dasharray="6 6">
+<path d="M319.8 150.3 L319.75 262 L413.6911569148936 484.5 L413.7 484.5 " fill="none"></path>
+</g>
+<path d="M325.1 150.3 L319.8 150.3 L314.4 150.3 L319.8 137.0 Z"></path>
+<text x="843.8" y="1107.6" stroke="none">0..*</text>
+<path d="M540.5 791.5 L630.25 1014 L835.75 1115.6173228346456 L835.8 1115.6 " fill="none"></path>
+<text x="843.8" y="1127.1" stroke="none">0..*</text>
+<path d="M470.3 791.5 L458.5 1014 L835.75 1135.0592743995912 L835.8 1135.1 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M3840.8 124.4 L5669.25 262 L5599.967087765957 411.5 L5600.0 411.5 " fill="none"></path>
+</g>
+<path d="M3841.2 119.1 L3840.8 124.4 L3840.4 129.7 L3827.5 123.4 Z"></path>
+<g stroke-dasharray="6 6">
+<path d="M5350.8 150.3 L5350.75 262 L5408.104720744681 411.5 L5408.1 411.5 " fill="none"></path>
+</g>
+<path d="M5356.1 150.3 L5350.8 150.3 L5345.4 150.3 L5350.8 137.0 Z"></path>
+<path d="M5665.5 741.5 L6114.25 1014 L6060.791401273886 1058 L6060.8 1058.0 " fill="none"></path>
+<path d="M5495.0 864.5 L5495 1014 L5419.140127388535 1074 L5419.1 1074.0 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M3840.7 126.9 L4862.5 262 L4862.5 363 L4862.5 363.0 " fill="none"></path>
+</g>
+<path d="M3841.4 121.6 L3840.7 126.9 L3840.0 132.2 L3827.5 125.2 Z"></path>
+<path d="M4862.5 913.0 L4862.5 1014 L4257.75 1156.4008248968878 L4257.8 1156.4 " fill="none"></path>
+<path d="M5008.5 683.3 L6074.25 1014 L6032.001592356688 1058 L6032.0 1058.0 " fill="none"></path>
+<path d="M4716.5 666.6 L2944 1014 L3219.5 1107.521081081081 L3219.5 1107.5 " fill="none"></path>
+<path d="M5008.5 755.2 L5330.75 1014 L5317.660828025478 1074 L5317.7 1074.0 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M3840.8 125.2 L5310.75 262 L5206.782579787234 533 L5206.8 533.0 " fill="none"></path>
+</g>
+<path d="M3841.3 119.9 L3840.8 125.2 L3840.3 130.5 L3827.5 123.9 Z"></path>
+<g stroke-dasharray="6 6">
+<path d="M5302.7 142.4 L5034.5 262 L5129.63829787234 533 L5129.6 533.0 " fill="none"></path>
+</g>
+<path d="M5304.9 147.3 L5302.7 142.4 L5300.5 137.6 L5314.9 137.0 Z"></path>
+<text x="6353.0" y="1086.5" stroke="none">0..*</text>
+<path d="M5284.5 675.6 L6345 1014 L6345 1094.5 L6345.0 1094.5 " fill="none"></path>
+<path d="M5166.5 743.0 L5166.5 1014 L5216.1815286624205 1074 L5216.2 1074.0 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M3840.8 124.0 L5903.5 262 L5898.127659574468 363 L5898.1 363.0 " fill="none"></path>
+</g>
+<path d="M3841.2 118.7 L3840.8 124.0 L3840.4 129.3 L3827.5 123.1 Z"></path>
+<g stroke-dasharray="6 6">
+<path d="M5403.8 141.9 L5709.25 262 L5756.056515957447 363 L5756.1 363.0 " fill="none"></path>
+</g>
+<path d="M5405.8 136.9 L5403.8 141.9 L5401.9 146.8 L5391.4 137.0 Z"></path>
+<path d="M5883.5 913.0 L5883.5 1014 L5894.710191082802 1058 L5894.7 1058.0 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M3840.6 129.5 L4537 262 L4537 509 L4537.0 509.0 " fill="none"></path>
+</g>
+<path d="M3841.6 124.2 L3840.6 129.5 L3839.6 134.7 L3827.5 127.0 Z"></path>
+<path d="M4586.0 767.0 L4679.75 1014 L4257.75 1150.888429752066 L4257.8 1150.9 " fill="none"></path>
+<path d="M4484.7 767.0 L4384.5 1014 L4257.75 1119.4291390728476 L4257.8 1119.4 " fill="none"></path>
+<path d="M4397.5 670.1 L2904 1014 L3219.5 1112.5741293532337 L3219.5 1112.6 " fill="none"></path>
+<path d="M4676.5 735.6 L5074.5 1014 L5170 1081.5382882882882 L5170.0 1081.5 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M3840.1 136.7 L4192 262 L4192 468.5 L4192.0 468.5 " fill="none"></path>
+</g>
+<path d="M3841.8 131.7 L3840.1 136.7 L3838.3 141.7 L3827.5 132.2 Z"></path>
+<path d="M4192.0 807.5 L4192 1014 L4194.49601910828 1118.5 L4194.5 1118.5 " fill="none"></path>
+<path d="M4026.5 684.9 L2864 1014 L3219.5 1116.8820276497695 L3219.5 1116.9 " fill="none"></path>
+<path d="M4357.5 711.9 L5034.5 1014 L5170 1095.1965648854962 L5170.0 1095.2 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M3767.3 145.7 L3632.5 262 L3532.126329787234 525 L3532.1 525.0 " fill="none"></path>
+</g>
+<path d="M3770.8 149.7 L3767.3 145.7 L3763.9 141.7 L3777.4 137.0 Z"></path>
+<g stroke-dasharray="6 6">
+<path d="M388.1 124.4 L3190 262 L3399.1409574468084 525 L3399.1 525.0 " fill="none"></path>
+</g>
+<path d="M388.3 119.0 L388.1 124.4 L387.8 129.7 L374.8 123.7 Z"></path>
+<text x="4153.0" y="1110.5" stroke="none">0..*</text>
+<path d="M3605.5 716.9 L4044 1014 L4145.005573248408 1118.5 L4145.0 1118.5 " fill="none"></path>
+<text x="4141.8" y="1143.7" stroke="none">0..*</text>
+<path d="M3550.2 751.0 L3692.5 1014 L4133.75 1151.6577247888724 L4133.8 1151.7 " fill="none"></path>
+<path d="M3372.5 703.9 L2824 1014 L3219.5 1120.5982832618026 L3219.5 1120.6 " fill="none"></path>
+<path d="M3605.5 667.1 L4994.5 1014 L5170 1105.2367549668875 L5170.0 1105.2 " fill="none"></path>
+<g data-name="App">
+<g fill="#eee8d5" stroke="#33322E" data-name="App">
+<rect x="0.0" y="590.0" height="96.0" width="242.0" data-name="App"></rect>
+<path d="M0.0 622.0 L242.0 622.0" fill="none" data-name="App"></path>
+<path d="M0.0 654.0 L242.0 654.0" fill="none" data-name="App"></path>
+</g>
+<g transform="translate(0, 590)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="App" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="App" data-compartment="0">
+<a id="..\src\app\app.ts.App" xlink:href="..\src\app\app.ts"><text x="113.0" y="14.1" stroke="none" text-anchor="middle" data-name="App" data-compartment="0">App</text></a>
+
+</g>
+</g>
+<g transform="translate(0, 622)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="App" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="App" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="App" data-compartment="1">#title: WritableSignal&lt;string&gt;</text>
+
+</g>
+</g>
+<g transform="translate(0, 654)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="App" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="App" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="App" data-compartment="2">+ngOnInit(): void</text>
+
+</g>
+</g>
+</g>
+<g data-name="OnInit">
+<g fill="#eee8d5" stroke="#33322E" data-name="OnInit">
+<rect x="3764.5" y="105.0" height="32.0" width="63.0" data-name="OnInit"></rect>
+</g>
+<g transform="translate(3764.5, 105)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="OnInit" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="OnInit" data-compartment="0">
+<text x="23.5" y="14.1" stroke="none" text-anchor="middle" data-name="OnInit" data-compartment="0">OnInit</text>
+
+</g>
+</g>
+</g>
+<g data-name="DashboardComponent">
+<g fill="#eee8d5" stroke="#33322E" data-name="DashboardComponent">
+<rect x="1281.0" y="476.5" height="323.0" width="272.0" data-name="DashboardComponent"></rect>
+<path d="M1281.0 508.5 L1553.0 508.5" fill="none" data-name="DashboardComponent"></path>
+<path d="M1281.0 670.5 L1553.0 670.5" fill="none" data-name="DashboardComponent"></path>
+</g>
+<g transform="translate(1281, 476.5)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="DashboardComponent" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="DashboardComponent" data-compartment="0">
+<a id="..\src\app\dashboard\dashboard.ts.DashboardComponent" xlink:href="..\src\app\dashboard\dashboard.ts"><text x="128.0" y="14.1" stroke="none" text-anchor="middle" data-name="DashboardComponent" data-compartment="0">DashboardComponent</text></a>
+
+</g>
+</g>
+<g transform="translate(1281, 508.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="DashboardComponent" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="DashboardComponent" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="DashboardComponent" data-compartment="1">+issues: Issue[]</text>
+<text x="0.0" y="30.3" stroke="none" data-name="DashboardComponent" data-compartment="1">+searchTerm: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="DashboardComponent" data-compartment="1">+tipoFilter: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="DashboardComponent" data-compartment="1">+statoFilter: string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="DashboardComponent" data-compartment="1">+prioritaFilter: string</text>
+<text x="0.0" y="95.1" stroke="none" data-name="DashboardComponent" data-compartment="1">+todoPercentage: number</text>
+<text x="0.0" y="111.3" stroke="none" data-name="DashboardComponent" data-compartment="1">+inProgressPercentage: number</text>
+<text x="0.0" y="127.5" stroke="none" data-name="DashboardComponent" data-compartment="1">+donePercentage: number</text>
+<text x="0.0" y="143.7" stroke="none" data-name="DashboardComponent" data-compartment="1">-issueService: IssueService</text>
+
+</g>
+</g>
+<g transform="translate(1281, 670.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="DashboardComponent" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="DashboardComponent" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="DashboardComponent" data-compartment="2">+ngOnInit(): void</text>
+<text x="0.0" y="30.3" stroke="none" data-name="DashboardComponent" data-compartment="2">+loadAllIssues(): void</text>
+<text x="0.0" y="46.5" stroke="none" data-name="DashboardComponent" data-compartment="2">+onSearchChange(): void</text>
+<text x="0.0" y="62.7" stroke="none" data-name="DashboardComponent" data-compartment="2">+onTipoFilterChange(): void</text>
+<text x="0.0" y="78.9" stroke="none" data-name="DashboardComponent" data-compartment="2">+onStatoFilterChange(): void</text>
+<text x="0.0" y="95.1" stroke="none" data-name="DashboardComponent" data-compartment="2">+onPrioritaFilterChange(): void</text>
+<text x="0.0" y="111.3" stroke="none" data-name="DashboardComponent" data-compartment="2">+onStatisticsChange(): void</text>
+
+</g>
+</g>
+</g>
+<g data-name="Issue">
+<g fill="lightblue" stroke="#33322E" data-name="Issue">
+<rect x="835.8" y="1094.5" height="153.0" width="224.0" data-name="Issue"></rect>
+<path d="M835.8 1126.5 L1059.8 1126.5" fill="none" data-name="Issue"></path>
+<path d="M835.8 1239.5 L1059.8 1239.5" fill="none" data-name="Issue"></path>
+</g>
+<g transform="translate(835.75, 1094.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="Issue" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="Issue" data-compartment="0">
+<a id="..\src\app\_internalComponents\issue-card\issue-card.ts.Issue" xlink:href="..\src\app\_internalComponents\issue-card\issue-card.ts"><text x="104.0" y="14.1" stroke="none" text-anchor="middle" data-name="Issue" data-compartment="0">Issue</text></a>
+
+</g>
+</g>
+<g transform="translate(835.75, 1126.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="Issue" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="Issue" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="Issue" data-compartment="1">+id: number</text>
+<text x="0.0" y="30.3" stroke="none" data-name="Issue" data-compartment="1">+title: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="Issue" data-compartment="1">+description: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="Issue" data-compartment="1">+tags: string[]</text>
+<text x="0.0" y="78.9" stroke="none" data-name="Issue" data-compartment="1">+commentsCount: number</text>
+<text x="0.0" y="95.1" stroke="none" data-name="Issue" data-compartment="1">+assignee: string</text>
+
+</g>
+</g>
+<g transform="translate(835.75, 1239.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="Issue" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="Issue" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="IssueService">
+<g fill="#eee8d5" stroke="#33322E" data-name="IssueService">
+<rect x="2122.0" y="1066.0" height="210.0" width="350.0" data-name="IssueService"></rect>
+<path d="M2122.0 1098.0 L2472.0 1098.0" fill="none" data-name="IssueService"></path>
+<path d="M2122.0 1163.0 L2472.0 1163.0" fill="none" data-name="IssueService"></path>
+</g>
+<g transform="translate(2122, 1066)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="IssueService" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="IssueService" data-compartment="0">
+<a id="..\src\app\_services\issue\issue.service.ts.IssueService" xlink:href="..\src\app\_services\issue\issue.service.ts"><text x="167.0" y="14.1" stroke="none" text-anchor="middle" data-name="IssueService" data-compartment="0">IssueService</text></a>
+
+</g>
+</g>
+<g transform="translate(2122, 1098)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="IssueService" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="IssueService" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="IssueService" data-compartment="1">-http: HttpClient</text>
+<text x="0.0" y="30.3" stroke="none" data-name="IssueService" data-compartment="1">-apiUrl: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="IssueService" data-compartment="1">-commentApiUrl: string</text>
+
+</g>
+</g>
+<g transform="translate(2122, 1163)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="IssueService" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="IssueService" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="IssueService" data-compartment="2">+getIssuesByProject(): Observable&lt;any[]&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="IssueService" data-compartment="2">+getAllIssues(): Observable&lt;any[]&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="IssueService" data-compartment="2">+getIssueById(): Observable&lt;any&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="IssueService" data-compartment="2">+createComment(): Observable&lt;any&gt;</text>
+<text x="0.0" y="78.9" stroke="none" data-name="IssueService" data-compartment="2">+updateIssue(): Observable&lt;any&gt;</text>
+<text x="0.0" y="95.1" stroke="none" data-name="IssueService" data-compartment="2">+completeIssue(): Observable&lt;any&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="LoginComponent">
+<g fill="#eee8d5" stroke="#33322E" data-name="LoginComponent">
+<rect x="3061.5" y="533.5" height="209.0" width="271.0" data-name="LoginComponent"></rect>
+<path d="M3061.5 565.5 L3332.5 565.5" fill="none" data-name="LoginComponent"></path>
+<path d="M3061.5 694.5 L3332.5 694.5" fill="none" data-name="LoginComponent"></path>
+</g>
+<g transform="translate(3061.5, 533.5)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="LoginComponent" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="LoginComponent" data-compartment="0">
+<a id="..\src\app\login\login.ts.LoginComponent" xlink:href="..\src\app\login\login.ts"><text x="127.5" y="14.1" stroke="none" text-anchor="middle" data-name="LoginComponent" data-compartment="0">LoginComponent</text></a>
+
+</g>
+</g>
+<g transform="translate(3061.5, 565.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="LoginComponent" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="LoginComponent" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="LoginComponent" data-compartment="1">+loginForm: FormGroup&lt;any&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="LoginComponent" data-compartment="1">+errorMessage: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="LoginComponent" data-compartment="1">+isLoading: boolean</text>
+<text x="0.0" y="62.7" stroke="none" data-name="LoginComponent" data-compartment="1">+showPassword: boolean</text>
+<text x="0.0" y="78.9" stroke="none" data-name="LoginComponent" data-compartment="1">-fb: FormBuilder</text>
+<text x="0.0" y="95.1" stroke="none" data-name="LoginComponent" data-compartment="1">-authService: AuthService</text>
+<text x="0.0" y="111.3" stroke="none" data-name="LoginComponent" data-compartment="1">-router: Router</text>
+
+</g>
+</g>
+<g transform="translate(3061.5, 694.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="LoginComponent" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="LoginComponent" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="LoginComponent" data-compartment="2">+togglePasswordVisibility(): void</text>
+<text x="0.0" y="30.3" stroke="none" data-name="LoginComponent" data-compartment="2">+onSubmit(): void</text>
+
+</g>
+</g>
+</g>
+<g data-name="AuthService">
+<g fill="#eee8d5" stroke="#33322E" data-name="AuthService">
+<rect x="3219.5" y="1034.0" height="274.0" width="374.0" data-name="AuthService"></rect>
+<path d="M3219.5 1066.0 L3593.5 1066.0" fill="none" data-name="AuthService"></path>
+<path d="M3219.5 1179.0 L3593.5 1179.0" fill="none" data-name="AuthService"></path>
+</g>
+<g transform="translate(3219.5, 1034)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="AuthService" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="AuthService" data-compartment="0">
+<a id="..\src\app\_services\auth\auth.service.ts.AuthService" xlink:href="..\src\app\_services\auth\auth.service.ts"><text x="179.0" y="14.1" stroke="none" text-anchor="middle" data-name="AuthService" data-compartment="0">AuthService</text></a>
+
+</g>
+</g>
+<g transform="translate(3219.5, 1066)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="AuthService" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="AuthService" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="AuthService" data-compartment="1">-http: HttpClient</text>
+<text x="0.0" y="30.3" stroke="none" data-name="AuthService" data-compartment="1">-router: Router</text>
+<text x="0.0" y="46.5" stroke="none" data-name="AuthService" data-compartment="1">-apiUrl: &quot;http://localhost:3000/api/auth&quot;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="AuthService" data-compartment="1">-usersApiUrl: &quot;http://localhost:3000/api/users&quot;</text>
+<text x="0.0" y="78.9" stroke="none" data-name="AuthService" data-compartment="1">-userProfileSubject: BehaviorSubject&lt;any&gt;</text>
+<text x="0.0" y="95.1" stroke="none" data-name="AuthService" data-compartment="1">+currentUser$: Observable&lt;any&gt;</text>
+
+</g>
+</g>
+<g transform="translate(3219.5, 1179)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="AuthService" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="AuthService" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="AuthService" data-compartment="2">+login(): Observable&lt;any&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="AuthService" data-compartment="2">+logout(): void</text>
+<text x="0.0" y="46.5" stroke="none" data-name="AuthService" data-compartment="2">+checkSession(): Observable&lt;boolean&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="AuthService" data-compartment="2">+isAuthenticated(): Observable&lt;boolean&gt;</text>
+<text x="0.0" y="78.9" stroke="none" data-name="AuthService" data-compartment="2">+hasRole(): boolean</text>
+<text x="0.0" y="95.1" stroke="none" data-name="AuthService" data-compartment="2">+register(): Observable&lt;any&gt;</text>
+<text x="0.0" y="111.3" stroke="none" data-name="AuthService" data-compartment="2">+deleteUser(): Observable&lt;any&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="ProjectComponent">
+<g fill="#eee8d5" stroke="#33322E" data-name="ProjectComponent">
+<rect x="969.0" y="468.5" height="339.0" width="272.0" data-name="ProjectComponent"></rect>
+<path d="M969.0 500.5 L1241.0 500.5" fill="none" data-name="ProjectComponent"></path>
+<path d="M969.0 694.5 L1241.0 694.5" fill="none" data-name="ProjectComponent"></path>
+</g>
+<g transform="translate(969, 468.5)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="ProjectComponent" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="ProjectComponent" data-compartment="0">
+<a id="..\src\app\project\project.ts.ProjectComponent" xlink:href="..\src\app\project\project.ts"><text x="128.0" y="14.1" stroke="none" text-anchor="middle" data-name="ProjectComponent" data-compartment="0">ProjectComponent</text></a>
+
+</g>
+</g>
+<g transform="translate(969, 500.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ProjectComponent" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="ProjectComponent" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="ProjectComponent" data-compartment="1">+issues: Issue[]</text>
+<text x="0.0" y="30.3" stroke="none" data-name="ProjectComponent" data-compartment="1">+projectName: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="ProjectComponent" data-compartment="1">+searchTerm: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="ProjectComponent" data-compartment="1">+tipoFilter: string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="ProjectComponent" data-compartment="1">+statoFilter: string</text>
+<text x="0.0" y="95.1" stroke="none" data-name="ProjectComponent" data-compartment="1">+prioritaFilter: string</text>
+<text x="0.0" y="111.3" stroke="none" data-name="ProjectComponent" data-compartment="1">+todoPercentage: number</text>
+<text x="0.0" y="127.5" stroke="none" data-name="ProjectComponent" data-compartment="1">+inProgressPercentage: number</text>
+<text x="0.0" y="143.7" stroke="none" data-name="ProjectComponent" data-compartment="1">+donePercentage: number</text>
+<text x="0.0" y="159.9" stroke="none" data-name="ProjectComponent" data-compartment="1">-issueService: IssueService</text>
+<text x="0.0" y="176.1" stroke="none" data-name="ProjectComponent" data-compartment="1">-route: ActivatedRoute</text>
+
+</g>
+</g>
+<g transform="translate(969, 694.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ProjectComponent" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="ProjectComponent" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="ProjectComponent" data-compartment="2">+ngOnInit(): void</text>
+<text x="0.0" y="30.3" stroke="none" data-name="ProjectComponent" data-compartment="2">+onSearchChange(): void</text>
+<text x="0.0" y="46.5" stroke="none" data-name="ProjectComponent" data-compartment="2">+onTipoFilterChange(): void</text>
+<text x="0.0" y="62.7" stroke="none" data-name="ProjectComponent" data-compartment="2">+onStatoFilterChange(): void</text>
+<text x="0.0" y="78.9" stroke="none" data-name="ProjectComponent" data-compartment="2">+onPrioritaFilterChange(): void</text>
+<text x="0.0" y="95.1" stroke="none" data-name="ProjectComponent" data-compartment="2">+onStatisticsChange(): void</text>
+
+</g>
+</g>
+</g>
+<g data-name="UsersComponent">
+<g fill="#eee8d5" stroke="#33322E" data-name="UsersComponent">
+<rect x="1815.0" y="541.0" height="194.0" width="238.0" data-name="UsersComponent"></rect>
+<path d="M1815.0 573.0 L2053.0 573.0" fill="none" data-name="UsersComponent"></path>
+<path d="M1815.0 654.0 L2053.0 654.0" fill="none" data-name="UsersComponent"></path>
+</g>
+<g transform="translate(1815, 541)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="UsersComponent" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="UsersComponent" data-compartment="0">
+<a id="..\src\app\users\users.ts.UsersComponent" xlink:href="..\src\app\users\users.ts"><text x="111.0" y="14.1" stroke="none" text-anchor="middle" data-name="UsersComponent" data-compartment="0">UsersComponent</text></a>
+
+</g>
+</g>
+<g transform="translate(1815, 573)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="UsersComponent" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="UsersComponent" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="UsersComponent" data-compartment="1">-userService: UserService</text>
+<text x="0.0" y="30.3" stroke="none" data-name="UsersComponent" data-compartment="1">+users: User[]</text>
+<text x="0.0" y="46.5" stroke="none" data-name="UsersComponent" data-compartment="1">+searchTerm: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="UsersComponent" data-compartment="1">+roleFilter: string</text>
+
+</g>
+</g>
+<g transform="translate(1815, 654)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="UsersComponent" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="UsersComponent" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="UsersComponent" data-compartment="2">+ngOnInit(): void</text>
+<text x="0.0" y="30.3" stroke="none" data-name="UsersComponent" data-compartment="2">+loadUsers(): void</text>
+<text x="0.0" y="46.5" stroke="none" data-name="UsersComponent" data-compartment="2">+onSearchChange(): void</text>
+<text x="0.0" y="62.7" stroke="none" data-name="UsersComponent" data-compartment="2">+onRoleFilterChange(): void</text>
+
+</g>
+</g>
+</g>
+<g data-name="UserService">
+<g fill="#eee8d5" stroke="#33322E" data-name="UserService">
+<rect x="1786.0" y="1115.0" height="112.0" width="296.0" data-name="UserService"></rect>
+<path d="M1786.0 1147.0 L2082.0 1147.0" fill="none" data-name="UserService"></path>
+<path d="M1786.0 1195.0 L2082.0 1195.0" fill="none" data-name="UserService"></path>
+</g>
+<g transform="translate(1786, 1115)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="UserService" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="UserService" data-compartment="0">
+<a id="..\src\app\_services\user\user.service.ts.UserService" xlink:href="..\src\app\_services\user\user.service.ts"><text x="140.0" y="14.1" stroke="none" text-anchor="middle" data-name="UserService" data-compartment="0">UserService</text></a>
+
+</g>
+</g>
+<g transform="translate(1786, 1147)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="UserService" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="UserService" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="UserService" data-compartment="1">-http: HttpClient</text>
+<text x="0.0" y="30.3" stroke="none" data-name="UserService" data-compartment="1">-apiUrl: string</text>
+
+</g>
+</g>
+<g transform="translate(1786, 1195)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="UserService" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="UserService" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="UserService" data-compartment="2">+getAllUsers(): Observable&lt;User[]&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="User">
+<g fill="lightblue" stroke="#33322E" data-name="User">
+<rect x="4133.8" y="1118.5" height="105.0" width="124.0" data-name="User"></rect>
+<path d="M4133.8 1150.5 L4257.8 1150.5" fill="none" data-name="User"></path>
+<path d="M4133.8 1215.5 L4257.8 1215.5" fill="none" data-name="User"></path>
+</g>
+<g transform="translate(4133.75, 1118.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="User" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="User" data-compartment="0">
+<a id="..\src\app\_internalComponents\user-card\user-card.ts.User" xlink:href="..\src\app\_internalComponents\user-card\user-card.ts"><text x="54.0" y="14.1" stroke="none" text-anchor="middle" data-name="User" data-compartment="0">User</text></a>
+
+</g>
+</g>
+<g transform="translate(4133.75, 1150.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="User" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="User" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="User" data-compartment="1">+name: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="User" data-compartment="1">+email: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="User" data-compartment="1">+role: string</text>
+
+</g>
+</g>
+<g transform="translate(4133.75, 1215.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="User" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="User" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="ConfirmDialogComponent">
+<g fill="#eee8d5" stroke="#33322E" data-name="ConfirmDialogComponent">
+<rect x="1445.0" y="57.0" height="128.0" width="478.0" data-name="ConfirmDialogComponent"></rect>
+<path d="M1445.0 89.0 L1923.0 89.0" fill="none" data-name="ConfirmDialogComponent"></path>
+<path d="M1445.0 137.0 L1923.0 137.0" fill="none" data-name="ConfirmDialogComponent"></path>
+</g>
+<g transform="translate(1445, 57)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="ConfirmDialogComponent" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="ConfirmDialogComponent" data-compartment="0">
+<a id="..\src\app\_internalComponents\confirm-dialog\confirm-dialog.ts.ConfirmDialogComponent" xlink:href="..\src\app\_internalComponents\confirm-dialog\confirm-dialog.ts"><text x="231.0" y="14.1" stroke="none" text-anchor="middle" data-name="ConfirmDialogComponent" data-compartment="0">ConfirmDialogComponent</text></a>
+
+</g>
+</g>
+<g transform="translate(1445, 89)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ConfirmDialogComponent" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="ConfirmDialogComponent" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="ConfirmDialogComponent" data-compartment="1">+dialogRef: MatDialogRef&lt;ConfirmDialogComponent, any&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="ConfirmDialogComponent" data-compartment="1">+data: ConfirmDialogData</text>
+
+</g>
+</g>
+<g transform="translate(1445, 137)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ConfirmDialogComponent" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="ConfirmDialogComponent" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="ConfirmDialogComponent" data-compartment="2">+onCancel(): void</text>
+<text x="0.0" y="30.3" stroke="none" data-name="ConfirmDialogComponent" data-compartment="2">+onConfirm(): void</text>
+
+</g>
+</g>
+</g>
+<g data-name="ConfirmDialogData">
+<g fill="lightblue" stroke="#33322E" data-name="ConfirmDialogData">
+<rect x="1593.0" y="569.5" height="137.0" width="182.0" data-name="ConfirmDialogData"></rect>
+<path d="M1593.0 601.5 L1775.0 601.5" fill="none" data-name="ConfirmDialogData"></path>
+<path d="M1593.0 698.5 L1775.0 698.5" fill="none" data-name="ConfirmDialogData"></path>
+</g>
+<g transform="translate(1593, 569.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ConfirmDialogData" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="ConfirmDialogData" data-compartment="0">
+<a id="..\src\app\_internalComponents\confirm-dialog\confirm-dialog.ts.ConfirmDialogData" xlink:href="..\src\app\_internalComponents\confirm-dialog\confirm-dialog.ts"><text x="83.0" y="14.1" stroke="none" text-anchor="middle" data-name="ConfirmDialogData" data-compartment="0">ConfirmDialogData</text></a>
+
+</g>
+</g>
+<g transform="translate(1593, 601.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ConfirmDialogData" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="ConfirmDialogData" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="ConfirmDialogData" data-compartment="1">+title: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="ConfirmDialogData" data-compartment="1">+message: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="ConfirmDialogData" data-compartment="1">+confirmText?: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="ConfirmDialogData" data-compartment="1">+cancelText?: string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="ConfirmDialogData" data-compartment="1">+isDanger?: boolean</text>
+
+</g>
+</g>
+<g transform="translate(1593, 698.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ConfirmDialogData" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="ConfirmDialogData" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="EditIssueComponent">
+<g fill="#eee8d5" stroke="#33322E" data-name="EditIssueComponent">
+<rect x="3645.5" y="314.5" height="647.0" width="341.0" data-name="EditIssueComponent"></rect>
+<path d="M3645.5 346.5 L3986.5 346.5" fill="none" data-name="EditIssueComponent"></path>
+<path d="M3645.5 637.5 L3986.5 637.5" fill="none" data-name="EditIssueComponent"></path>
+</g>
+<g transform="translate(3645.5, 314.5)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="EditIssueComponent" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="EditIssueComponent" data-compartment="0">
+<a id="..\src\app\_internalComponents\edit-issue\edit-issue.ts.EditIssueComponent" xlink:href="..\src\app\_internalComponents\edit-issue\edit-issue.ts"><text x="162.5" y="14.1" stroke="none" text-anchor="middle" data-name="EditIssueComponent" data-compartment="0">EditIssueComponent</text></a>
+
+</g>
+</g>
+<g transform="translate(3645.5, 346.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="EditIssueComponent" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="EditIssueComponent" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="EditIssueComponent" data-compartment="1">+content: ElementRef&lt;HTMLDivElement&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="EditIssueComponent" data-compartment="1">+issueId: number</text>
+<text x="0.0" y="46.5" stroke="none" data-name="EditIssueComponent" data-compartment="1">+issue: any</text>
+<text x="0.0" y="62.7" stroke="none" data-name="EditIssueComponent" data-compartment="1">+loading: boolean</text>
+<text x="0.0" y="78.9" stroke="none" data-name="EditIssueComponent" data-compartment="1">+error: string</text>
+<text x="0.0" y="95.1" stroke="none" data-name="EditIssueComponent" data-compartment="1">+uploadedImages: File[]</text>
+<text x="0.0" y="111.3" stroke="none" data-name="EditIssueComponent" data-compartment="1">+imagePreviewUrls: string[]</text>
+<text x="0.0" y="127.5" stroke="none" data-name="EditIssueComponent" data-compartment="1">-route: ActivatedRoute</text>
+<text x="0.0" y="143.7" stroke="none" data-name="EditIssueComponent" data-compartment="1">-router: Router</text>
+<text x="0.0" y="159.9" stroke="none" data-name="EditIssueComponent" data-compartment="1">-issueService: IssueService</text>
+<text x="0.0" y="176.1" stroke="none" data-name="EditIssueComponent" data-compartment="1">-userSubscription: Subscription</text>
+<text x="0.0" y="192.3" stroke="none" data-name="EditIssueComponent" data-compartment="1">-currentUser: { email: any</text>
+<text x="0.0" y="208.5" stroke="none" data-name="EditIssueComponent" data-compartment="1">isAdmin: any</text>
+<text x="0.0" y="224.7" stroke="none" data-name="EditIssueComponent" data-compartment="1">}</text>
+<text x="0.0" y="240.9" stroke="none" data-name="EditIssueComponent" data-compartment="1">-cdr: ChangeDetectorRef</text>
+<text x="0.0" y="257.1" stroke="none" data-name="EditIssueComponent" data-compartment="1">-authService: AuthService</text>
+<text x="0.0" y="273.3" stroke="none" data-name="EditIssueComponent" data-compartment="1">-toastService: ToastService</text>
+
+</g>
+</g>
+<g transform="translate(3645.5, 637.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="EditIssueComponent" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="EditIssueComponent" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="EditIssueComponent" data-compartment="2">+ngOnInit(): void</text>
+<text x="0.0" y="30.3" stroke="none" data-name="EditIssueComponent" data-compartment="2">+onImageError(): void</text>
+<text x="0.0" y="46.5" stroke="none" data-name="EditIssueComponent" data-compartment="2">+loadIssueDetail(): void</text>
+<text x="0.0" y="62.7" stroke="none" data-name="EditIssueComponent" data-compartment="2">+formatDoc(): void</text>
+<text x="0.0" y="78.9" stroke="none" data-name="EditIssueComponent" data-compartment="2">+onImageUpload(): void</text>
+<text x="0.0" y="95.1" stroke="none" data-name="EditIssueComponent" data-compartment="2">+triggerImageUpload(): void</text>
+<text x="0.0" y="111.3" stroke="none" data-name="EditIssueComponent" data-compartment="2">+removeImage(): void</text>
+<text x="0.0" y="127.5" stroke="none" data-name="EditIssueComponent" data-compartment="2">+submitEdit(): void</text>
+<text x="0.0" y="143.7" stroke="none" data-name="EditIssueComponent" data-compartment="2">+goBack(): void</text>
+<text x="0.0" y="159.9" stroke="none" data-name="EditIssueComponent" data-compartment="2">+getInitials(): string</text>
+<text x="0.0" y="176.1" stroke="none" data-name="EditIssueComponent" data-compartment="2">+getFileName(): string</text>
+<text x="0.0" y="192.3" stroke="none" data-name="EditIssueComponent" data-compartment="2">+isImage(): boolean</text>
+<text x="0.0" y="208.5" stroke="none" data-name="EditIssueComponent" data-compartment="2">+canEditIssue(): boolean</text>
+<text x="0.0" y="224.7" stroke="none" data-name="EditIssueComponent" data-compartment="2">+isCompleted(): boolean</text>
+<text x="0.0" y="240.9" stroke="none" data-name="EditIssueComponent" data-compartment="2">+getAttachmentUrl(): string</text>
+<text x="0.0" y="257.1" stroke="none" data-name="EditIssueComponent" data-compartment="2">+isImageAttachment(): boolean</text>
+<text x="0.0" y="273.3" stroke="none" data-name="EditIssueComponent" data-compartment="2">+isPdfAttachment(): boolean</text>
+<text x="0.0" y="289.5" stroke="none" data-name="EditIssueComponent" data-compartment="2">+formatFileSize(): string</text>
+<text x="0.0" y="305.7" stroke="none" data-name="EditIssueComponent" data-compartment="2">+downloadAttachment(): void</text>
+
+</g>
+</g>
+</g>
+<g data-name="ToastService">
+<g fill="#eee8d5" stroke="#33322E" data-name="ToastService">
+<rect x="5170.0" y="1074.0" height="194.0" width="253.0" data-name="ToastService"></rect>
+<path d="M5170.0 1106.0 L5423.0 1106.0" fill="none" data-name="ToastService"></path>
+<path d="M5170.0 1171.0 L5423.0 1171.0" fill="none" data-name="ToastService"></path>
+</g>
+<g transform="translate(5170, 1074)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="ToastService" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="ToastService" data-compartment="0">
+<a id="..\src\app\_services\toast\toast.service.ts.ToastService" xlink:href="..\src\app\_services\toast\toast.service.ts"><text x="118.5" y="14.1" stroke="none" text-anchor="middle" data-name="ToastService" data-compartment="0">ToastService</text></a>
+
+</g>
+</g>
+<g transform="translate(5170, 1106)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ToastService" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="ToastService" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="ToastService" data-compartment="1">-toastSubject: Subject&lt;Toast&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="ToastService" data-compartment="1">+toasts$: Observable&lt;Toast&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="ToastService" data-compartment="1">-idCounter: number</text>
+
+</g>
+</g>
+<g transform="translate(5170, 1171)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ToastService" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="ToastService" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="ToastService" data-compartment="2">+show(): void</text>
+<text x="0.0" y="30.3" stroke="none" data-name="ToastService" data-compartment="2">+success(): void</text>
+<text x="0.0" y="46.5" stroke="none" data-name="ToastService" data-compartment="2">+error(): void</text>
+<text x="0.0" y="62.7" stroke="none" data-name="ToastService" data-compartment="2">+info(): void</text>
+<text x="0.0" y="78.9" stroke="none" data-name="ToastService" data-compartment="2">+warning(): void</text>
+
+</g>
+</g>
+</g>
+<g data-name="IssueCardComponent">
+<g fill="#eee8d5" stroke="#33322E" data-name="IssueCardComponent">
+<rect x="715.0" y="574.0" height="128.0" width="214.0" data-name="IssueCardComponent"></rect>
+<path d="M715.0 606.0 L929.0 606.0" fill="none" data-name="IssueCardComponent"></path>
+<path d="M715.0 654.0 L929.0 654.0" fill="none" data-name="IssueCardComponent"></path>
+</g>
+<g transform="translate(715, 574)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="IssueCardComponent" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="IssueCardComponent" data-compartment="0">
+<a id="..\src\app\_internalComponents\issue-card\issue-card.ts.IssueCardComponent" xlink:href="..\src\app\_internalComponents\issue-card\issue-card.ts"><text x="99.0" y="14.1" stroke="none" text-anchor="middle" data-name="IssueCardComponent" data-compartment="0">IssueCardComponent</text></a>
+
+</g>
+</g>
+<g transform="translate(715, 606)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="IssueCardComponent" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="IssueCardComponent" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="IssueCardComponent" data-compartment="1">+issue: Issue</text>
+<text x="0.0" y="30.3" stroke="none" data-name="IssueCardComponent" data-compartment="1">-router: Router</text>
+
+</g>
+</g>
+<g transform="translate(715, 654)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="IssueCardComponent" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="IssueCardComponent" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="IssueCardComponent" data-compartment="2">+getInitials(): string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="IssueCardComponent" data-compartment="2">+navigateToDetail(): void</text>
+
+</g>
+</g>
+</g>
+<g data-name="IssueDetailComponent">
+<g fill="#eee8d5" stroke="#33322E" data-name="IssueDetailComponent">
+<rect x="2560.5" y="282.0" height="712.0" width="341.0" data-name="IssueDetailComponent"></rect>
+<path d="M2560.5 314.0 L2901.5 314.0" fill="none" data-name="IssueDetailComponent"></path>
+<path d="M2560.5 638.0 L2901.5 638.0" fill="none" data-name="IssueDetailComponent"></path>
+</g>
+<g transform="translate(2560.5, 282)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="IssueDetailComponent" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="IssueDetailComponent" data-compartment="0">
+<a id="..\src\app\_internalComponents\issue-detail\issue-detail.ts.IssueDetailComponent" xlink:href="..\src\app\_internalComponents\issue-detail\issue-detail.ts"><text x="162.5" y="14.1" stroke="none" text-anchor="middle" data-name="IssueDetailComponent" data-compartment="0">IssueDetailComponent</text></a>
+
+</g>
+</g>
+<g transform="translate(2560.5, 314)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="IssueDetailComponent" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="IssueDetailComponent" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="IssueDetailComponent" data-compartment="1">+content: ElementRef&lt;HTMLDivElement&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="IssueDetailComponent" data-compartment="1">+issueId: number</text>
+<text x="0.0" y="46.5" stroke="none" data-name="IssueDetailComponent" data-compartment="1">+issue: any</text>
+<text x="0.0" y="62.7" stroke="none" data-name="IssueDetailComponent" data-compartment="1">+comments: Comment[]</text>
+<text x="0.0" y="78.9" stroke="none" data-name="IssueDetailComponent" data-compartment="1">+loading: boolean</text>
+<text x="0.0" y="95.1" stroke="none" data-name="IssueDetailComponent" data-compartment="1">+error: string</text>
+<text x="0.0" y="111.3" stroke="none" data-name="IssueDetailComponent" data-compartment="1">+newComment: string</text>
+<text x="0.0" y="127.5" stroke="none" data-name="IssueDetailComponent" data-compartment="1">+uploadedImages: File[]</text>
+<text x="0.0" y="143.7" stroke="none" data-name="IssueDetailComponent" data-compartment="1">+imagePreviewUrls: string[]</text>
+<text x="0.0" y="159.9" stroke="none" data-name="IssueDetailComponent" data-compartment="1">-route: ActivatedRoute</text>
+<text x="0.0" y="176.1" stroke="none" data-name="IssueDetailComponent" data-compartment="1">-router: Router</text>
+<text x="0.0" y="192.3" stroke="none" data-name="IssueDetailComponent" data-compartment="1">-issueService: IssueService</text>
+<text x="0.0" y="208.5" stroke="none" data-name="IssueDetailComponent" data-compartment="1">-userSubscription: Subscription</text>
+<text x="0.0" y="224.7" stroke="none" data-name="IssueDetailComponent" data-compartment="1">-currentUser: { email: any</text>
+<text x="0.0" y="240.9" stroke="none" data-name="IssueDetailComponent" data-compartment="1">isAdmin: any</text>
+<text x="0.0" y="257.1" stroke="none" data-name="IssueDetailComponent" data-compartment="1">}</text>
+<text x="0.0" y="273.3" stroke="none" data-name="IssueDetailComponent" data-compartment="1">-cdr: ChangeDetectorRef</text>
+<text x="0.0" y="289.5" stroke="none" data-name="IssueDetailComponent" data-compartment="1">-authService: AuthService</text>
+<text x="0.0" y="305.7" stroke="none" data-name="IssueDetailComponent" data-compartment="1">-toastService: ToastService</text>
+
+</g>
+</g>
+<g transform="translate(2560.5, 638)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="IssueDetailComponent" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="IssueDetailComponent" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+ngOnInit(): void</text>
+<text x="0.0" y="30.3" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+onImageError(): void</text>
+<text x="0.0" y="46.5" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+loadIssueDetail(): void</text>
+<text x="0.0" y="62.7" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+formatDoc(): void</text>
+<text x="0.0" y="78.9" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+onImageUpload(): void</text>
+<text x="0.0" y="95.1" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+triggerImageUpload(): void</text>
+<text x="0.0" y="111.3" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+removeImage(): void</text>
+<text x="0.0" y="127.5" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+submitComment(): void</text>
+<text x="0.0" y="143.7" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+goBack(): void</text>
+<text x="0.0" y="159.9" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+getInitials(): string</text>
+<text x="0.0" y="176.1" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+getFileName(): string</text>
+<text x="0.0" y="192.3" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+isImage(): boolean</text>
+<text x="0.0" y="208.5" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+canEditIssue(): boolean</text>
+<text x="0.0" y="224.7" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+isCompleted(): boolean</text>
+<text x="0.0" y="240.9" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+editIssue(): void</text>
+<text x="0.0" y="257.1" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+completeIssue(): void</text>
+<text x="0.0" y="273.3" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+getAttachmentUrl(): string</text>
+<text x="0.0" y="289.5" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+isImageAttachment(): boolean</text>
+<text x="0.0" y="305.7" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+isPdfAttachment(): boolean</text>
+<text x="0.0" y="321.9" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+formatFileSize(): string</text>
+<text x="0.0" y="338.1" stroke="none" data-name="IssueDetailComponent" data-compartment="2">+downloadAttachment(): void</text>
+
+</g>
+</g>
+</g>
+<g data-name="Comment">
+<g fill="lightblue" stroke="#33322E" data-name="Comment">
+<rect x="2512.0" y="1062.0" height="218.0" width="238.0" data-name="Comment"></rect>
+<path d="M2512.0 1094.0 L2750.0 1094.0" fill="none" data-name="Comment"></path>
+<path d="M2512.0 1272.0 L2750.0 1272.0" fill="none" data-name="Comment"></path>
+</g>
+<g transform="translate(2512, 1062)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="Comment" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="Comment" data-compartment="0">
+<a id="..\src\app\_internalComponents\issue-detail\issue-detail.ts.Comment" xlink:href="..\src\app\_internalComponents\issue-detail\issue-detail.ts"><text x="111.0" y="14.1" stroke="none" text-anchor="middle" data-name="Comment" data-compartment="0">Comment</text></a>
+
+</g>
+</g>
+<g transform="translate(2512, 1094)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="Comment" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="Comment" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="Comment" data-compartment="1">+id: number</text>
+<text x="0.0" y="30.3" stroke="none" data-name="Comment" data-compartment="1">+author: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="Comment" data-compartment="1">+text: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="Comment" data-compartment="1">+date: Date</text>
+<text x="0.0" y="78.9" stroke="none" data-name="Comment" data-compartment="1">+attachments?: { id: number</text>
+<text x="0.0" y="95.1" stroke="none" data-name="Comment" data-compartment="1">nome_file_originale: string</text>
+<text x="0.0" y="111.3" stroke="none" data-name="Comment" data-compartment="1">tipo_mime: string</text>
+<text x="0.0" y="127.5" stroke="none" data-name="Comment" data-compartment="1">percorso_relativo: string</text>
+<text x="0.0" y="143.7" stroke="none" data-name="Comment" data-compartment="1">dimensione_byte: number</text>
+<text x="0.0" y="159.9" stroke="none" data-name="Comment" data-compartment="1">}[]</text>
+
+</g>
+</g>
+<g transform="translate(2512, 1272)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="Comment" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="Comment" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="IssuesListComponent">
+<g fill="#eee8d5" stroke="#33322E" data-name="IssuesListComponent">
+<rect x="282.0" y="484.5" height="307.0" width="393.0" data-name="IssuesListComponent"></rect>
+<path d="M282.0 516.5 L675.0 516.5" fill="none" data-name="IssuesListComponent"></path>
+<path d="M282.0 710.5 L675.0 710.5" fill="none" data-name="IssuesListComponent"></path>
+</g>
+<g transform="translate(282, 484.5)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="IssuesListComponent" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="IssuesListComponent" data-compartment="0">
+<a id="..\src\app\_internalComponents\issues-list\issues-list.ts.IssuesListComponent" xlink:href="..\src\app\_internalComponents\issues-list\issues-list.ts"><text x="188.5" y="14.1" stroke="none" text-anchor="middle" data-name="IssuesListComponent" data-compartment="0">IssuesListComponent</text></a>
+
+</g>
+</g>
+<g transform="translate(282, 516.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="IssuesListComponent" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="IssuesListComponent" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="IssuesListComponent" data-compartment="1">+issues: Issue[]</text>
+<text x="0.0" y="30.3" stroke="none" data-name="IssuesListComponent" data-compartment="1">+searchTerm: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="IssuesListComponent" data-compartment="1">+tipoFilter: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="IssuesListComponent" data-compartment="1">+statoFilter: string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="IssuesListComponent" data-compartment="1">+prioritaFilter: string</text>
+<text x="0.0" y="95.1" stroke="none" data-name="IssuesListComponent" data-compartment="1">+statisticsChange: EventEmitter&lt;{ todo: number</text>
+<text x="0.0" y="111.3" stroke="none" data-name="IssuesListComponent" data-compartment="1">inProgress: number</text>
+<text x="0.0" y="127.5" stroke="none" data-name="IssuesListComponent" data-compartment="1">done: number</text>
+<text x="0.0" y="143.7" stroke="none" data-name="IssuesListComponent" data-compartment="1">}&gt;</text>
+<text x="0.0" y="159.9" stroke="none" data-name="IssuesListComponent" data-compartment="1">+filteredIssues: Issue[]</text>
+<text x="0.0" y="176.1" stroke="none" data-name="IssuesListComponent" data-compartment="1">-statisticsCalculated: boolean</text>
+
+</g>
+</g>
+<g transform="translate(282, 710.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="IssuesListComponent" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="IssuesListComponent" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="IssuesListComponent" data-compartment="2">+ngOnInit(): void</text>
+<text x="0.0" y="30.3" stroke="none" data-name="IssuesListComponent" data-compartment="2">+ngOnChanges(): void</text>
+<text x="0.0" y="46.5" stroke="none" data-name="IssuesListComponent" data-compartment="2">+applyFilters(): void</text>
+<text x="0.0" y="62.7" stroke="none" data-name="IssuesListComponent" data-compartment="2">+calculateStatistics(): void</text>
+
+</g>
+</g>
+</g>
+<g data-name="OnChanges">
+<g fill="#eee8d5" stroke="#33322E" data-name="OnChanges">
+<rect x="264.8" y="105.0" height="32.0" width="110.0" data-name="OnChanges"></rect>
+</g>
+<g transform="translate(264.75, 105)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="OnChanges" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="OnChanges" data-compartment="0">
+<text x="47.0" y="14.1" stroke="none" text-anchor="middle" data-name="OnChanges" data-compartment="0">OnChanges</text>
+
+</g>
+</g>
+</g>
+<g data-name="NewIssueComponent">
+<g fill="#eee8d5" stroke="#33322E" data-name="NewIssueComponent">
+<rect x="5324.5" y="411.5" height="453.0" width="341.0" data-name="NewIssueComponent"></rect>
+<path d="M5324.5 443.5 L5665.5 443.5" fill="none" data-name="NewIssueComponent"></path>
+<path d="M5324.5 702.5 L5665.5 702.5" fill="none" data-name="NewIssueComponent"></path>
+</g>
+<g transform="translate(5324.5, 411.5)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="NewIssueComponent" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="NewIssueComponent" data-compartment="0">
+<a id="..\src\app\_internalComponents\new-issue\new-issue.ts.NewIssueComponent" xlink:href="..\src\app\_internalComponents\new-issue\new-issue.ts"><text x="162.5" y="14.1" stroke="none" text-anchor="middle" data-name="NewIssueComponent" data-compartment="0">NewIssueComponent</text></a>
+
+</g>
+</g>
+<g transform="translate(5324.5, 443.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="NewIssueComponent" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="NewIssueComponent" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="NewIssueComponent" data-compartment="1">+content: ElementRef&lt;HTMLDivElement&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="NewIssueComponent" data-compartment="1">+cancel: EventEmitter&lt;void&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="NewIssueComponent" data-compartment="1">+confirm: EventEmitter&lt;any&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="NewIssueComponent" data-compartment="1">+title: string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="NewIssueComponent" data-compartment="1">+tipo: string</text>
+<text x="0.0" y="95.1" stroke="none" data-name="NewIssueComponent" data-compartment="1">+priorita: string</text>
+<text x="0.0" y="111.3" stroke="none" data-name="NewIssueComponent" data-compartment="1">+projectName: string</text>
+<text x="0.0" y="127.5" stroke="none" data-name="NewIssueComponent" data-compartment="1">+uploadedImages: File[]</text>
+<text x="0.0" y="143.7" stroke="none" data-name="NewIssueComponent" data-compartment="1">+isLoading: boolean</text>
+<text x="0.0" y="159.9" stroke="none" data-name="NewIssueComponent" data-compartment="1">+imagePreviewUrls: string[]</text>
+<text x="0.0" y="176.1" stroke="none" data-name="NewIssueComponent" data-compartment="1">-router: Router</text>
+<text x="0.0" y="192.3" stroke="none" data-name="NewIssueComponent" data-compartment="1">-route: ActivatedRoute</text>
+<text x="0.0" y="208.5" stroke="none" data-name="NewIssueComponent" data-compartment="1">-projectService: ProjectService</text>
+<text x="0.0" y="224.7" stroke="none" data-name="NewIssueComponent" data-compartment="1">-cdr: ChangeDetectorRef</text>
+<text x="0.0" y="240.9" stroke="none" data-name="NewIssueComponent" data-compartment="1">-toastService: ToastService</text>
+
+</g>
+</g>
+<g transform="translate(5324.5, 702.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="NewIssueComponent" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="NewIssueComponent" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="NewIssueComponent" data-compartment="2">+ngOnInit(): void</text>
+<text x="0.0" y="30.3" stroke="none" data-name="NewIssueComponent" data-compartment="2">+formatDoc(): void</text>
+<text x="0.0" y="46.5" stroke="none" data-name="NewIssueComponent" data-compartment="2">+onImageUpload(): void</text>
+<text x="0.0" y="62.7" stroke="none" data-name="NewIssueComponent" data-compartment="2">+triggerImageUpload(): void</text>
+<text x="0.0" y="78.9" stroke="none" data-name="NewIssueComponent" data-compartment="2">+removeImage(): void</text>
+<text x="0.0" y="95.1" stroke="none" data-name="NewIssueComponent" data-compartment="2">+onCancel(): void</text>
+<text x="0.0" y="111.3" stroke="none" data-name="NewIssueComponent" data-compartment="2">-resetForm(): void</text>
+<text x="0.0" y="127.5" stroke="none" data-name="NewIssueComponent" data-compartment="2">+ngOnDestroy(): void</text>
+<text x="0.0" y="143.7" stroke="none" data-name="NewIssueComponent" data-compartment="2">+onConfirm(): void</text>
+
+</g>
+</g>
+</g>
+<g data-name="OnDestroy">
+<g fill="#eee8d5" stroke="#33322E" data-name="OnDestroy">
+<rect x="5300.8" y="105.0" height="32.0" width="100.0" data-name="OnDestroy"></rect>
+</g>
+<g transform="translate(5300.75, 105)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="OnDestroy" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="OnDestroy" data-compartment="0">
+<text x="42.0" y="14.1" stroke="none" text-anchor="middle" data-name="OnDestroy" data-compartment="0">OnDestroy</text>
+
+</g>
+</g>
+</g>
+<g data-name="ProjectService">
+<g fill="#eee8d5" stroke="#33322E" data-name="ProjectService">
+<rect x="5720.5" y="1058.0" height="226.0" width="406.0" data-name="ProjectService"></rect>
+<path d="M5720.5 1090.0 L6126.5 1090.0" fill="none" data-name="ProjectService"></path>
+<path d="M5720.5 1171.0 L6126.5 1171.0" fill="none" data-name="ProjectService"></path>
+</g>
+<g transform="translate(5720.5, 1058)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="ProjectService" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="ProjectService" data-compartment="0">
+<a id="..\src\app\_services\project\project-service.ts.ProjectService" xlink:href="..\src\app\_services\project\project-service.ts"><text x="195.0" y="14.1" stroke="none" text-anchor="middle" data-name="ProjectService" data-compartment="0">ProjectService</text></a>
+
+</g>
+</g>
+<g transform="translate(5720.5, 1090)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ProjectService" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="ProjectService" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="ProjectService" data-compartment="1">-apiUrl: &quot;http://localhost:3000/api&quot;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="ProjectService" data-compartment="1">-selectedProjectSubject: BehaviorSubject&lt;string&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="ProjectService" data-compartment="1">+selectedProject$: Observable&lt;string&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="ProjectService" data-compartment="1">-http: HttpClient</text>
+
+</g>
+</g>
+<g transform="translate(5720.5, 1171)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ProjectService" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="ProjectService" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="ProjectService" data-compartment="2">+setSelectedProject(): void</text>
+<text x="0.0" y="30.3" stroke="none" data-name="ProjectService" data-compartment="2">+getSelectedProject(): string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="ProjectService" data-compartment="2">+createProject(): Observable&lt;any&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="ProjectService" data-compartment="2">+getAllProjects(): Observable&lt;any[]&gt;</text>
+<text x="0.0" y="78.9" stroke="none" data-name="ProjectService" data-compartment="2">+createIssue(): Observable&lt;any&gt;</text>
+<text x="0.0" y="95.1" stroke="none" data-name="ProjectService" data-compartment="2">+deleteProject(): Observable&lt;Object&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="ProjectDialogComponent">
+<g fill="#eee8d5" stroke="#33322E" data-name="ProjectDialogComponent">
+<rect x="5440.8" y="24.5" height="193.0" width="472.0" data-name="ProjectDialogComponent"></rect>
+<path d="M5440.8 56.5 L5912.8 56.5" fill="none" data-name="ProjectDialogComponent"></path>
+<path d="M5440.8 185.5 L5912.8 185.5" fill="none" data-name="ProjectDialogComponent"></path>
+</g>
+<g transform="translate(5440.75, 24.5)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="ProjectDialogComponent" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="ProjectDialogComponent" data-compartment="0">
+<a id="..\src\app\_internalComponents\project-dialog\project-dialog.ts.ProjectDialogComponent" xlink:href="..\src\app\_internalComponents\project-dialog\project-dialog.ts"><text x="228.0" y="14.1" stroke="none" text-anchor="middle" data-name="ProjectDialogComponent" data-compartment="0">ProjectDialogComponent</text></a>
+
+</g>
+</g>
+<g transform="translate(5440.75, 56.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ProjectDialogComponent" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="ProjectDialogComponent" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="ProjectDialogComponent" data-compartment="1">+newProjectForm: FormGroup&lt;any&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="ProjectDialogComponent" data-compartment="1">+errorMessage: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="ProjectDialogComponent" data-compartment="1">+isLoading: boolean</text>
+<text x="0.0" y="62.7" stroke="none" data-name="ProjectDialogComponent" data-compartment="1">+projectData: { nome: string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="ProjectDialogComponent" data-compartment="1">}</text>
+<text x="0.0" y="95.1" stroke="none" data-name="ProjectDialogComponent" data-compartment="1">+dialogRef: MatDialogRef&lt;ProjectDialogComponent, any&gt;</text>
+<text x="0.0" y="111.3" stroke="none" data-name="ProjectDialogComponent" data-compartment="1">-fb: FormBuilder</text>
+
+</g>
+</g>
+<g transform="translate(5440.75, 185.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ProjectDialogComponent" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="ProjectDialogComponent" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="ProjectDialogComponent" data-compartment="2">+onSubmit(): void</text>
+
+</g>
+</g>
+</g>
+<g data-name="SidebarComponent">
+<g fill="#eee8d5" stroke="#33322E" data-name="SidebarComponent">
+<rect x="4716.5" y="363.0" height="550.0" width="292.0" data-name="SidebarComponent"></rect>
+<path d="M4716.5 395.0 L5008.5 395.0" fill="none" data-name="SidebarComponent"></path>
+<path d="M4716.5 638.0 L5008.5 638.0" fill="none" data-name="SidebarComponent"></path>
+</g>
+<g transform="translate(4716.5, 363)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="SidebarComponent" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="SidebarComponent" data-compartment="0">
+<a id="..\src\app\_internalComponents\sidebar\sidebar.ts.SidebarComponent" xlink:href="..\src\app\_internalComponents\sidebar\sidebar.ts"><text x="138.0" y="14.1" stroke="none" text-anchor="middle" data-name="SidebarComponent" data-compartment="0">SidebarComponent</text></a>
+
+</g>
+</g>
+<g transform="translate(4716.5, 395)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="SidebarComponent" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="SidebarComponent" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="SidebarComponent" data-compartment="1">+closeSidebar: EventEmitter&lt;void&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="SidebarComponent" data-compartment="1">+projects: string[]</text>
+<text x="0.0" y="46.5" stroke="none" data-name="SidebarComponent" data-compartment="1">+filteredProjects: string[]</text>
+<text x="0.0" y="62.7" stroke="none" data-name="SidebarComponent" data-compartment="1">+searchTerm: string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="SidebarComponent" data-compartment="1">+selectedProject: string</text>
+<text x="0.0" y="95.1" stroke="none" data-name="SidebarComponent" data-compartment="1">+hoveredProject: string</text>
+<text x="0.0" y="111.3" stroke="none" data-name="SidebarComponent" data-compartment="1">+user: User</text>
+<text x="0.0" y="127.5" stroke="none" data-name="SidebarComponent" data-compartment="1">-userSubscription: Subscription</text>
+<text x="0.0" y="143.7" stroke="none" data-name="SidebarComponent" data-compartment="1">+isDarkMode: boolean</text>
+<text x="0.0" y="159.9" stroke="none" data-name="SidebarComponent" data-compartment="1">-router: Router</text>
+<text x="0.0" y="176.1" stroke="none" data-name="SidebarComponent" data-compartment="1">-projectService: ProjectService</text>
+<text x="0.0" y="192.3" stroke="none" data-name="SidebarComponent" data-compartment="1">-authService: AuthService</text>
+<text x="0.0" y="208.5" stroke="none" data-name="SidebarComponent" data-compartment="1">+dialog: MatDialog</text>
+<text x="0.0" y="224.7" stroke="none" data-name="SidebarComponent" data-compartment="1">-toastService: ToastService</text>
+
+</g>
+</g>
+<g transform="translate(4716.5, 638)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="SidebarComponent" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="SidebarComponent" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="SidebarComponent" data-compartment="2">+onCloseSidebar(): void</text>
+<text x="0.0" y="30.3" stroke="none" data-name="SidebarComponent" data-compartment="2">+getInitials(): string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="SidebarComponent" data-compartment="2">+ngOnInit(): void</text>
+<text x="0.0" y="62.7" stroke="none" data-name="SidebarComponent" data-compartment="2">-extractRole(): string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="SidebarComponent" data-compartment="2">+toggleTheme(): void</text>
+<text x="0.0" y="95.1" stroke="none" data-name="SidebarComponent" data-compartment="2">+navigate(): void</text>
+<text x="0.0" y="111.3" stroke="none" data-name="SidebarComponent" data-compartment="2">+isActive(): boolean</text>
+<text x="0.0" y="127.5" stroke="none" data-name="SidebarComponent" data-compartment="2">+isProjectActive(): boolean</text>
+<text x="0.0" y="143.7" stroke="none" data-name="SidebarComponent" data-compartment="2">+onSearchInput(): void</text>
+<text x="0.0" y="159.9" stroke="none" data-name="SidebarComponent" data-compartment="2">+filterProjects(): void</text>
+<text x="0.0" y="176.1" stroke="none" data-name="SidebarComponent" data-compartment="2">+selectProject(): void</text>
+<text x="0.0" y="192.3" stroke="none" data-name="SidebarComponent" data-compartment="2">+logout(): void</text>
+<text x="0.0" y="208.5" stroke="none" data-name="SidebarComponent" data-compartment="2">+openAddProjectDialog(): void</text>
+<text x="0.0" y="224.7" stroke="none" data-name="SidebarComponent" data-compartment="2">+createProject(): void</text>
+<text x="0.0" y="240.9" stroke="none" data-name="SidebarComponent" data-compartment="2">+openDeleteProjectDialog(): void</text>
+<text x="0.0" y="257.1" stroke="none" data-name="SidebarComponent" data-compartment="2">+deleteProject(): void</text>
+
+</g>
+</g>
+</g>
+<g data-name="ToastComponent">
+<g fill="#eee8d5" stroke="#33322E" data-name="ToastComponent">
+<rect x="5048.5" y="533.0" height="210.0" width="236.0" data-name="ToastComponent"></rect>
+<path d="M5048.5 565.0 L5284.5 565.0" fill="none" data-name="ToastComponent"></path>
+<path d="M5048.5 646.0 L5284.5 646.0" fill="none" data-name="ToastComponent"></path>
+</g>
+<g transform="translate(5048.5, 533)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="ToastComponent" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="ToastComponent" data-compartment="0">
+<a id="..\src\app\_internalComponents\toast\toast.ts.ToastComponent" xlink:href="..\src\app\_internalComponents\toast\toast.ts"><text x="110.0" y="14.1" stroke="none" text-anchor="middle" data-name="ToastComponent" data-compartment="0">ToastComponent</text></a>
+
+</g>
+</g>
+<g transform="translate(5048.5, 565)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ToastComponent" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="ToastComponent" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="ToastComponent" data-compartment="1">+toasts: Toast[]</text>
+<text x="0.0" y="30.3" stroke="none" data-name="ToastComponent" data-compartment="1">+copiedIds: Set&lt;string&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="ToastComponent" data-compartment="1">-timeouts: Map&lt;string, any&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="ToastComponent" data-compartment="1">-toastService: ToastService</text>
+
+</g>
+</g>
+<g transform="translate(5048.5, 646)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ToastComponent" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="ToastComponent" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="ToastComponent" data-compartment="2">+ngOnInit(): void</text>
+<text x="0.0" y="30.3" stroke="none" data-name="ToastComponent" data-compartment="2">+removeToast(): void</text>
+<text x="0.0" y="46.5" stroke="none" data-name="ToastComponent" data-compartment="2">+copyToClipboard(): void</text>
+<text x="0.0" y="62.7" stroke="none" data-name="ToastComponent" data-compartment="2">+trackByToastId(): string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="ToastComponent" data-compartment="2">+ngOnDestroy(): void</text>
+
+</g>
+</g>
+</g>
+<g data-name="Toast">
+<g fill="lightblue" stroke="#33322E" data-name="Toast">
+<rect x="6166.5" y="1094.5" height="153.0" width="357.0" data-name="Toast"></rect>
+<path d="M6166.5 1126.5 L6523.5 1126.5" fill="none" data-name="Toast"></path>
+<path d="M6166.5 1239.5 L6523.5 1239.5" fill="none" data-name="Toast"></path>
+</g>
+<g transform="translate(6166.5, 1094.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="Toast" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="Toast" data-compartment="0">
+<a id="..\src\app\_services\toast\toast.service.ts.Toast" xlink:href="..\src\app\_services\toast\toast.service.ts"><text x="170.5" y="14.1" stroke="none" text-anchor="middle" data-name="Toast" data-compartment="0">Toast</text></a>
+
+</g>
+</g>
+<g transform="translate(6166.5, 1126.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="Toast" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="Toast" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="Toast" data-compartment="1">+id: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="Toast" data-compartment="1">+title: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="Toast" data-compartment="1">+message: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="Toast" data-compartment="1">+type: &quot;error&quot; | &quot;success&quot; | &quot;info&quot; | &quot;warning&quot;</text>
+<text x="0.0" y="78.9" stroke="none" data-name="Toast" data-compartment="1">+autoDismiss?: boolean</text>
+<text x="0.0" y="95.1" stroke="none" data-name="Toast" data-compartment="1">+copyText?: string</text>
+
+</g>
+</g>
+<g transform="translate(6166.5, 1239.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="Toast" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="Toast" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="TopbarComponent">
+<g fill="#eee8d5" stroke="#33322E" data-name="TopbarComponent">
+<rect x="5705.5" y="363.0" height="550.0" width="356.0" data-name="TopbarComponent"></rect>
+<path d="M5705.5 395.0 L6061.5 395.0" fill="none" data-name="TopbarComponent"></path>
+<path d="M5705.5 719.0 L6061.5 719.0" fill="none" data-name="TopbarComponent"></path>
+</g>
+<g transform="translate(5705.5, 363)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="TopbarComponent" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="TopbarComponent" data-compartment="0">
+<a id="..\src\app\_internalComponents\topbar\topbar.ts.TopbarComponent" xlink:href="..\src\app\_internalComponents\topbar\topbar.ts"><text x="170.0" y="14.1" stroke="none" text-anchor="middle" data-name="TopbarComponent" data-compartment="0">TopbarComponent</text></a>
+
+</g>
+</g>
+<g transform="translate(5705.5, 395)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="TopbarComponent" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="TopbarComponent" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="TopbarComponent" data-compartment="1">+tipo: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="TopbarComponent" data-compartment="1">+stato: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="TopbarComponent" data-compartment="1">+priorita: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="TopbarComponent" data-compartment="1">+searchTerm: string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="TopbarComponent" data-compartment="1">+tipi: string[]</text>
+<text x="0.0" y="95.1" stroke="none" data-name="TopbarComponent" data-compartment="1">+stati: string[]</text>
+<text x="0.0" y="111.3" stroke="none" data-name="TopbarComponent" data-compartment="1">+prioritaListe: string[]</text>
+<text x="0.0" y="127.5" stroke="none" data-name="TopbarComponent" data-compartment="1">+todoPercentage: number</text>
+<text x="0.0" y="143.7" stroke="none" data-name="TopbarComponent" data-compartment="1">+inProgressPercentage: number</text>
+<text x="0.0" y="159.9" stroke="none" data-name="TopbarComponent" data-compartment="1">+donePercentage: number</text>
+<text x="0.0" y="176.1" stroke="none" data-name="TopbarComponent" data-compartment="1">+tipoFilterChange: EventEmitter&lt;string&gt;</text>
+<text x="0.0" y="192.3" stroke="none" data-name="TopbarComponent" data-compartment="1">+statoFilterChange: EventEmitter&lt;string&gt;</text>
+<text x="0.0" y="208.5" stroke="none" data-name="TopbarComponent" data-compartment="1">+prioritaFilterChange: EventEmitter&lt;string&gt;</text>
+<text x="0.0" y="224.7" stroke="none" data-name="TopbarComponent" data-compartment="1">+searchChange: EventEmitter&lt;string&gt;</text>
+<text x="0.0" y="240.9" stroke="none" data-name="TopbarComponent" data-compartment="1">+currentRoute: string</text>
+<text x="0.0" y="257.1" stroke="none" data-name="TopbarComponent" data-compartment="1">+selectedProject: string</text>
+<text x="0.0" y="273.3" stroke="none" data-name="TopbarComponent" data-compartment="1">-destroy$: Subject&lt;void&gt;</text>
+<text x="0.0" y="289.5" stroke="none" data-name="TopbarComponent" data-compartment="1">-router: Router</text>
+<text x="0.0" y="305.7" stroke="none" data-name="TopbarComponent" data-compartment="1">-projectService: ProjectService</text>
+
+</g>
+</g>
+<g transform="translate(5705.5, 719)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="TopbarComponent" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="TopbarComponent" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="TopbarComponent" data-compartment="2">+navigateToNewIssuePage(): void</text>
+<text x="0.0" y="30.3" stroke="none" data-name="TopbarComponent" data-compartment="2">+onTipoChange(): void</text>
+<text x="0.0" y="46.5" stroke="none" data-name="TopbarComponent" data-compartment="2">+onStatoChange(): void</text>
+<text x="0.0" y="62.7" stroke="none" data-name="TopbarComponent" data-compartment="2">+onPrioritaChange(): void</text>
+<text x="0.0" y="78.9" stroke="none" data-name="TopbarComponent" data-compartment="2">+onSearchChange(): void</text>
+<text x="0.0" y="95.1" stroke="none" data-name="TopbarComponent" data-compartment="2">+ngOnInit(): void</text>
+<text x="0.0" y="111.3" stroke="none" data-name="TopbarComponent" data-compartment="2">+ngOnDestroy(): void</text>
+<text x="0.0" y="127.5" stroke="none" data-name="TopbarComponent" data-compartment="2">+isDashboard(): boolean</text>
+<text x="0.0" y="143.7" stroke="none" data-name="TopbarComponent" data-compartment="2">+isProject(): boolean</text>
+<text x="0.0" y="159.9" stroke="none" data-name="TopbarComponent" data-compartment="2">+formatPercentage(): string</text>
+<text x="0.0" y="176.1" stroke="none" data-name="TopbarComponent" data-compartment="2">+getSlicePath(): string</text>
+
+</g>
+</g>
+</g>
+<g data-name="UserCardComponent">
+<g fill="#eee8d5" stroke="#33322E" data-name="UserCardComponent">
+<rect x="4397.5" y="509.0" height="258.0" width="279.0" data-name="UserCardComponent"></rect>
+<path d="M4397.5 541.0 L4676.5 541.0" fill="none" data-name="UserCardComponent"></path>
+<path d="M4397.5 670.0 L4676.5 670.0" fill="none" data-name="UserCardComponent"></path>
+</g>
+<g transform="translate(4397.5, 509)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="UserCardComponent" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="UserCardComponent" data-compartment="0">
+<a id="..\src\app\_internalComponents\user-card\user-card.ts.UserCardComponent" xlink:href="..\src\app\_internalComponents\user-card\user-card.ts"><text x="131.5" y="14.1" stroke="none" text-anchor="middle" data-name="UserCardComponent" data-compartment="0">UserCardComponent</text></a>
+
+</g>
+</g>
+<g transform="translate(4397.5, 541)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="UserCardComponent" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="UserCardComponent" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="UserCardComponent" data-compartment="1">+user: User</text>
+<text x="0.0" y="30.3" stroke="none" data-name="UserCardComponent" data-compartment="1">+currentUser: User</text>
+<text x="0.0" y="46.5" stroke="none" data-name="UserCardComponent" data-compartment="1">+deleteUser: EventEmitter&lt;User&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="UserCardComponent" data-compartment="1">-userSubscription: Subscription</text>
+<text x="0.0" y="78.9" stroke="none" data-name="UserCardComponent" data-compartment="1">+showDeleteModal: boolean</text>
+<text x="0.0" y="95.1" stroke="none" data-name="UserCardComponent" data-compartment="1">-authService: AuthService</text>
+<text x="0.0" y="111.3" stroke="none" data-name="UserCardComponent" data-compartment="1">-toastService: ToastService</text>
+
+</g>
+</g>
+<g transform="translate(4397.5, 670)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="UserCardComponent" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="UserCardComponent" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="UserCardComponent" data-compartment="2">+ngOnInit(): void</text>
+<text x="0.0" y="30.3" stroke="none" data-name="UserCardComponent" data-compartment="2">+getInitials(): string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="UserCardComponent" data-compartment="2">+canDeleteUser(): boolean</text>
+<text x="0.0" y="62.7" stroke="none" data-name="UserCardComponent" data-compartment="2">+onDelete(): void</text>
+<text x="0.0" y="78.9" stroke="none" data-name="UserCardComponent" data-compartment="2">-extractRole(): string</text>
+
+</g>
+</g>
+</g>
+<g data-name="UserDialogComponent">
+<g fill="#eee8d5" stroke="#33322E" data-name="UserDialogComponent">
+<rect x="5952.8" y="0.0" height="242.0" width="454.0" data-name="UserDialogComponent"></rect>
+<path d="M5952.8 32.0 L6406.8 32.0" fill="none" data-name="UserDialogComponent"></path>
+<path d="M5952.8 210.0 L6406.8 210.0" fill="none" data-name="UserDialogComponent"></path>
+</g>
+<g transform="translate(5952.75, 0)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="UserDialogComponent" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="UserDialogComponent" data-compartment="0">
+<a id="..\src\app\_internalComponents\user-dialog\user-dialog.ts.UserDialogComponent" xlink:href="..\src\app\_internalComponents\user-dialog\user-dialog.ts"><text x="219.0" y="14.1" stroke="none" text-anchor="middle" data-name="UserDialogComponent" data-compartment="0">UserDialogComponent</text></a>
+
+</g>
+</g>
+<g transform="translate(5952.75, 32)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="UserDialogComponent" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="UserDialogComponent" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="UserDialogComponent" data-compartment="1">+newUserForm: FormGroup&lt;any&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="UserDialogComponent" data-compartment="1">+errorMessage: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="UserDialogComponent" data-compartment="1">+isLoading: boolean</text>
+<text x="0.0" y="62.7" stroke="none" data-name="UserDialogComponent" data-compartment="1">+userData: { nome: string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="UserDialogComponent" data-compartment="1">cognome: string</text>
+<text x="0.0" y="95.1" stroke="none" data-name="UserDialogComponent" data-compartment="1">email: string</text>
+<text x="0.0" y="111.3" stroke="none" data-name="UserDialogComponent" data-compartment="1">ruolo: string</text>
+<text x="0.0" y="127.5" stroke="none" data-name="UserDialogComponent" data-compartment="1">}</text>
+<text x="0.0" y="143.7" stroke="none" data-name="UserDialogComponent" data-compartment="1">+dialogRef: MatDialogRef&lt;UserDialogComponent, any&gt;</text>
+<text x="0.0" y="159.9" stroke="none" data-name="UserDialogComponent" data-compartment="1">-fb: FormBuilder</text>
+
+</g>
+</g>
+<g transform="translate(5952.75, 210)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="UserDialogComponent" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="UserDialogComponent" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="UserDialogComponent" data-compartment="2">+onSubmit(): void</text>
+
+</g>
+</g>
+</g>
+<g data-name="UserTopbar">
+<g fill="#eee8d5" stroke="#33322E" data-name="UserTopbar">
+<rect x="4026.5" y="468.5" height="339.0" width="331.0" data-name="UserTopbar"></rect>
+<path d="M4026.5 500.5 L4357.5 500.5" fill="none" data-name="UserTopbar"></path>
+<path d="M4026.5 678.5 L4357.5 678.5" fill="none" data-name="UserTopbar"></path>
+</g>
+<g transform="translate(4026.5, 468.5)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="UserTopbar" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="UserTopbar" data-compartment="0">
+<a id="..\src\app\_internalComponents\user-topbar\user-topbar.ts.UserTopbar" xlink:href="..\src\app\_internalComponents\user-topbar\user-topbar.ts"><text x="157.5" y="14.1" stroke="none" text-anchor="middle" data-name="UserTopbar" data-compartment="0">UserTopbar</text></a>
+
+</g>
+</g>
+<g transform="translate(4026.5, 500.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="UserTopbar" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="UserTopbar" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="UserTopbar" data-compartment="1">+currentUser: User</text>
+<text x="0.0" y="30.3" stroke="none" data-name="UserTopbar" data-compartment="1">+searchChange: EventEmitter&lt;string&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="UserTopbar" data-compartment="1">+roleFilterChange: EventEmitter&lt;string&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="UserTopbar" data-compartment="1">+searchTerm: string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="UserTopbar" data-compartment="1">+selectedRole: string</text>
+<text x="0.0" y="95.1" stroke="none" data-name="UserTopbar" data-compartment="1">-userSubscription: Subscription</text>
+<text x="0.0" y="111.3" stroke="none" data-name="UserTopbar" data-compartment="1">-router: Router</text>
+<text x="0.0" y="127.5" stroke="none" data-name="UserTopbar" data-compartment="1">+dialog: MatDialog</text>
+<text x="0.0" y="143.7" stroke="none" data-name="UserTopbar" data-compartment="1">-authService: AuthService</text>
+<text x="0.0" y="159.9" stroke="none" data-name="UserTopbar" data-compartment="1">-toastService: ToastService</text>
+
+</g>
+</g>
+<g transform="translate(4026.5, 678.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="UserTopbar" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="UserTopbar" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="UserTopbar" data-compartment="2">+ngOnInit(): void</text>
+<text x="0.0" y="30.3" stroke="none" data-name="UserTopbar" data-compartment="2">+onSearchChange(): void</text>
+<text x="0.0" y="46.5" stroke="none" data-name="UserTopbar" data-compartment="2">+onRoleFilterChange(): void</text>
+<text x="0.0" y="62.7" stroke="none" data-name="UserTopbar" data-compartment="2">-extractRole(): string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="UserTopbar" data-compartment="2">+openAddUserDialog(): void</text>
+<text x="0.0" y="95.1" stroke="none" data-name="UserTopbar" data-compartment="2">+createUser(): void</text>
+<text x="0.0" y="111.3" stroke="none" data-name="UserTopbar" data-compartment="2">+canCreateUser(): boolean</text>
+
+</g>
+</g>
+</g>
+<g data-name="UserListComponent">
+<g fill="#eee8d5" stroke="#33322E" data-name="UserListComponent">
+<rect x="3372.5" y="525.0" height="226.0" width="233.0" data-name="UserListComponent"></rect>
+<path d="M3372.5 557.0 L3605.5 557.0" fill="none" data-name="UserListComponent"></path>
+<path d="M3372.5 670.0 L3605.5 670.0" fill="none" data-name="UserListComponent"></path>
+</g>
+<g transform="translate(3372.5, 525)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="UserListComponent" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="UserListComponent" data-compartment="0">
+<a id="..\src\app\_internalComponents\users-list\users-list.ts.UserListComponent" xlink:href="..\src\app\_internalComponents\users-list\users-list.ts"><text x="108.5" y="14.1" stroke="none" text-anchor="middle" data-name="UserListComponent" data-compartment="0">UserListComponent</text></a>
+
+</g>
+</g>
+<g transform="translate(3372.5, 557)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="UserListComponent" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="UserListComponent" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="UserListComponent" data-compartment="1">+users: User[]</text>
+<text x="0.0" y="30.3" stroke="none" data-name="UserListComponent" data-compartment="1">+searchTerm: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="UserListComponent" data-compartment="1">+roleFilter: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="UserListComponent" data-compartment="1">+filteredUsers: User[]</text>
+<text x="0.0" y="78.9" stroke="none" data-name="UserListComponent" data-compartment="1">-authService: AuthService</text>
+<text x="0.0" y="95.1" stroke="none" data-name="UserListComponent" data-compartment="1">-toastService: ToastService</text>
+
+</g>
+</g>
+<g transform="translate(3372.5, 670)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="UserListComponent" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="UserListComponent" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="UserListComponent" data-compartment="2">+ngOnInit(): void</text>
+<text x="0.0" y="30.3" stroke="none" data-name="UserListComponent" data-compartment="2">+ngOnChanges(): void</text>
+<text x="0.0" y="46.5" stroke="none" data-name="UserListComponent" data-compartment="2">+applyFilters(): void</text>
+<text x="0.0" y="62.7" stroke="none" data-name="UserListComponent" data-compartment="2">+onUserDelete(): void</text>
+
+</g>
+</g>
+</g>
+<g data-name="KeycloakTokenPayload">
+<g fill="lightblue" stroke="#33322E" data-name="KeycloakTokenPayload">
+<rect x="6446.8" y="44.5" height="153.0" width="260.0" data-name="KeycloakTokenPayload"></rect>
+<path d="M6446.8 76.5 L6706.8 76.5" fill="none" data-name="KeycloakTokenPayload"></path>
+<path d="M6446.8 189.5 L6706.8 189.5" fill="none" data-name="KeycloakTokenPayload"></path>
+</g>
+<g transform="translate(6446.75, 44.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="KeycloakTokenPayload" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="KeycloakTokenPayload" data-compartment="0">
+<a id="..\src\app\_services\auth\auth.service.ts.KeycloakTokenPayload" xlink:href="..\src\app\_services\auth\auth.service.ts"><text x="122.0" y="14.1" stroke="none" text-anchor="middle" data-name="KeycloakTokenPayload" data-compartment="0">KeycloakTokenPayload</text></a>
+
+</g>
+</g>
+<g transform="translate(6446.75, 76.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="KeycloakTokenPayload" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="KeycloakTokenPayload" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="KeycloakTokenPayload" data-compartment="1">+given_name: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="KeycloakTokenPayload" data-compartment="1">+family_name: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="KeycloakTokenPayload" data-compartment="1">+email: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="KeycloakTokenPayload" data-compartment="1">+realm_access: { roles: string[]</text>
+<text x="0.0" y="78.9" stroke="none" data-name="KeycloakTokenPayload" data-compartment="1">}</text>
+<text x="0.0" y="95.1" stroke="none" data-name="KeycloakTokenPayload" data-compartment="1">+sub: string</text>
+
+</g>
+</g>
+<g transform="translate(6446.75, 189.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="KeycloakTokenPayload" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="KeycloakTokenPayload" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="LoginLayoutComponent">
+<g fill="#eee8d5" stroke="#33322E" data-name="LoginLayoutComponent">
+<rect x="6746.8" y="97.0" height="48.0" width="205.0" data-name="LoginLayoutComponent"></rect>
+<path d="M6746.8 129.0 L6951.8 129.0" fill="none" data-name="LoginLayoutComponent"></path>
+<path d="M6746.8 137.0 L6951.8 137.0" fill="none" data-name="LoginLayoutComponent"></path>
+</g>
+<g transform="translate(6746.75, 97)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="LoginLayoutComponent" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="LoginLayoutComponent" data-compartment="0">
+<a id="..\src\app\layout\login-layout\login-layout.ts.LoginLayoutComponent" xlink:href="..\src\app\layout\login-layout\login-layout.ts"><text x="94.5" y="14.1" stroke="none" text-anchor="middle" data-name="LoginLayoutComponent" data-compartment="0">LoginLayoutComponent</text></a>
+
+</g>
+</g>
+<g transform="translate(6746.75, 129)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="LoginLayoutComponent" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" data-name="LoginLayoutComponent" data-compartment="1">
+
+</g>
+</g>
+<g transform="translate(6746.75, 137)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="LoginLayoutComponent" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" data-name="LoginLayoutComponent" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="MainLayoutComponent">
+<g fill="#eee8d5" stroke="#33322E" data-name="MainLayoutComponent">
+<rect x="6991.8" y="65.0" height="112.0" width="217.0" data-name="MainLayoutComponent"></rect>
+<path d="M6991.8 97.0 L7208.8 97.0" fill="none" data-name="MainLayoutComponent"></path>
+<path d="M6991.8 129.0 L7208.8 129.0" fill="none" data-name="MainLayoutComponent"></path>
+</g>
+<g transform="translate(6991.75, 65)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="MainLayoutComponent" data-compartment="0">
+<g transform="translate(8, 8)" fill="#33322E" text-align="center" data-name="MainLayoutComponent" data-compartment="0">
+<a id="..\src\app\layout\main-layout\main-layout.ts.MainLayoutComponent" xlink:href="..\src\app\layout\main-layout\main-layout.ts"><text x="100.5" y="14.1" stroke="none" text-anchor="middle" data-name="MainLayoutComponent" data-compartment="0">MainLayoutComponent</text></a>
+
+</g>
+</g>
+<g transform="translate(6991.75, 97)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MainLayoutComponent" data-compartment="1">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="MainLayoutComponent" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="MainLayoutComponent" data-compartment="1">+isSidebarOpen: boolean</text>
+
+</g>
+</g>
+<g transform="translate(6991.75, 129)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MainLayoutComponent" data-compartment="2">
+<g transform="translate(8, 8)" fill="#33322E" text-align="left" data-name="MainLayoutComponent" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="MainLayoutComponent" data-compartment="2">+toggleSidebar(): void</text>
+<text x="0.0" y="30.3" stroke="none" data-name="MainLayoutComponent" data-compartment="2">+closeSidebar(): void</text>
+
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</svg>

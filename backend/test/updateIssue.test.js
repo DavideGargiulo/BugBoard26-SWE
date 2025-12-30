@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { updateIssue } from '../controllers/issueController.js';
 import { Issue, Allegato } from '../data/remote/Database.js';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 
 const fsMocks = vi.hoisted(() => ({
   unlink: vi.fn(),

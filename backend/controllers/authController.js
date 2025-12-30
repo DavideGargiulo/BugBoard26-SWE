@@ -1,5 +1,5 @@
 import axios from 'axios';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import KeycloakService from '../services/KeycloakService.js';
 import syncService from '../services/syncService.js';
 

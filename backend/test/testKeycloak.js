@@ -13,7 +13,7 @@ async function test() {
 }
 
 try {
-  test();
+  await test();
 } catch (error) {
   console.error('Errore durante l\'esecuzione del test:', error.message);
 }

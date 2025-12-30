@@ -1,10 +1,71 @@
 import { Issue, Progetto, Utente, Allegato, Commento, database } from '../data/remote/Database.js';
 import { countCommentsByIssueId } from './commentController.js';
 import { promises as fsPromises } from 'node:fs';
-import { promisify } from 'node:util';
 import crypto from 'node:crypto';
 
 const readFile = fsPromises.readFile;
+
+const cleanupFiles = async (files) => {
+  if (files && files.length > 0) {
+    await Promise.all(
+      files.map(file =>
+        fsPromises.unlink(file.path).catch(() => {})
+      )
+    );
+  }
+};
+
+const validateAttachmentLimit = async (issueId, newFilesCount) => {
+  const existingCount = await Allegato.count({
+    where: {
+      id_issue: issueId,
+      id_commento: null
+    }
+  });
+
+  if (existingCount + newFilesCount > 3) {
+    return {
+      valid: false,
+      message: `Limite superato. L'issue ha già ${existingCount} allegati e ne stai inviando ${newFilesCount}. Il massimo totale consentito è 3.`
+    };
+  }
+
+  return { valid: true };
+};
+
+const createAttachments = async (files, issueId) => {
+  const allegatoPromises = files.map(async (file) => {
+    const fileBuffer = await readFile(file.path);
+    const hash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+
+    return Allegato.create({
+      nome_file_originale: file.originalname,
+      nome_file_storage: file.filename,
+      percorso_relativo: file.path,
+      tipo_mime: file.mimetype,
+      dimensione_byte: file.size,
+      hash_sha256: hash,
+      id_issue: issueId,
+      id_commento: null
+    });
+  });
+
+  return Promise.all(allegatoPromises);
+};
+
+const appendDescription = (oldDescription, newDescription) => {
+  const now = new Date();
+  const timestamp = now.toLocaleString('it-IT', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+
+  const updateHeader = `<br><br><strong>${timestamp}:</strong><br>`;
+
+  return oldDescription
+    ? `${oldDescription}${updateHeader}${newDescription}`
+    : `${updateHeader}${newDescription}`;
+};
 
 export const getProjectIdByName = async (projectName) => {
   try {
@@ -190,9 +251,7 @@ export const updateIssue = async (req, res) => {
   try {
     const issueId = req.params.id;
     const { descrizione } = req.body;
-
     const hasDescription = descrizione && descrizione.trim() !== '';
-    const hasFiles = req.files && req.files.length > 0;
 
     if (!hasDescription) {
       return res.status(400).json({
@@ -203,74 +262,24 @@ export const updateIssue = async (req, res) => {
     const issue = await Issue.findByPk(issueId);
 
     if (!issue) {
-      if (req.files) {
-        await Promise.all(
-          req.files.map(file =>
-            fsPromises.unlink(file.path).catch(() => {})
-          )
-        );
-      }
+      await cleanupFiles(req.files);
       return res.status(404).json({ message: 'Issue non trovata' });
     }
 
-    const existingAttachmentsCount = await Allegato.count({
-      where: {
-        id_issue: issueId,
-        id_commento: null
-      }
-    });
-
     const newFilesCount = req.files ? req.files.length : 0;
+    const validation = await validateAttachmentLimit(issueId, newFilesCount);
 
-    if (existingAttachmentsCount + newFilesCount > 3) {
-      if (req.files) {
-        await Promise.all(
-          req.files.map(file =>
-            fsPromises.unlink(file.path).catch(() => {})
-          )
-        );
-      }
-      return res.status(400).json({
-        message: `Limite superato. L'issue ha già ${existingAttachmentsCount} allegati e ne stai inviando ${newFilesCount}. Il massimo totale consentito è 3.`
-      });
+    if (!validation.valid) {
+      await cleanupFiles(req.files);
+      return res.status(400).json({ message: validation.message });
     }
 
     if (req.files && req.files.length > 0) {
-      const allegatoPromises = req.files.map(async (file) => {
-        const fileBuffer = await readFile(file.path);
-        const hash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
-
-        return Allegato.create({
-          nome_file_originale: file.originalname,
-          nome_file_storage: file.filename,
-          percorso_relativo: file.path,
-          tipo_mime: file.mimetype,
-          dimensione_byte: file.size,
-          hash_sha256: hash,
-          id_issue: issueId,
-          id_commento: null
-        });
-      });
-
-      await Promise.all(allegatoPromises);
+      await createAttachments(req.files, issueId);
     }
 
-    if (hasDescription) {
-      const now = new Date();
-      const timestamp = now.toLocaleString('it-IT', {
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-      });
-
-      const updateHeader = `<br><br><strong>${timestamp}:</strong><br>`;
-
-      const oldDescription = issue.descrizione || '';
-      const finalDescription = oldDescription
-        ? `${oldDescription}${updateHeader}${descrizione}`
-        : `${updateHeader}${descrizione}`;
-
-      await issue.update({ descrizione: finalDescription });
-    }
+    const finalDescription = appendDescription(issue.descrizione || '', descrizione);
+    await issue.update({ descrizione: finalDescription });
 
     const updatedIssue = await Issue.findByPk(issueId, {
        include: [{
@@ -288,13 +297,7 @@ export const updateIssue = async (req, res) => {
 
   } catch (error) {
     console.error('Errore update:', error);
-    if (req.files) {
-      await Promise.all(
-        req.files.map(file =>
-          fsPromises.unlink(file.path).catch(() => {})
-        )
-      );
-    }
+    await cleanupFiles(req.files);
     res.status(500).json({
       message: 'Errore nell\'aggiornamento della issue',
       error: error.message

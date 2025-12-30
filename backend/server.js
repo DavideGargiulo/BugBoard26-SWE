@@ -5,8 +5,8 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import helmet from 'helmet';
-import { fileURLToPath } from 'url';
-import path from 'path';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 
 import { initKeycloak } from './config/keycloak.js';
 import authRoutes from './routes/authRoutes.js';

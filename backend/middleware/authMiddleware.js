@@ -18,6 +18,107 @@ const jwksClientInstance = jwksClient({
   jwksRequestsPerMinute: 10
 });
 
+const AUTH_ERRORS = {
+  LOGIN_REQUIRED: 'Autenticazione richiesta',
+  SESSION_EXPIRED: 'Sessione scaduta, effettua nuovamente il login',
+  INVALID_TOKEN: 'Token non valido'
+};
+
+const clearAuthCookies = (res) => {
+  res.clearCookie('access_token');
+  res.clearCookie('refresh_token');
+};
+
+const buildUserFromDecoded = (decoded) => ({
+  id: decoded.sub,
+  email: decoded.email,
+  username: decoded.preferred_username,
+  name: decoded.name,
+  given_name: decoded.given_name,
+  family_name: decoded.family_name,
+  realm_access: decoded.realm_access,
+  resource_access: decoded.resource_access,
+  ...decoded
+});
+
+const verifyAndSetUser = async (req, token) => {
+  const decoded = await verifyKeycloakToken(token);
+
+  if (!decoded?.sub || !decoded?.exp) {
+    const e = new Error('Token payload non valido');
+    e.name = 'InvalidTokenPayload';
+    throw e;
+  }
+
+  req.user = buildUserFromDecoded(decoded);
+  return decoded;
+};
+
+const refreshAndGetToken = async (req, res, reason) => {
+  const refreshToken = req.cookies['refresh_token'];
+  if (!refreshToken) return null;
+
+  const result = await handleTokenRefresh(req, res, refreshToken, reason);
+  return result.success ? result.token : null;
+};
+
+const ensureAccessToken = async (req, res) => {
+  const token = extractToken(req);
+  if (token) return token;
+
+  if (!req.cookies['refresh_token']) {
+    const e = new Error(AUTH_ERRORS.LOGIN_REQUIRED);
+    e.code = 'NO_REFRESH';
+    throw e;
+  }
+
+  const refreshed = await refreshAndGetToken(req, res, 'Access token mancante');
+  if (refreshed) return refreshed;
+
+  const e = new Error(AUTH_ERRORS.SESSION_EXPIRED);
+  e.code = 'REFRESH_FAILED';
+  throw e;
+};
+
+const respondUnauthorized = (res, message, err) => {
+  const body = { error: message };
+  if (process.env.NODE_ENV === 'development' && err) body.details = err.message;
+  return res.status(401).json(body);
+};
+
+const handleExpiredTokenFlow = async (req, res, next) => {
+  const refreshed = await refreshAndGetToken(req, res, 'Token scaduto');
+
+  if (!refreshed) {
+    clearAuthCookies(res);
+    return respondUnauthorized(res, AUTH_ERRORS.SESSION_EXPIRED);
+  }
+
+  try {
+    await verifyAndSetUser(req, refreshed);
+    return next();
+  } catch (e) {
+    clearAuthCookies(res);
+    return respondUnauthorized(res, AUTH_ERRORS.INVALID_TOKEN, e);
+  }
+};
+
+const handleAuthFailure = (err, req, res, next) => {
+  console.error('Errore validazione token:', err.message);
+
+  if (err?.name === 'TokenExpiredError') {
+    return handleExpiredTokenFlow(req, res, next);
+  }
+
+  if (err?.code === 'NO_REFRESH') {
+    return res.status(401).json({ error: AUTH_ERRORS.LOGIN_REQUIRED });
+  }
+
+  // firma non valida, issuer/audience errati, payload invalido, ecc.
+  clearAuthCookies(res);
+  return respondUnauthorized(res, AUTH_ERRORS.INVALID_TOKEN, err);
+};
+
 /**
  * Ottiene la chiave pubblica di Keycloak per verificare il token
  */
@@ -160,104 +261,12 @@ const handleTokenRefresh = async (req, res, refreshToken, reason) => {
  * Middleware di protezione: verifica il token JWT con Keycloak
  */
 export const protect = async (req, res, next) => {
-  let token = extractToken(req);
-
-  // Se manca il token, prova il refresh
-  if (!token) {
-    const refreshToken = req.cookies['refresh_token'];
-
-    if (!refreshToken) {
-      console.error('Nessun token trovato');
-      return res.status(401).json({ error: 'Autenticazione richiesta' });
-    }
-
-    const result = await handleTokenRefresh(req, res, refreshToken, 'Access token mancante');
-
-    if (!result.success) {
-      return res.status(401).json({ error: 'Sessione scaduta, effettua nuovamente il login' });
-    }
-
-    token = result.token;
-  }
-
-  // Valida il token con la chiave pubblica di Keycloak
   try {
-    const decoded = await verifyKeycloakToken(token);
-
-    // Validazioni aggiuntive del payload
-    if (!decoded.sub || !decoded.exp) {
-      throw new Error('Token payload non valido');
-    }
-
-    // Estrai informazioni utente dal token verificato
-    req.user = {
-      id: decoded.sub,
-      email: decoded.email,
-      username: decoded.preferred_username,
-      name: decoded.name,
-      given_name: decoded.given_name,
-      family_name: decoded.family_name,
-      realm_access: decoded.realm_access,
-      resource_access: decoded.resource_access,
-      ...decoded
-    };
-
-    next();
-
-  } catch (error) {
-    console.error('Errore validazione token:', error.message);
-
-    // Gestione specifica per token scaduto
-    if (error.name === 'TokenExpiredError') {
-      const refreshToken = req.cookies['refresh_token'];
-
-      if (!refreshToken) {
-        res.clearCookie('access_token');
-        res.clearCookie('refresh_token');
-        return res.status(401).json({ error: 'Sessione scaduta, effettua nuovamente il login' });
-      }
-
-      // Prova il refresh automatico
-      const result = await handleTokenRefresh(req, res, refreshToken, 'Token scaduto');
-
-      if (!result.success) {
-        res.clearCookie('access_token');
-        res.clearCookie('refresh_token');
-        return res.status(401).json({ error: 'Sessione scaduta, effettua nuovamente il login' });
-      }
-
-      // Verifica il nuovo token
-      try {
-        const newDecoded = await verifyKeycloakToken(result.token);
-
-        req.user = {
-          id: newDecoded.sub,
-          email: newDecoded.email,
-          username: newDecoded.preferred_username,
-          name: newDecoded.name,
-          given_name: newDecoded.given_name,
-          family_name: newDecoded.family_name,
-          realm_access: newDecoded.realm_access,
-          resource_access: newDecoded.resource_access,
-          ...newDecoded
-        };
-
-        return next();
-      } catch (verifyError) {
-        console.error('Errore verifica nuovo token:', verifyError.message);
-        res.clearCookie('access_token');
-        res.clearCookie('refresh_token');
-        return res.status(401).json({ error: 'Token non valido' });
-      }
-    }
-
-    // Altri errori (firma non valida, issuer sbagliato, ecc.)
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
-    return res.status(401).json({
-      error: 'Token non valido',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+    const token = await ensureAccessToken(req, res);
+    await verifyAndSetUser(req, token);
+    return next();
+  } catch (err) {
+    return handleAuthFailure(err, req, res, next);
   }
 };
 

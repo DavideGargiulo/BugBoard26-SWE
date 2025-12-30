@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createComment } from '../controllers/commentController.js';
 import { Commento, Allegato, Utente, Issue } from '../data/remote/Database.js';
-import crypto from 'crypto';
 
 // 1. Setup Mock per FS
 const fsMocks = vi.hoisted(() => ({

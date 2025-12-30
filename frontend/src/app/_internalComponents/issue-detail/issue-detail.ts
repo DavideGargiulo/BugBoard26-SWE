@@ -307,7 +307,7 @@ export class IssueDetailComponent implements OnInit {
       return '';
     }
 
-    const normalizedPath = attachment.percorso_relativo.replace(/\\/g, '/');
+    const normalizedPath = attachment.percorso_relativo.replaceAll(/\\/g, '/');
 
     const url = `http://localhost:3000/${normalizedPath}`;
     console.log('URL generato per attachment:', url);

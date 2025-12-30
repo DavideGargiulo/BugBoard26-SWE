@@ -254,7 +254,7 @@ export class EditIssueComponent implements OnInit {
 
   getAttachmentUrl(attachment: any): string {
     if (!attachment || !attachment.percorso_relativo) return '';
-    const normalizedPath = attachment.percorso_relativo.replace(/\\/g, '/');
+    const normalizedPath = attachment.percorso_relativo.replaceAll(/\\/g, '/');
     return `http://localhost:3000/${normalizedPath}`;
   }
 

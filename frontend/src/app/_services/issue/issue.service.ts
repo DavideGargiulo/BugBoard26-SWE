@@ -49,7 +49,7 @@ export class IssueService {
 
     if (data.newAttachments && data.newAttachments.length > 0) {
       data.newAttachments.forEach((file) => {
-        formData.append('attachments', file, file.name);
+        formData.append('images', file, file.name);
       });
     }
     return this.http.put<any>(url, formData, { withCredentials: true });

@@ -14,15 +14,15 @@ import { ToastService } from '../../_services/toast/toast.service';
 
 export class NewIssueComponent implements OnInit, OnDestroy {
   @ViewChild('content') content!: ElementRef<HTMLDivElement>;
-  @Output() cancel = new EventEmitter<void>();
+  @Output() cancelEvent = new EventEmitter<void>();
   @Output() confirm = new EventEmitter<any>();
 
   constructor(
     private readonly router: Router,
-    private route: ActivatedRoute,
-    private projectService: ProjectService,
-    private cdr: ChangeDetectorRef,
-    private toastService: ToastService
+    private readonly route: ActivatedRoute,
+    private readonly projectService: ProjectService,
+    private readonly cdr: ChangeDetectorRef,
+    private readonly toastService: ToastService
   ) {}
 
   title: string = '';
@@ -123,7 +123,7 @@ export class NewIssueComponent implements OnInit, OnDestroy {
   }
 
   onCancel(): void {
-    this.cancel.emit();
+    this.cancelEvent.emit();
     this.resetForm();
     this.router.navigate(['/progetto/', this.projectName]);
   }

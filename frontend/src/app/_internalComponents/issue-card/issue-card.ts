@@ -21,7 +21,7 @@ export interface Issue {
 export class IssueCardComponent {
   @Input() issue!: Issue;
 
-  constructor(private router: Router) {}
+  constructor(private readonly router: Router) {}
 
   getInitials(name: string): string {
     return name

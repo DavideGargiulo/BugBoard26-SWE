@@ -12,7 +12,7 @@ import { UserService } from "../_services/user/user.service";
   templateUrl: './users.html'
 })
 export class UsersComponent implements OnInit {
-  private userService = inject(UserService);
+  private readonly userService = inject(UserService);
 
   users: User[] = [];
   searchTerm: string = '';

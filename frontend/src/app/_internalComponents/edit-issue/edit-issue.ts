@@ -25,16 +25,16 @@ export class EditIssueComponent implements OnInit {
   uploadedImages: File[] = [];
   imagePreviewUrls: string[] = [];
 
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private issueService = inject(IssueService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly issueService = inject(IssueService);
   private userSubscription: Subscription | null = null;
   private currentUser: { email: any; isAdmin: any; } = { email: '', isAdmin: false };
 
   constructor(
-    private cdr: ChangeDetectorRef,
+    private readonly cdr: ChangeDetectorRef,
     private readonly authService: AuthService,
-    private toastService: ToastService
+    private readonly toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -85,7 +85,7 @@ export class EditIssueComponent implements OnInit {
         }
 
         setTimeout(() => {
-          if (this.content && this.content.nativeElement) {
+          if (this.content?.nativeElement) {
             this.content.nativeElement.innerHTML = '';
           }
         });
@@ -253,7 +253,7 @@ export class EditIssueComponent implements OnInit {
   }
 
   getAttachmentUrl(attachment: any): string {
-    if (!attachment || !attachment.percorso_relativo) return '';
+    if (!attachment?.percorso_relativo) return '';
     const normalizedPath = attachment.percorso_relativo.replaceAll('\\', '/');
     return `http://localhost:3000/${normalizedPath}`;
   }

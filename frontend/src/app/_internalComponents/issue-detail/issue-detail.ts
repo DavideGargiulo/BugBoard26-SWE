@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, Inject, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -41,16 +41,16 @@ export class IssueDetailComponent implements OnInit {
   uploadedImages: File[] = [];
   imagePreviewUrls: string[] = [];
 
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private issueService = inject(IssueService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly issueService = inject(IssueService);
   private userSubscription: Subscription | null = null;
   private currentUser: { email: any; isAdmin: any; } = { email: '', isAdmin: false };
 
   constructor(
-    private cdr: ChangeDetectorRef,
+    private readonly cdr: ChangeDetectorRef,
     private readonly authService: AuthService,
-    private toastService: ToastService
+    private readonly toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -302,7 +302,7 @@ export class IssueDetailComponent implements OnInit {
   }
 
   getAttachmentUrl(attachment: any): string {
-    if (!attachment || !attachment.percorso_relativo) {
+    if (!attachment?.percorso_relativo) {
       console.error('Attachment mancante o percorso non valido:', attachment);
       return '';
     }

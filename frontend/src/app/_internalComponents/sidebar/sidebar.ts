@@ -66,7 +66,7 @@ export class SidebarComponent implements OnInit {
     private readonly projectService: ProjectService,
     private readonly authService: AuthService,
     @Inject(MatDialog) public dialog: MatDialog,
-    private toastService: ToastService
+    private readonly toastService: ToastService
   ) {}
 
   ngOnInit(): void {

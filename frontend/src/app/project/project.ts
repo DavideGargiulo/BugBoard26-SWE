@@ -25,9 +25,9 @@ export class ProjectComponent implements OnInit {
   inProgressPercentage: number = 0;
   donePercentage: number = 0;
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(private readonly route: ActivatedRoute) {}
 
-  private issueService = inject(IssueService);
+  private readonly issueService = inject(IssueService);
 
   ngOnInit(): void {
     this.route.params.pipe(

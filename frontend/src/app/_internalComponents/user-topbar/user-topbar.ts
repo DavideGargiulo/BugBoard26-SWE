@@ -23,7 +23,7 @@ export class UserTopbar implements OnInit {
   searchTerm: string = '';
   selectedRole: string = ''; // Nuovo
   private userSubscription: Subscription | null = null;
-  private router = inject(Router);
+  private readonly router = inject(Router);
 
   constructor(
     @Inject(MatDialog) public dialog: MatDialog,

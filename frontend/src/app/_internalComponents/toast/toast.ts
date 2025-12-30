@@ -25,9 +25,9 @@ import { trigger, transition, style, animate } from '@angular/animations';
 export class ToastComponent implements OnInit, OnDestroy {
   toasts: Toast[] = [];
   copiedIds = new Set<string>();
-  private timeouts = new Map<string, any>();
+  private readonly timeouts = new Map<string, any>();
 
-  constructor(private toastService: ToastService) {}
+  constructor(private readonly toastService: ToastService) {}
 
   ngOnInit() {
     this.toastService.toasts$.subscribe(toast => {

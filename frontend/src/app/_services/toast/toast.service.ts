@@ -15,7 +15,7 @@ export interface Toast {
 })
 export class ToastService {
 
-  private toastSubject = new Subject<Toast>();
+  private readonly toastSubject = new Subject<Toast>();
   public toasts$ = this.toastSubject.asObservable();
   private idCounter = 0; // Contatore per ID unici
 

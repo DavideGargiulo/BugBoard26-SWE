@@ -6,9 +6,9 @@ import { inject, Injectable } from '@angular/core';
 })
 
 export class IssueService {
-  private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/api/issues'; // URL del backend
-  private commentApiUrl = 'http://localhost:3000/api/comments'; // URL del backend
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = 'http://localhost:3000/api/issues'; // URL del backend
+  private readonly commentApiUrl = 'http://localhost:3000/api/comments'; // URL del backend
 
   getIssuesByProject(projectName: string) {
     const url = `${this.apiUrl}/project/${projectName}`;

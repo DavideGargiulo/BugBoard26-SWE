@@ -21,7 +21,7 @@ export class DashboardComponent implements OnInit {
   inProgressPercentage: number = 0;
   donePercentage: number = 0;
 
-  private issueService = inject(IssueService);
+  private readonly issueService = inject(IssueService);
 
   ngOnInit(): void {
     this.loadAllIssues();

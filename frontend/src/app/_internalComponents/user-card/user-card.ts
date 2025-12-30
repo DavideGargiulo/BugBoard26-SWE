@@ -26,7 +26,7 @@ export class UserCardComponent implements OnInit {
 
   constructor(
     private readonly authService: AuthService,
-    private toastService: ToastService
+    private readonly toastService: ToastService
   ) {}
 
   showDeleteModal = false;

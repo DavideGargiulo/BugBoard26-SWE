@@ -27,7 +27,7 @@ export class AuthService {
   private readonly apiUrl = 'http://localhost:3000/api/auth';
   private readonly usersApiUrl = 'http://localhost:3000/api/users';
 
-  private userProfileSubject = new BehaviorSubject<any | null>(null);
+  private readonly userProfileSubject = new BehaviorSubject<any | null>(null);
   public currentUser$ = this.userProfileSubject.asObservable();
 
   constructor() {
@@ -82,7 +82,7 @@ export class AuthService {
 
   hasRole(role: string): boolean {
     const profile = this.userProfileSubject.value;
-    if (!profile || !profile.realm_access || !profile.realm_access.roles) {
+    if (!profile?.realm_access?.roles) {
       return false;
     }
     return profile.realm_access.roles.includes(role);

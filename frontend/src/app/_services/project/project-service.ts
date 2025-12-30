@@ -9,7 +9,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 export class ProjectService {
   private readonly apiUrl = 'http://localhost:3000/api';
 
-  private selectedProjectSubject = new BehaviorSubject<string | null>(null);
+  private readonly selectedProjectSubject = new BehaviorSubject<string | null>(null);
   public readonly selectedProject$: Observable<string | null> = this.selectedProjectSubject.asObservable();
 
   constructor(private readonly http: HttpClient) {}

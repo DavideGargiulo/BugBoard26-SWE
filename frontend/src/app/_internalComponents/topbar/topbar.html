@@ -81,7 +81,6 @@
       <!-- SVG Pie Chart -->
       <svg class="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0" viewBox="0 0 96 96">
         <ng-container *ngIf="todoPercentage + inProgressPercentage + donePercentage > 0; else emptyChart">
-          <!-- TODO slice (gray-100/gray-800) -->
           <path
             *ngIf="todoPercentage > 0"
             [attr.d]="getSlicePath(0, todoPercentage)"

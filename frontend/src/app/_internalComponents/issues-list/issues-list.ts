@@ -33,7 +33,7 @@ export class IssuesListComponent implements OnInit, OnChanges {
     }
 
     // Calcola statistiche alla prima inizializzazione
-    if (changes['issues'] && changes['issues'].firstChange && this.issues.length > 0) {
+    if (changes['issues']?.firstChange && this.issues.length > 0) {
       this.calculateStatistics();
       this.statisticsCalculated = true;
     }

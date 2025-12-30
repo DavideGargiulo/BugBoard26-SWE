@@ -28,7 +28,7 @@ export class UserTopbar implements OnInit {
   constructor(
     @Inject(MatDialog) public dialog: MatDialog,
     private readonly authService: AuthService,
-    private toastService: ToastService
+    private readonly toastService: ToastService
   ) {}
 
   ngOnInit(): void {

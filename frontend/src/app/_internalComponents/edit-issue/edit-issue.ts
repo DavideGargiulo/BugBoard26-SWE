@@ -6,24 +6,22 @@ import { ToastService } from '../../_services/toast/toast.service';
 import { IssueService } from '../../_services/issue/issue.service';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../_services/auth/auth.service';
+import { EditorComponent } from '../editor/editor';
 
 @Component({
   selector: 'app-edit-issue',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, EditorComponent],
   templateUrl: './edit-issue.html'
 })
-export class EditIssueComponent implements OnInit {
 
-  @ViewChild('content') content!: ElementRef<HTMLDivElement>;
+export class EditIssueComponent implements OnInit {
+  @ViewChild(EditorComponent) editor!: EditorComponent;
 
   issueId: number = 0;
   issue: any = null;
   loading: boolean = true;
   error: string = '';
-
-  uploadedImages: File[] = [];
-  imagePreviewUrls: string[] = [];
 
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -32,7 +30,6 @@ export class EditIssueComponent implements OnInit {
   private currentUser: { email: any; isAdmin: any; } = { email: '', isAdmin: false };
 
   constructor(
-    private readonly cdr: ChangeDetectorRef,
     private readonly authService: AuthService,
     private readonly toastService: ToastService
   ) {}
@@ -84,12 +81,6 @@ export class EditIssueComponent implements OnInit {
           return;
         }
 
-        setTimeout(() => {
-          if (this.content?.nativeElement) {
-            this.content.nativeElement.innerHTML = '';
-          }
-        });
-
         this.loading = false;
       },
       error: (err) => {
@@ -100,83 +91,9 @@ export class EditIssueComponent implements OnInit {
     });
   }
 
-  formatDoc(cmd: string, value: any = null): void {
-    document.execCommand(cmd, false, value);
-  }
-
-  onImageUpload(event: Event): void {
-    const input = event.target as HTMLInputElement;
-
-    if (input.files) {
-      const files = Array.from(input.files);
-
-      const maxFiles = 3;
-      const maxSize = 5 * 1024 * 1024;
-      const allowedExtensions = ['png', 'jpg', 'jpeg', 'pdf'];
-
-      if (this.uploadedImages.length + files.length > maxFiles) {
-        this.toastService.error(
-          'Errore caricamento file',
-          `Puoi caricare un massimo di ${maxFiles} file per volta`
-        );
-        return;
-      }
-
-      for (const file of files) {
-        const extension = file.name.split('.').pop()?.toLowerCase();
-        if (!extension || !allowedExtensions.includes(extension)) {
-          this.toastService.error(
-            'Errore caricamento file',
-            `Il file "${file.name}" non è valido. Sono ammessi: ${allowedExtensions.join(', ')}`
-          );
-          return;
-        }
-
-        if (file.size > maxSize) {
-          this.toastService.error(
-            'Errore caricamento file',
-            `Il file "${file.name}" supera i 5MB di dimensione massima`
-          );
-          return;
-        }
-      }
-
-      this.uploadedImages.push(...files);
-
-      files.forEach(file => {
-        if (file.type.startsWith('image/')) {
-          const url = URL.createObjectURL(file);
-          this.imagePreviewUrls.push(url);
-        } else {
-          this.imagePreviewUrls.push('');
-        }
-      });
-
-      setTimeout(() => {
-        this.cdr.detectChanges();
-      });
-    }
-  }
-
-  triggerImageUpload(): void {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.png,.jpg,.jpeg,.pdf';
-    input.multiple = true;
-    input.onchange = (e) => this.onImageUpload(e);
-    input.click();
-  }
-
-  removeImage(index: number): void {
-    if (this.imagePreviewUrls[index]) {
-      URL.revokeObjectURL(this.imagePreviewUrls[index]);
-    }
-    this.uploadedImages.splice(index, 1);
-    this.imagePreviewUrls.splice(index, 1);
-  }
-
   submitEdit(): void {
-    const descriptionHtml = this.content.nativeElement.innerHTML.trim();
+    const descriptionHtml = this.editor.getContent().trim();
+    const files = this.editor.getFiles();
 
     if (!descriptionHtml) {
       this.toastService.error(
@@ -187,7 +104,7 @@ export class EditIssueComponent implements OnInit {
     }
 
     const existingCount = this.issue.attachments ? this.issue.attachments.length : 0;
-    const newCount = this.uploadedImages.length;
+    const newCount = files.length;
 
     if (existingCount + newCount > 3) {
       this.toastService.error(
@@ -197,19 +114,13 @@ export class EditIssueComponent implements OnInit {
       return;
     }
 
-
     this.issueService.updateIssue(this.issueId, {
       descrizione: descriptionHtml,
-      newAttachments: this.uploadedImages
+      newAttachments: files
     }).subscribe({
       next: (response) => {
         console.log('Issue aggiornata:', response);
         this.toastService.success('Successo', 'Aggiornamento aggiunto correttamente');
-
-        // Reset
-        this.uploadedImages = [];
-        this.imagePreviewUrls = [];
-
         this.router.navigate(['/issue', this.issueId]);
       },
       error: (error) => {
@@ -226,14 +137,6 @@ export class EditIssueComponent implements OnInit {
 
   getInitials(name: string): string {
     return name ? name.split(' ').map(word => word.charAt(0).toUpperCase()).join('').substring(0, 2) : '??';
-  }
-
-  getFileName(file: File): string {
-    return file.name;
-  }
-
-  isImage(file: File): boolean {
-    return file.type.startsWith('image/');
   }
 
   canEditIssue(): boolean {

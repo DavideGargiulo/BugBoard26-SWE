@@ -1,6 +1,4 @@
 <div class="flex flex-col h-screen overflow-hidden bg-gray-100 dark:bg-gray-900">
-
-  <!-- Wrapper pagina -->
   <div class="flex-1 min-h-0 flex flex-col">
 
     <!-- Header -->
@@ -27,105 +25,10 @@
           />
         </div>
 
-        <!-- Descrizione -->
+        <!-- Descrizione - EDITOR COMPONENT -->
         <div class="flex-1 min-h-0 flex flex-col">
-
-          <!-- Toolbar -->
-          <div class="border border-gray-300 dark:border-gray-700 rounded-t-lg bg-gray-100 dark:bg-gray-800 px-2 py-1.5 sm:py-2 flex-shrink-0">
-            <div class="flex items-center gap-1 text-sm sm:text-base flex-wrap">
-              <button (click)="formatDoc('bold')" class="p-1.5 sm:p-2 text-gray-700 dark:text-gray-200 font-bold hover:bg-gray-200 dark:hover:bg-gray-700 rounded">B</button>
-              <button (click)="formatDoc('italic')" class="p-1.5 sm:p-2 text-gray-700 dark:text-gray-200 italic hover:bg-gray-200 dark:hover:bg-gray-700 rounded">I</button>
-              <button (click)="formatDoc('underline')" class="p-1.5 sm:p-2 text-gray-700 dark:text-gray-200 underline hover:bg-gray-200 dark:hover:bg-gray-700 rounded">U</button>
-              <button (click)="formatDoc('strikeThrough')" class="p-1.5 sm:p-2 text-gray-700 dark:text-gray-200 line-through hover:bg-gray-200 dark:hover:bg-gray-700 rounded">S</button>
-
-              <div class="hidden sm:block w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
-
-              <!-- JUSTIFY LEFT -->
-              <button (click)="formatDoc('justifyLeft')" class="editor-btn">
-                <span class="icon-lines items-start">
-                  <span class="line w-full"></span>
-                  <span class="line w-3/4"></span>
-                  <span class="line w-full"></span>
-                </span>
-              </button>
-
-              <!-- JUSTIFY CENTER -->
-              <button (click)="formatDoc('justifyCenter')" class="editor-btn">
-                <span class="icon-lines items-center">
-                  <span class="line w-full"></span>
-                  <span class="line w-3/4"></span>
-                  <span class="line w-full"></span>
-                </span>
-              </button>
-
-              <!-- JUSTIFY RIGHT -->
-              <button (click)="formatDoc('justifyRight')" class="editor-btn">
-                <span class="icon-lines items-end">
-                  <span class="line w-full"></span>
-                  <span class="line w-3/4"></span>
-                  <span class="line w-full"></span>
-                </span>
-              </button>
-
-              <!-- JUSTIFY FULL -->
-              <button (click)="formatDoc('justifyFull')" class="editor-btn">
-                <span class="icon-lines items-stretch">
-                  <span class="line w-full"></span>
-                  <span class="line w-full"></span>
-                  <span class="line w-full"></span>
-                </span>
-              </button>
-
-              <div class="hidden sm:block w-px h-6 bg-gray-300 dark:bg-gray-700 mx-1"></div>
-
-              <button (click)="triggerImageUpload()" class="p-1.5 sm:p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">📷</button>
-            </div>
-          </div>
-
-          <!-- Content Editable -->
-          <div
-            #content
-            contenteditable="true"
-            spellcheck="false"
-            class="border border-t-0 border-gray-300 dark:border-gray-700 rounded-b-lg flex-1 min-h-0 overflow-y-auto
-                  bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
-                  p-3 sm:p-6 outline-none break-words
-                  scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200
-                  dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800"
-            [style]="{'scrollbar-gutter':'stable'}"
-          ></div>
-
-        </div>
-
-        <!-- Immagini caricate -->
-        <div class="flex-shrink-0" *ngIf="uploadedImages.length > 0">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            File allegati ({{ uploadedImages.length }}/3)
-          </label>
-
-          <div class="flex flex-wrap gap-2">
-            <div *ngFor="let image of uploadedImages; let i = index" class="relative group">
-              <div class="w-20 h-20 border-2 border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
-                <img [src]="imagePreviewUrls[i]" [alt]="image.name" class="max-w-full max-h-full object-contain"/>
-              </div>
-
-              <!-- su touch: sempre visibile -->
-              <button
-                type="button"
-                (click)="removeImage(i)"
-                class="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full
-                       opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity
-                       flex items-center justify-center"
-                aria-label="Rimuovi allegato"
-              >
-                ×
-              </button>
-
-              <span class="block text-xs text-gray-600 dark:text-gray-400 mt-1 truncate w-20" [title]="image.name">
-                {{ image.name }}
-              </span>
-            </div>
-          </div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex-shrink-0">Descrizione</label>
+          <app-editor class="flex-1 min-h-0 flex flex-col"></app-editor>
         </div>
 
         <!-- Tipo, Priorità e Azioni -->
@@ -160,7 +63,7 @@
             </div>
           </div>
 
-          <!-- Actions: full-width su mobile -->
+          <!-- Actions -->
           <div class="flex flex-col-reverse sm:flex-row gap-3 lg:justify-end lg:self-end">
             <button
               type="button"

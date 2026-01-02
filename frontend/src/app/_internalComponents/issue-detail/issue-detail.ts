@@ -6,6 +6,7 @@ import { ToastService } from '../../_services/toast/toast.service';
 import { IssueService } from '../../_services/issue/issue.service';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../_services/auth/auth.service';
+import { EditorComponent } from '../editor/editor';
 
 interface Comment {
   id: number;
@@ -24,22 +25,18 @@ interface Comment {
 @Component({
   selector: 'app-issue-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, EditorComponent],
   templateUrl: './issue-detail.html'
 })
-export class IssueDetailComponent implements OnInit {
-  @ViewChild('content') content!: ElementRef<HTMLDivElement>;
 
+export class IssueDetailComponent implements OnInit {
+  @ViewChild(EditorComponent) editor!: EditorComponent;
 
   issueId: number = 0;
   issue: any = null;
   comments: Comment[] = [];
   loading: boolean = true;
   error: string = '';
-
-  newComment: string = '';
-  uploadedImages: File[] = [];
-  imagePreviewUrls: string[] = [];
 
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -48,7 +45,6 @@ export class IssueDetailComponent implements OnInit {
   private currentUser: { email: any; isAdmin: any; } = { email: '', isAdmin: false };
 
   constructor(
-    private readonly cdr: ChangeDetectorRef,
     private readonly authService: AuthService,
     private readonly toastService: ToastService
   ) {}
@@ -62,9 +58,7 @@ export class IssueDetailComponent implements OnInit {
 
   onImageError(event: any): void {
     console.error('Errore caricamento immagine:', event.target.src);
-    // Imposta un'immagine placeholder
-    event.target.src = 'assets/image-error.png'; // O usa un'icona
-    // Oppure nascondi l'immagine
+    event.target.src = 'assets/image-error.png';
     event.target.style.display = 'none';
   }
 
@@ -105,92 +99,9 @@ export class IssueDetailComponent implements OnInit {
     });
   }
 
-  formatDoc(cmd: string, value: any = null): void {
-    document.execCommand(cmd, false, value);
-  }
-
-  onImageUpload(event: Event): void {
-    const input = event.target as HTMLInputElement;
-
-    if (input.files) {
-      const files = Array.from(input.files);
-
-      const maxFiles = 3;
-      const maxSize = 5 * 1024 * 1024;
-      const allowedExtensions = ['png', 'jpg', 'jpeg', 'pdf'];
-
-      // Controllo numero massimo
-      if (this.uploadedImages.length + files.length > maxFiles) {
-        this.toastService.error(
-          'Errore caricamento file',
-          `Puoi caricare un massimo di ${maxFiles} file`
-        );
-        return;
-      }
-
-      // Controlli su tutti i file PRIMA di caricare
-      for (const file of files) {
-        const extension = file.name.split('.').pop()?.toLowerCase();
-        if (!extension || !allowedExtensions.includes(extension)) {
-          this.toastService.error(
-            'Errore caricamento file',
-            `Il file "${file.name}" non è valido. Sono ammessi: ${allowedExtensions.join(', ')}`
-          );
-          return;
-        }
-
-        if (file.size > maxSize) {
-          this.toastService.error(
-            'Errore caricamento file',
-            `Il file "${file.name}" supera i 5MB di dimensione massima`
-          );
-          return;
-        }
-      }
-
-      // Se tutti validi → li aggiungo in una volta sola
-      this.uploadedImages.push(...files);
-
-      // Genero gli URL per l'anteprima (solo per immagini, NON per PDF)
-      files.forEach(file => {
-        if (file.type.startsWith('image/')) {
-          const url = URL.createObjectURL(file);
-          this.imagePreviewUrls.push(url);
-        } else {
-          // Per i PDF aggiungo una stringa vuota per mantenere gli indici allineati
-          this.imagePreviewUrls.push('');
-        }
-      });
-
-      // Change detection
-      setTimeout(() => {
-        this.cdr.detectChanges();
-      });
-
-      console.log('File caricati:', this.uploadedImages);
-    }
-  }
-
-  triggerImageUpload(): void {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.png,.jpg,.jpeg,.pdf';
-    input.multiple = true;
-    input.onchange = (e) => this.onImageUpload(e);
-    input.click();
-  }
-
-  removeImage(index: number): void {
-    if (this.imagePreviewUrls[index]) {
-      URL.revokeObjectURL(this.imagePreviewUrls[index]);
-    }
-
-    this.uploadedImages.splice(index, 1);
-    this.imagePreviewUrls.splice(index, 1);
-  }
-
   submitComment(): void {
-    const commentHtml = this.content.nativeElement.innerHTML.trim();
+    const commentHtml = this.editor.getContent().trim();
+    const files = this.editor.getFiles();
 
     if (!commentHtml) {
       this.toastService.error(
@@ -202,31 +113,25 @@ export class IssueDetailComponent implements OnInit {
 
     console.log('Invio commento:', {
       text: commentHtml,
-      files: this.uploadedImages
+      files: files
     });
 
     this.issueService.createComment(this.issueId, {
       testo: commentHtml,
-      attachments: this.uploadedImages
+      attachments: files
     }).subscribe({
       next: (response) => {
         console.log('Commento creato con successo:', response);
 
-        // Reset editor solo dopo il successo
-        this.content.nativeElement.innerHTML = '';
-        this.uploadedImages = [];
-
-        this.imagePreviewUrls.forEach(url => {
-
-        });
-        this.imagePreviewUrls = [];
+        // Reset editor
+        this.editor.clear();
 
         this.toastService.success(
           'Commento inviato',
           'Il tuo commento è stato pubblicato'
         );
 
-        // Opzionale: ricarica i commenti per mostrare quello nuovo
+        // Ricarica i commenti
         this.loadIssueDetail();
       },
       error: (error) => {
@@ -251,14 +156,6 @@ export class IssueDetailComponent implements OnInit {
       .substring(0, 2);
   }
 
-  getFileName(file: File): string {
-    return file.name;
-  }
-
-  isImage(file: File): boolean {
-    return file.type.startsWith('image/');
-  }
-
   canEditIssue(): boolean {
     this.userSubscription = this.authService.currentUser$.subscribe(backendUser => {
       if (backendUser) {
@@ -268,14 +165,12 @@ export class IssueDetailComponent implements OnInit {
         };
       }
     });
-
     return this.currentUser.email === this.issue.creatorEmail || this.currentUser.isAdmin;
   }
 
   isCompleted(): boolean {
     return this.issue.tags.includes('Done');
   }
-
 
   editIssue(): void {
     this.router.navigate(['/issue', this.issueId, 'modifica']);
@@ -285,9 +180,7 @@ export class IssueDetailComponent implements OnInit {
     this.issueService.completeIssue(this.issue.id).subscribe({
       next: (res) => {
         console.log('Issue completata', res);
-
         this.issue.stato = 'Done';
-
         this.toastService.success('Fatto', 'Issue completata con successo');
         this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
           this.router.navigate(['/issue', this.issueId]);
@@ -298,7 +191,6 @@ export class IssueDetailComponent implements OnInit {
         this.toastService.error('Errore', err.error?.message || 'Errore nel completamento della issue');
       }
     });
-
   }
 
   getAttachmentUrl(attachment: any): string {
@@ -306,12 +198,9 @@ export class IssueDetailComponent implements OnInit {
       console.error('Attachment mancante o percorso non valido:', attachment);
       return '';
     }
-
     const normalizedPath = attachment.percorso_relativo.replaceAll('\\', '/');
-
     const url = `http://localhost:3000/${normalizedPath}`;
     console.log('URL generato per attachment:', url);
-
     return url;
   }
 

@@ -83,32 +83,36 @@ export const getProjectIdByName = async (projectName) => {
   }
 };
 
+const fetchIssuesWithComments = async (whereClause = {}) => {
+  const issues = await Issue.findAll({
+    where: whereClause,
+    attributes: { exclude: ['id_creatore'] },
+    include: [
+      {
+        model: Utente,
+        as: 'Creatore',
+        attributes: [
+          [database.fn('CONCAT', database.col('nome'), ' ', database.col('cognome')), 'nome'],
+          'email'
+        ]
+      }
+    ]
+  });
+
+  return Promise.all(
+    issues.map(async (issue) => {
+      const numeroCommenti = await countCommentsByIssueId(issue.id);
+      return {
+        ...issue.toJSON(),
+        numeroCommenti
+      };
+    })
+  );
+};
+
 export const getAllIssues = async (req, res) => {
   try {
-    const issues = await Issue.findAll({
-      attributes: { exclude: ['id_creatore'] },
-      include: [
-        {
-          model: Utente,
-          as: 'Creatore',
-          attributes: [
-            [database.fn('CONCAT', database.col('nome'), ' ', database.col('cognome')), 'nome'],
-            'email'
-          ]
-        }
-      ]
-    });
-
-    const issuesWithCount = await Promise.all(
-      issues.map(async (issue) => {
-        const numeroCommenti = await countCommentsByIssueId(issue.id);
-        return {
-          ...issue.toJSON(),
-          numeroCommenti
-        };
-      })
-    );
-
+    const issuesWithCount = await fetchIssuesWithComments();
     res.status(200).json(issuesWithCount);
   } catch (error) {
     res.status(500).json({ message: 'Errore nel recupero delle issue', error: error.message });
@@ -118,38 +122,13 @@ export const getAllIssues = async (req, res) => {
 export const getIssuesByProject = async (req, res) => {
   try {
     const { projectName } = req.params;
-
     const projectId = await getProjectIdByName(projectName);
 
     if (!projectId) {
       return res.status(404).json({ message: 'Progetto non trovato' });
     }
 
-    const issues = await Issue.findAll({
-      where: { id_progetto: projectId },
-      attributes: { exclude: ['id_creatore'] },
-      include: [
-        {
-          model: Utente,
-          as: 'Creatore',
-          attributes: [
-            [database.fn('CONCAT', database.col('nome'), ' ', database.col('cognome')), 'nome'],
-            'email'
-          ]
-        }
-      ]
-    });
-
-    const issuesWithCount = await Promise.all(
-      issues.map(async (issue) => {
-        const numeroCommenti = await countCommentsByIssueId(issue.id);
-        return {
-          ...issue.toJSON(),
-          numeroCommenti
-        };
-      })
-    );
-
+    const issuesWithCount = await fetchIssuesWithComments({ id_progetto: projectId });
     res.status(200).json(issuesWithCount);
   } catch (error) {
     res.status(500).json({ message: 'Errore nel recupero delle issue', error: error.message });

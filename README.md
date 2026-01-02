@@ -47,6 +47,9 @@ Il modo più rapido per avviare l'intera infrastruttura (Database, Backend, Fron
     docker-compose up --build -d
     ```
 
+4.  **Setup Keycloak:**
+    Creare un realm su keycloak importando il file `keycloackexport.json`
+
 4.  **Accedi all'applicazione:**
     * **Frontend:** `http://localhost:4200`
     * **Backend:** `http://localhost:3000`

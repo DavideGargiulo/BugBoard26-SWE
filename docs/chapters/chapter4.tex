@@ -1,0 +1,62 @@
+\chapter{Documento di Design del sistema}
+
+\section{Obiettivi di Design}
+
+Gli obiettivi di design del sistema si basano sugli attributi di qualità del software definiti nello
+standard ISO/IEC 25002. Per priorizzare tali obiettivi, è stato adottato un sistema di
+ponderazione da 1 a 5, dove 5 indica la massima priorità, in funzione dell'impatto specifico di
+ciascuna caratteristica sulle funzionalità da implementare.
+
+\subsection{Analisi delle Caratteristiche di Qualità}
+
+\begin{itemize}
+  \item \textbf{Functional Suitability (5/5)} \\
+        L'idoneità funzionale è centrale per garantire che il flusso di gestione delle anomalie supporti efficacemente il processo di QA aziendale.
+        La \textbf{functional completeness (5/5)} è garantita dalla copertura esaustiva dei casi d'uso necessari per il tracking, inclusa la creazione di issue con tipologie diversificate (Bug, Feature, Question), la gestione di allegati e il sistema di commenti per la collaborazione.
+        La \textbf{functional correctness (5/5)} è assicurata dalle rigorose validazioni implementate nel backend, che prevengono la creazione di ticket con dati incompleti o incoerenti, e verificata tramite test automatici specifici.
+        La \textbf{functional appropriateness (5/5)} si riflette nella segregazione dei compiti tra ruoli "Standard" e "Admin", fornendo a ciascun utente esattamente le funzionalità pertinenti al proprio livello di responsabilità.
+  \\
+  \item \textbf{Reliability (4/5)} \\
+        L'affidabilità del sistema è solida, garantendo continuità e robustezza operativa. La \textbf{faultlessness (4/5)} è perseguita attraverso l'uso di strumenti di analisi statica e una suite di test automatizzati con \texttt{Vitest} che verifica il comportamento corretto delle API, riducendo la presenza di difetti nel codice.
+        L'\textbf{Availability (4/5)} è assicurata dall'architettura containerizzata: i servizi critici come Postgres e Keycloak dispongono di healthcheck dedicati che prevengono l'avvio del backend finché le dipendenze non sono operative, massimizzando il tempo di attività del servizio.
+        La \textbf{fault tolerance (4/5)} è gestita efficacemente a livello applicativo; i controller utilizzano blocchi try/catch per intercettare eccezioni impreviste senza causare il crash dell'intero servizio, restituendo invece errori strutturati al client.
+        La \textbf{recoverability (3/5)} è implementata tramite meccanismi di rollback manuale, come la funzione cleanupFiles che elimina i file caricati se la transazione di creazione della issue fallisce, ripristinando uno stato consistente del sistema.
+  \newpage
+  \item \textbf{Security (5/5)} \\
+        La sicurezza è gestita in modo rigoroso, adottando standard industriali per la protezione del sistema. La \textbf{confidentiality (5/5)} è garantita dall'integrazione con Keycloak, che protegge le risorse tramite token JWT cifrati; l'accesso agli endpoint sensibili è regolato da middleware come protect e checkRole, assicurando che solo gli utenti autorizzati visualizzino i dati.
+        L'\textbf{integrity (5/5)} è assicurata per gli allegati tramite il calcolo dell'hash SHA256 al momento dell'upload, permettendo di verificare che i file non siano stati alterati.
+        L'\textbf{authenticity (5/5)} viene verificata crittograficamente: il backend valida la firma digitale dei token JWT utilizzando le chiavi pubbliche (JWKS) esposte da Keycloak, garantendo con certezza l'identità del mittente.
+        La \textbf{non-repudiation (4/5)} è supportata dalla persistenza dei dati: ogni issue e commento creato è indissolubilmente legato all'ID univoco dell'utente nel database, rendendo innegabile la paternità dell'azione all'interno del sistema.
+        Infine, l'\textbf{accountability (5/5)} è totale, poiché ogni richiesta che modifica lo stato del sistema passa attraverso il middleware di autenticazione che traccia l'utente responsabile prima di eseguire qualsiasi operazione sui controller.
+  \\
+  \item \textbf{Performace Efficiency (3/5)} \\
+        L'efficienza risente della centralizzazione della logica nel layer backend monolitico. Il \textbf{time behaviour (3/5)} è penalizzato da alcune implementazioni nel layer di accesso ai dati, come il problema "N+1" nel controller delle issue che esegue una query di conteggio per ogni elemento restituito, rallentando la risposta complessiva del server.
+        La \textbf{resource utilization (3/5)} è critica nel layer applicativo, poiché la gestione degli allegati carica interi file in buffer di memoria direttamente nel processo Node.js principale, rischiando di saturare le risorse del container backend in caso di picchi di utilizzo.
+        La \textbf{capacity (4/5)} rimane comunque buona grazie alla separazione netta degli strati via Docker Compose, che permette di allocare risorse dedicate o scalare il layer backend indipendentemente dal database e dal frontend.
+  \\
+  \item \textbf{Usability (4/5)} \\
+        L'usabilità è progettata per garantire un'interazione intuitiva e accessibile. La \textbf{recognizability (5/5)} è eccellente: la presenza di una dashboard iniziale con grafici a torta permette agli utenti di comprendere immediatamente lo scopo del sistema e lo stato corrente delle issue, mentre la navigazione tramite sidebar rende esplicite le funzionalità disponibili.
+        L'\textbf{inclusivity (4/5)} è supportata dall'adozione del framework Angular Material, che fornisce componenti nativamente accessibili (come campi di input con etichette chiare e contrasto adeguato), facilitando l'uso anche a utenti con diverse abilità visive.
+        La \textbf{learnability (4/5)} è favorita da un'interfaccia coerente e moderna (Tailwind CSS), che riduce la curva di apprendimento per i nuovi membri del team.
+        L'\textbf{operability (4/5)} è garantita da flussi di lavoro lineari e dialoghi di conferma (es. toast) che prevengono errori operativi durante azioni critiche come l'eliminazione.
+  \newpage
+  \item \textbf{Compatibility (5/5)} \\
+        La compatibilità è essenziale per l'integrazione in ambienti di sviluppo eterogenei. La \textbf{co-existence (5/5)} è eccellente grazie all'uso di Docker Compose, che isola completamente le dipendenze (DB, Keycloak, Backend) evitando conflitti con altro software installato sulla macchina host.
+        L'\textbf{interoperability (5/5)} è garantita dall'adozione di standard aperti come REST per le API, JSON per lo scambio dati e OIDC per l'autenticazione, permettendo al sistema di dialogare facilmente con altri strumenti aziendali.
+  \\
+  \item \textbf{Maintainability (5/5)} \\
+        La manutenibilità è un punto di forza, strutturata per facilitare evoluzioni future. La \textbf{modularity (5/5)} è garantita dalla netta separazione delle responsabilità nel backend tra controller, rotte e modelli dati, e nel frontend tramite l'architettura a componenti di Angular.
+        La \textbf{reusability (5/5)} è massimizzata dall'uso di middleware generici per funzioni trasversali come l'autenticazione e la gestione dei file, riutilizzabili su diverse rotte.
+        La \textbf{testability (5/5)} è assicurata da un'infrastruttura di testing pronta con l'utilizzo di \texttt{Vitest}.
+        La \textbf{modifiability (5/5)} è supportata dall'uso dell'ORM Sequelize, che astrae le query SQL permettendo di modificare lo schema del database o la logica di business con impatti minimi sul resto del codice, e dalla configurazione esternalizzata in file \texttt{.env} che facilita i cambi di ambiente senza ricompilazione.
+  \\
+  \item \textbf{Flexibility (4/5)} \\
+        La flessibilità determina la capacità del software di adattarsi a nuovi contesti e tecnologie. L'\textbf{adaptability (4/5)} è gestita tramite un ampio uso di variabili d'ambiente che permettono di riconfigurare database, porte e URL di servizi esterni senza modificare il codice sorgente.
+        La \textbf{scalability (4/5)} è intrinseca nell'architettura a container, permettendo di scalare orizzontalmente i servizi stateless come il backend e il frontend.
+        L'\textbf{installability (3/5)} è buona grazie a Docker Compose, ma il punteggio è ridotto dalla necessità di configurare manualmente il file .env prima dell'avvio, introducendo un passaggio manuale obbligatorio che impedisce un deployment totalmente automatico "out-of-the-box".
+        Infine, la \textbf{replaceability (4/5)} è supportata dall'uso dell'ORM Sequelize, che facilita la sostituzione del database PostgreSQL con altri dialetti SQL minimizzando le modifiche al codice.
+  \\
+  \item \textbf{Safety (3/5)} \\
+        La sicurezza intesa come assenza di rischi (Safety) riguarda la prevenzione di danni critici. Sebbene in un bug tracker il rischio fisico sia nullo, l'\textbf{operational safety (3/5)} è garantita da meccanismi che prevenendo la corruzione dei dati o l'accumulo di "rifiuti" digitali, come la cancellazione automatica dei file caricati se la transazione database fallisce.
+        La \textbf{risk identification (3/5)} è mitigata dalle restrizioni sui ruoli, impedendo che utenti inesperti possano compromettere la configurazione dei progetti o degli utenti critici.
+\end{itemize}

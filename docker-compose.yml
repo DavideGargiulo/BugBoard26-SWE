@@ -61,9 +61,7 @@ services:
       start_period: 60s
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: davideeh/bugboard26-swe-backend
     container_name: express_backend
     env_file:
       - .env
@@ -104,9 +102,7 @@ services:
     command: npm run dev
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: davideeh/bugboard26-swe-frontend
     container_name: angular_frontend
     env_file:
       - .env

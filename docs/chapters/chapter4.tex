@@ -60,3 +60,135 @@ ciascuna caratteristica sulle funzionalità da implementare.
         La sicurezza intesa come assenza di rischi (Safety) riguarda la prevenzione di danni critici. Sebbene in un bug tracker il rischio fisico sia nullo, l'\textbf{operational safety (3/5)} è garantita da meccanismi che prevenendo la corruzione dei dati o l'accumulo di "rifiuti" digitali, come la cancellazione automatica dei file caricati se la transazione database fallisce.
         La \textbf{risk identification (3/5)} è mitigata dalle restrizioni sui ruoli, impedendo che utenti inesperti possano compromettere la configurazione dei progetti o degli utenti critici.
 \end{itemize}
+
+\newpage
+
+\subsection{Tabella riassuntiva delle priorità delle qualità del software}
+
+Di seguito è presentata una tabella riassuntiva delle valutazioni di priorità assegnate alle qualità
+del software analizzate.
+
+\begin{longtable}{|>{\centering\arraybackslash\bfseries}p{7cm}|p{7cm}|}
+  \hline
+  \rowcolor{airforceblue!80!cyan}
+  \textcolor{white}{\textbf{Qualità}} & \textcolor{white}{\textbf{Punteggio}} \\
+  \hline
+  \endfirsthead
+  \endhead
+
+  \rowcolor{beaublue!30}
+  \textit{Functional suitability} & 5 \\ \hline
+  Reliability  & 4 \\ \hline
+  \rowcolor{beaublue!30}
+  \textit{Security} & 5 \\ \hline
+  Performace Efficiency & 3 \\ \hline
+  \rowcolor{beaublue!30}
+  \textit{Usability} & 4 \\ \hline
+  Compatibility & 5 \\ \hline
+  \rowcolor{beaublue!30}
+  \textit{Maintainability} & 5 \\ \hline
+  Flexibility & 4 \\ \hline
+  \rowcolor{beaublue!30}
+  \textit{Safety} & 3 \\ \hline
+\end{longtable}
+
+\newpage
+
+\subsection{Considerazioni sul Tempo di rilascio e Trade-offs}
+
+Il \textbf{Time to Release} rappresenta un vincolo critico del progetto, subordinato esclusivamente alla \textit{Functional Suitability} e alla \textit{Security}. La pressione temporale imposta dalle scadenze operative ha determinato trade-offs consapevoli tra qualità del software concorrenti, privilegiando il rilascio rapido di funzionalità essenziali rispetto all'ottimizzazione spinta di attributi secondari.
+
+\begin{itemize}
+  \item \textbf{Time to Release vs Code Quality} \\
+        L'introduzione controllata di technical debt è stata accettata per rispettare le milestone di progetto, garantendo comunque la correttezza funzionale tramite test automatizzati con \texttt{Vitest}.
+  \\
+  \item \textbf{Time to Release vs Performance Efficiency} \\
+        L'adozione dell'ORM Sequelize ha accelerato lo sviluppo del layer di persistenza eliminando la necessità di scrivere query SQL manuali, introducendo però un overhead computazionale fisiologico. L'implementazione diretta di query ottimizzate avrebbe richiesto un dispendio temporale incompatibile con la priorità del rilascio.
+  \\
+  \item \textbf{Time to Release vs Functional Suitability} \\
+        La definizione rigorosa del perimetro funzionale ha limitato lo scope alle funzionalità essenziali: creazione, lettura, aggiornamento ed eliminazione di issue con sistema di commenti e allegati.
+  \\
+  \item \textbf{Safety vs Performance Efficiency} \\
+        I meccanismi di \textbf{operational safety} implementati introducono overhead elaborativo aggiuntivo per ogni transazione. La funzione \texttt{cleanupFiles} esegue operazioni di filesystem I/O sincrone per garantire la rimozione degli allegati orfani in caso di rollback del database, rallentando il throughput delle operazioni di creazione issue ma prevenendo la corruzione dello stato del sistema e l'accumulo di risorse non referenziate.
+  \\
+  \item \textbf{Security vs Time to Release} \\
+        Nonostante la pressione temporale, la \textbf{Security} non è stata compromessa. L'integrazione con Keycloak per la gestione di autenticazione e autorizzazione tramite token JWT, la validazione crittografica delle firme digitali con JWKS, e il calcolo dell'hash SHA256 per l'integrità degli allegati sono stati implementati integralmente sin dalla prima release, riconoscendo il rischio elevato di exploitation di vulnerabilità legate a bug leak o privilege escalation.
+\end{itemize}
+
+\newpage
+
+\section{Decomposizione del sistema}
+
+Per poter comprendere quale architettura fosse adatta per questo progetto, abbiamo analizzato diverse alternative concentrandoci però sugli aspetti chiave di essi:
+
+\begin{itemize}
+  \item \textbf{Architetture Standard vs. Architetture Moderne} \\
+        L'analisi ha confrontato l'adozione di architetture consolidate, come quella monolitica a strati (layered architecture), con paradigmi più recenti quali microservizi e architetture event-driven. Pur riconoscendo i benefici di approcci distribuiti in termini di scalabilità orizzontale, fault isolation e autonomia dei team, tali soluzioni comportano un overhead significativo nella gestione della comunicazione inter-service, nell'orchestrazione del deployment e nel monitoraggio distribuito. Considerando le caratteristiche del progetto — un perimetro funzionale ben definito, un team di sviluppo ridotto e vincoli temporali stringenti — un'architettura monolitica a strati si è rivelata la scelta ottimale, bilanciando efficacemente semplicità operativa ed efficienza nello sviluppo. Questa decisione ha consentito di allocare le risorse disponibili sull'implementazione delle funzionalità core del sistema, evitando la complessità architetturale non necessaria per la scala operativa prevista.
+  \\
+  \item \textbf{Persistenza dei Dati} \\
+        La natura strutturata delle informazioni gestite dal sistema — issue con metadati
+        tipizzati, relazioni tra utenti e progetti, commenti gerarchici e allegati referenziati —
+        ha reso necessaria l'adozione di un database relazionale (RDBMS). PostgreSQL è
+        stato selezionato per la sua robustezza nelle operazioni transazionali ACID,
+        essenziali per garantire la consistenza tra la creazione di issue e il caricamento di
+        allegati, e per il supporto nativo a vincoli di integrità referenziale che prevengono
+        la corruzione dei dati in caso di operazioni concorrenti. L'integrazione con
+        Sequelize ORM ha ulteriormente semplificato l'accesso ai dati, astraendo la
+        complessità delle query SQL e massimizzando la \textbf{modifiability} del
+        layer di persistenza. Alternative NoSQL, pur offrendo scalabilità orizzontale
+        superiore, avrebbero compromesso la capacità di eseguire query complesse con
+        filtri multipli (per tipo, stato, progetto, assegnatario) e join tra entità correlate,
+        funzionalità core del sistema di ricerca implementato nel frontend.
+  \\
+  \item \textbf{Cloud vs On-Premise} \\
+        Il deployment del sistema è stato progettato per ambienti cloud, sfruttando
+        la containerizzazione tramite Docker Compose per garantire portabilità e
+        isolamento delle dipendenze. Questa scelta elimina la necessità di gestire infrastruttura fisica dedicata e
+        semplificando drasticamente le operazioni di provisioning e scaling.
+        L'architettura containerizzata permette il deployment su qualsiasi provider
+        cloud o su infrastrutture on-premise virtualizzate,
+        mantenendo la \textbf{co-existence} con altri servizi aziendali senza
+        conflitti di dipendenze. Un deployment on-premise tradizionale richiederebbe configurazioni manuali per PostgreSQL, Keycloak e Node.js su
+        ciascun ambiente. La soluzione
+        cloud consente inoltre di delegare aspetti infrastrutturali critici come
+        backup automatici, disaster recovery e aggiornamenti di sicurezza al provider,
+        liberando risorse del team per lo sviluppo delle funzionalità core.
+  \newpage
+  \item \textbf{Buy vs Build} \\
+        Nonostante la pressione temporale derivante dal \textbf{Time to Release},
+        la scelta è ricaduta sull'opzione "build", sviluppando il sistema internamente
+        piuttosto che adottare soluzioni commerciali preesistenti come Jira, GitLab
+        Issues o Bugzilla. Questa decisione è stata motivata principalmente da
+        requisiti di \textbf{Functional Suitability} specifici per i processi di
+        QA aziendali, che richiedevano workflow personalizzati e integrazioni con
+        sistemi interni non supportate da strumenti generici. Tuttavia, per componenti
+        infrastrutturali critici ma non differenzianti, è stata privilegiata
+        l'integrazione con software open-source maturo: Keycloak in modalità headless come Identity
+        Provider self-hosted garantisce standard industriali di \textbf{Security}
+        (autenticazione OIDC, gestione realm con ruoli "Standard" e "Amministratore",
+        validazione JWT tramite JWKS) senza dover implementare da zero logiche
+        complesse di Identity and Access Management. L'infrastruttura cloud è
+        affidata ad Amazon Web Services (AWS), che fornisce compute tramite EC2
+        per l'esecuzione dei container Docker (frontend Angular, backend Node.js,
+        database PostgreSQL e Keycloak stesso). Questo approccio ibrido ha bilanciato
+        il controllo completo sulle funzionalità core del bug tracker con l'efficienza
+        derivante dall'utilizzo di componenti consolidate per aspetti trasversali,
+        evitando il rischio di reinventare soluzioni già disponibili e battle-tested.
+  \\
+  \item \textbf{Complessità del Sistema e Prospettive Future} \\
+        La complessità contenuta del sistema, caratterizzato da un perimetro
+        funzionale ben definito e da incertezze sulla sua evoluzione a lungo termine,
+        ha reso ingiustificata l'adozione prematura di architetture distribuite come i
+        microservizi, che avrebbero introdotto un livello di complessità eccessivo
+        (over-engineering) rispetto alle necessità operative attuali. Tale approccio
+        avrebbe inoltre compromesso significativamente il \textbf{Time to Release}, imponendo overhead di gestione, orchestrazione e monitoring
+        sproporzionati alla scala del progetto. Ciononostante, la scelta di
+        un'architettura containerizzata su cloud AWS e l'integrazione con servizi
+        gestiti come Keycloak garantiscono la flessibilità necessaria per una
+        potenziale migrazione verso pattern architetturali più distribuiti qualora le
+        esigenze future del sistema richiedano maggiore scalabilità orizzontale,
+        resilienza o autonomia dei componenti. L'adozione di standard aperti
+        (REST API, OIDC, Docker) e la separazione netta dei layer preservano la
+        \textbf{modifiability} necessaria per evolvere l'architettura senza
+        riscritture sostanziali del codice esistente.
+\end{itemize}

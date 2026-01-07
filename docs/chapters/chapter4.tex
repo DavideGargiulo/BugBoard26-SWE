@@ -192,3 +192,160 @@ Per poter comprendere quale architettura fosse adatta per questo progetto, abbia
         \textbf{modifiability} necessaria per evolvere l'architettura senza
         riscritture sostanziali del codice esistente.
 \end{itemize}
+
+\newpage
+
+\subsection{La Scelta Architetturale: Un "Monolite Modulare con Servizi Esterni"}
+
+Dopo una attenta analisi considerando pro e contro di ogni architettura, abbiamo dunque dedotto che la migliore opzione per l'architettura per questo progetto fosse un monolite modulare ma con l'utilizzo di servizi esterni, come per esempio l'identity provider.
+Tale architettura offre molti vantaggi, ovvero quelli di un'architettura monolitica a strati con l'ausilio di servizi indipendenti, offerti da servizi cloud come Amazon AWS.
+Questa soluzione è stata la scelta più adeguata data la sua semplicità di implementazione iniziale, ma soprattutto per i suoi vantaggi di scalabilità futura.
+
+Nello specifico, le funzionalità core del sistema, ovvero la logica di business principale (ad esempio la creazione di una issue, commentare una issue etc),
+saranno implementate all'interno di un'architettura monolitica a strati ben definita.
+Parallelamente, utilizzeremo servizi esterni per gestire funzionalità trasversali come l'autenticazione.
+
+\subsection{Strutturazione del core monolitico}
+
+Il core monolitico conterrà le funzionalità principali del sistema. Tale monolite è diviso in 5 layer principali:
+\begin{itemize}
+  \item \textbf{User Interface};
+  \item \textbf{Presentation Logic};
+  \item \textbf{Application Logic};
+  \item \textbf{Data Access};
+  \item \textbf{Data Storage}.
+\end{itemize}
+
+In particolare ogni layer si occuperà di:
+
+\begin{itemize}
+  \item \textbf{User Interface} \\
+        La User Interface, comunemente detta UI, si occupa della presentazione visiva e di tutto ciò che riguarda l'interazione dell'utente finale. Esso contiene tutti gli elementi dell'interfaccia e si limita a raccogliere gli input dell'utente e presentare i risultati forniti dal layer di presentation logic.
+  \\
+  \item \textbf{Presentation Logic} \\
+        Il layer di presentation è responsabile della formattazione dei dati per la visualizzazione all'utente e alle interazioni dell'utente. In pratica prende le richieste dal layer di user interface, le inoltra al layer di application logic e formatta i risultati ottenuti nell'interfaccia utente.
+  \\
+  \item \textbf{Application Logic} \\
+        Il layer di application contiene tutta la logica di business, ovvero tutte le regole e tutti i processi che definiscono il funzionamento del sistema. Fa tutto ciò esponendo gli API (Application programming interface) end-point del backend e si occupa di gestire la logica di business.
+  \newpage
+  \item \textbf{Data Access} \\
+        Il layer di data access si occupa dell'interazione con i sistemi di persistenza dei dati. Fornisce un livello di astrazione maggiore rispetto all'implementazione specifica del database in sé, consentendo al layer di application logic di interagire con i dati non preoccupandosi di query SQL etc.
+  \\
+  \item \textbf{Data Storage} \\
+        Il layer data storage rappresenta l'effettiva implementazione della persistenza dei dati. Principalmente include il database relazionale.
+\end{itemize}
+
+\subsection{Servizio Cross-Layer Esternalizzato}
+
+L'unico servizio esternalizzato è il servizio di \textbf{identity provider}.
+
+\subsection{Comunicazione tra parti del sistema}
+
+L'architettura del sistema è progettata come un'architettura aperta, tenendo conto della presenza del servizio cross-layer. Inoltre, alcuni layer come quello di presentation logic, devono comunicare con più parti del sistema per soddisfare i requisiti funzionali.
+
+Inoltre, considerando esclusivamente il core monolitico dell'architettura, la comunicazione tra i vari layer segue un paradigma di architettura chiusa. Questo approccio è scelto per garantire una chiara separazione delle responsabilità di tutti i layer. Tale separazione porta molti vantaggi tra cui il miglioramento della manutenibilità e la facilità di effettuare eventuali modifiche o evoluzioni del sistema.
+
+\newpage
+
+\section{Identificazione dei Threads}
+
+Nel layer di presentation logic vengono sfruttati dei threads per consentire il caricamento dei dati in parallelo rispetto al caricamento della pagina principale. Questa strategia permette di migliorare significativamente le performance complessive dell'applicazione, evitando che operazioni potenzialmente lunghe blocchino il rendering dell'interfaccia utente. In particolare, i threads vengono utilizzati per eseguire richieste asincrone verso il backend, elaborare dati complessi o effettuare chiamate a servizi esterni, garantendo così un'esperienza utente più fluida e reattiva. L'adozione di questo approccio multi-threading consente inoltre di sfruttare al meglio le risorse hardware disponibili, distribuendo il carico di lavoro su più unità di elaborazione.
+
+\subsection{Parallelismo e Asincronismo}
+
+L'adozione di meccanismi di parallelismo e asincronismo è fondamentale per migliorare l'efficienza di alcune operazioni, soprattutto quando il carico di lavoro è elevato. Alcuni esempi di caso d'uso significativi di queste tecniche sono:
+
+\begin{itemize}
+  \item \textbf{Gestione Concorrente degli Allegati} \\
+        Durante la creazione o l'aggiornamento di una issue, il sistema deve gestire l'upload di molteplici file (immagini o PDF). Nel controller createIssue e nella funzione helper createAttachments, il codice non processa i file in sequenza. Viene invece creato un array di Promises mappando i file in ingresso: per ciascun file vengono avviate simultaneamente le operazioni di lettura dal disco (fsPromises.readFile), calcolo dell'hash crittografico (SHA256) e inserimento nel database. L'uso di Promise.all attende che tutte queste operazioni parallele siano completate prima di restituire la risposta, riducendo drasticamente il tempo di attesa complessivo per l'utente rispetto a un'esecuzione sequenziale.
+  \\
+  \item \textbf{Aggregazione Dati per le Liste:}
+        Nella funzione `fetchIssuesWithComments`, utilizzata per recuperare la lista delle issue da mostrare nella dashboard, il sistema deve associare a ogni issue il numero dei suoi commenti. Invece di iterare e attendere sequenzialmente il conteggio per ogni singola issue (che causerebbe un forte rallentamento), il sistema lancia tutte le query di conteggio (`countCommentsByIssueId`) in parallelo utilizzando `Promise.all` su una mappa delle issue trovate. Questo permette di sfruttare la capacità del database di gestire connessioni concorrenti.
+  \\
+  \item \textbf{Rollback e Pulizia delle Risorse:}
+        Nel caso in cui la creazione di una issue fallisca (ad esempio per errori di validazione o database), la funzione `cleanupFiles` garantisce che i file fisici caricati vengano rimossi per non lasciare "rifiuti". Anche questa operazione sfrutta il parallelismo: viene generata una lista di operazioni di cancellazione (`fsPromises.unlink`) che vengono eseguite simultaneamente tramite `Promise.all`, minimizzando il tempo impiegato per la gestione dell'errore.
+\end{itemize}
+
+\newpage
+
+\section{Descrizione e motivazione delle scelte tecnologiche adottate}
+
+\subsection{Hardware-Software Mapping}
+
+Come discusso nelle sezioni precedenti, l'architettura del sistema fa uso di tecnologie cloud per garantire scalabilità, flessibilità e una gestione semplificata delle risorse in generale.
+Per rendere l'applicazione accessibile via rete, si utilizzeranno i servizi offerti da Amazon Web Services (AWS). Quindi la struttura sarà organizzata come di seguito
+
+\begin{figure}[h]
+  \centering
+  % TODO mettere l'immagine con aws etc
+  \caption{Figura rappresentante il sistema}
+\end{figure}
+
+\newpage
+
+\subsection{Distribuzioni delle Componenti del Sistema}
+
+\subsubsection{Layer del Core Monolitico}
+
+Le varie parti del sistema sono distribuite tra il client dell'utente e un'infrastruttura cloud basata su container. Ecco i dettagli:
+
+\begin{itemize}
+  \item \textbf{User Interface e Presentation Logic Layer} \\
+        Questi due layer sono realizzati come \textbf{Web Application SPA (Single Page Applicaton)} e vengono eseguiti direttamente all'interno del browser sul dispositivo dell'utente.
+        Il browser scarica il bundle frontend (Angular) fornito dal server e gestisce la logica di presentazione localmente, garantendo un'esperienza utente reattiva senza gravare sul server per il rendering dell'interfaccia.
+  \\
+  \item \textbf{Application Layer e Data Access Layer} \\
+        Questi layer costituiscono il cuore del backend e sono incapsulati in container Docker. L'orchestrazione avviene tramite \textbf{Docker Compose} su una macchina virtuale \textbf{AWS EC2} (Amazon Elastic Compute Cloud). Questa scelta permette di avere un ambiente riproducibile e isolato, dove la logica di business viene eseguita all'interno del proprio container dedicato.
+  \\
+  \item \textbf{Data Storage Layer} \\
+        La persistenza dei dati è gestita interamente all'interno dell'ecosistema Docker sulla macchina virtuale, utilizzando volumi per garantire la durata dei dati:
+        \begin{itemize}
+          \item Il database relazionale PostgreSQL è ospitato in un container dedicato definito nel docker-compose, che sostituisce la necessità di un servizio gestito esterno;
+          \item Gli allegati vengono salvati sul file system locale tramite volumi Docker collegati al container di backend, gestiti direttamente dalle API di upload del sistema.
+        \end{itemize}
+\end{itemize}
+
+\subsubsection{Servizi Cross-Layer}
+
+Alcune funzionalità trasversali al sistema sono state esternalizzate a servizi specializzati, ospitati in container dedicati, per ottimizzare la gestione delle identità e garantire la scalabilità:
+
+\begin{itemize}
+  \item \textbf{Autenticazione e Gestione Identità} \\
+        Gestita tramite Keycloak, una soluzione di Identity and Access Management open-source. Per integrarsi perfettamente con l'interfaccia utente personalizzata sviluppata in Angular, Keycloak è utilizzato in modalità "headless": il frontend gestisce i form di accesso e comunica con il backend, che agisce da intermediario sicuro per la validazione delle credenziali e l'emissione dei token JWT, senza reindirizzare l'utente su pagine di login esterne.
+\end{itemize}
+
+\newpage
+
+\section{Descrizione dello schema per la persistenza dati (Database)}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=1\textwidth]{images/dbschema.png}
+\end{figure}
+
+\subsection{Il Ruolo del Database nel Sistema}
+
+Contrariamente ai paradigmi Database-Centric che delegano la logica di business a stored procedures complesse, l'architettura di sistema adotta un approccio moderno basato su ORM (Sequelize). Il database PostgreSQL, containerizzato via Docker, agisce come Persistence Layer robusto, responsabile dell'integrità referenziale e della consistenza dei dati (ACID), mentre la logica di business complessa è centralizzata nel Backend. Tuttavia, per garantire la massima coerenza dei dati critici indipendentemente dal flusso applicativo, sono stati implementati mirati meccanismi attivi nel database, come Trigger per l'aggiornamento automatico degli stati e vincoli di integrità (Check Constraints) per la validazione degli allegati.
+
+\newpage
+
+\subsection{PostgreSQL come Motore di Persistenza Relazionale}
+
+La scelta di PostgreSQL come foundation tecnologica deriva dalla necessità di garantire la massima integrità e consistenza dei dati in un ambiente multi-utente. Più che una semplice memoria di massa, il database agisce come garante ultimo della qualità del dato.
+
+Le capacità avanzate di PostgreSQL sono sfruttate in modo mirato per rinforzare la logica di dominio:
+
+\begin{itemize}
+  \item \textbf{Type Safety e Enum} \\
+        L'utilizzo di tipi enumerativi personalizzati per stati, ruoli e priorità assicura che il sistema gestisca solo valori semanticamente validi, prevenendo errori di incoerenza a livello strutturale.
+  \item \textbf{Integrità Referenziale Avanzata} \\
+        L'architettura fa ampio uso di vincoli FOREIGN KEY con clausole ON DELETE CASCADE per gestire automaticamente la pulizia dei dati correlati (es. eliminazione di issue e commenti quando viene eliminato un progetto), semplificando la logica applicativa.
+  \item \textbf{Vincoli Complessi} \\
+        Sono implementati CHECK constraints sofisticati, come la logica XOR sulla tabella allegati (che garantisce l'appartenenza esclusiva a issue o commenti), delegando al database la validazione di invarianti critiche che potrebbero sfuggire al livello applicativo.
+\end{itemize}
+
+% TODO Forse scrivere Sistema di Tipi e Validazione: Type Safety nel
+
+% TODO Gestione delle Gerarchie e Sicurezza (Standard e Amministratore)
+
+% TODO Integrazione con Sistemi di Autenticazione Esterni

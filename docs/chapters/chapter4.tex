@@ -277,7 +277,7 @@ Per rendere l'applicazione accessibile via rete, si utilizzeranno i servizi offe
 
 \begin{figure}[h]
   \centering
-  % TODO mettere l'immagine con aws etc
+  \includegraphics[width=1\textwidth]{images/Diagrammi_architettura2.png}
   \caption{Figura rappresentante il sistema}
 \end{figure}
 
@@ -344,8 +344,232 @@ Le capacità avanzate di PostgreSQL sono sfruttate in modo mirato per rinforzare
         Sono implementati CHECK constraints sofisticati, come la logica XOR sulla tabella allegati (che garantisce l'appartenenza esclusiva a issue o commenti), delegando al database la validazione di invarianti critiche che potrebbero sfuggire al livello applicativo.
 \end{itemize}
 
-% TODO Forse scrivere Sistema di Tipi e Validazione: Type Safety nel
+\subsection{Sistema di Tipi e Valutazione: Type Safety nel Database}
 
-% TODO Gestione delle Gerarchie e Sicurezza (Standard e Amministratore)
+\subsubsection{Sistema di Tipi Personalizzati}
 
-% TODO Integrazione con Sistemi di Autenticazione Esterni
+Per modellare fedelmente il dominio del problema, sono stati definiti tipi enumerativi personalizzati che restringono il campo dei valori ammissibili per attributi critici, eliminando l'ambiguità delle stringhe libere:
+
+\begin{itemize}
+  \item \textbf{Ruoli e Permessi} \\
+        Il tipo ruolo ('Amministratore', 'Standard') centralizza la definizione della gerarchia utenti.
+  \\
+  \item \textbf{Workflow delle Issue} \\
+        I tipi tipo\_issue ('Bug', 'Feature', ecc.) e stato\_issue ('TODO', 'In-Progress', 'Done') cristallizzano il ciclo di vita delle segnalazioni direttamente nello schema del database, impedendo l'inserimento di stati non riconosciuti dal sistema.
+\end{itemize}
+
+\newpage
+
+\subsubsection{Validazione Strutturale e Constraints}
+
+Oltre ai vincoli standard di unicità e chiave esterna, sono stati implementati vincoli CHECK complessi per garantire regole di business strutturali:
+
+\begin{itemize}
+  \item \textbf{Integrità Polimorfica degli Allegati} \\
+        La tabella allegato utilizza un vincolo logico XOR per garantire che un file sia associato esclusivamente a un commento O a una issue, ma mai a entrambi o a nessuno. Questo previene record orfani o relazioni ambigue a livello strutturale.
+  \\
+  \item \textbf{Limiti Fisici} \\
+        È stato imposto un vincolo rigido sulla dimensione dei file (dimensione\_byte <= 5242880), assicurando che il database rifiuti transazioni che violano i requisiti non funzionali di storage, fungendo da ultima linea di difesa contro errori di validazione nel frontend.
+\end{itemize}
+
+\section{Evoluzione e Manutenibilità del Sistema}
+
+\subsection{Architettura Evolutiva e Modularità}
+
+Il sistema è stato progettato seguendo un'architettura a livelli (Layered Architecture) che favorisce la manutenibilità e l'evoluzione indipendente dei componenti. La separazione netta tra il livello di presentazione (Frontend Angular), la logica di business (Backend Node.js) e la persistenza dei dati (PostgreSQL) permette modifiche mirate senza effetti a cascata.
+
+\subsection{Osservabilità e Diagnostica}
+
+Per quanto riguarda osservabilità e diagnostica, ci affidiamo alla robustezza dell'infrastruttura.
+
+Il database stesso funge da primo strumento di debug: i suoi vincoli di integrità bloccano sul nascere dati incoerenti, segnalandoci subito eventuali errori logici. Lato logging, Docker ci permette di aggregare tutto in un unico flusso, correlando facilmente l'autenticazione di Keycloak con la logica di business. Infine, abbiamo adottato una nomenclatura semantica che rende lo schema del database auto-esplicativo, riducendo drasticamente la necessità di consultare documentazione esterna.
+
+\newpage
+
+\subsection{Strategie per scalabilità futura}
+
+Guardando al futuro, abbiamo progettato il sistema per non essere un sistema chiuso, ma pronto a scalare. La scelta di un backend stateless, basato su token JWT e Keycloak, è fondamentale: ci permetterebbe di aggiungere nuove istanze server in parallelo senza dover modificare una sola riga di codice. Inoltre, abbiamo protetto le prestazioni del database separando fisicamente gli allegati pesanti dai dati testuali e pre-calcolando indici strategici sulle tabelle critiche, garantendo così tempi di risposta rapidi anche qualora il numero di issue dovesse crescere drasticamente.
+
+\newpage
+
+\section{Descrizione della logica di base (Backend)}
+
+Il backend del sistema BugBoard26 implementa le funzionalità server-side di una piattaforma dedicata al Bug Tracking e alla gestione collaborativa delle problematiche software. Il sistema è stato sviluppato utilizzando l'ambiente di runtime Node.js e il framework Express, avvalendosi del driver nativo pg per un'interazione performante e diretta con il database relazionale PostgreSQL.
+
+L'architettura software adotta il pattern Layered Architecture (architettura a livelli), strutturando il codice in strati logici con responsabilità distinte: le Routes per la definizione degli endpoint, i Controllers per l'elaborazione delle richieste e il Data Access Layer per l'interazione con il database. La comunicazione tra client e server è gestita tramite API REST, mentre la sicurezza è delegata all'Identity Provider Keycloak, che gestisce l'autenticazione e l'autorizzazione attraverso standard OpenID Connect e token JWT. L'intera infrastruttura, inclusi database e servizi di supporto, è containerizzata e orchestrata tramite Docker, assicurando coerenza tra gli ambienti di sviluppo e produzione.
+
+\subsection{Gestione delle Dipendenze}
+
+Moduli ES6 e Pattern Singleton Per mantenere l'architettura snella e performante, il backend evita l'introduzione di complessi container di Inversion of Control (IoC). La gestione delle dipendenze è affidata al sistema nativo di ES6 Modules, implementando il Pattern Singleton per la connessione al database. L'istanza di Sequelize e i relativi modelli vengono inizializzati una singola volta all'avvio (Database.js) e importati staticamente nei controller. Questa scelta riduce drasticamente l'overhead a runtime e semplifica il tracciamento del flusso di esecuzione ("Code Navigation"), pur mantenendo una chiara separazione tra la logica di accesso ai dati e la logica di business.
+
+\newpage
+
+\subsection{Gestione della Concorrenza e Integrità Transazionale}
+
+Data la natura collaborativa di BugBoard26, la gestione di accessi concorrenti è critica (es. due utenti che commentano contemporaneamente o un utente che commenta mentre un admin chiude la issue). La concorrenza è gestita delegando l'atomicità al livello più robusto: il Database Relazionale (PostgreSQL).
+
+\begin{itemize}
+  \item \textbf{Transazioni Applicative (Sequelize Hooks)} \\
+        La logica di validazione critica è incapsulata in Hooks del modello ORM che operano all'interno di transazioni database. Ad esempio, prima di creare un commento, il sistema verifica lo stato della Issue all'interno della stessa transazione SQL dell'inserimento. Questo approccio (Pessimistic Check) previene race conditions in cui un commento potrebbe essere registrato su una issue che è stata chiusa millisecondi prima.
+  \\
+  \item \textbf{Non-Blocking I/O} \\
+        A livello di server, l'architettura Event-Driven di Node.js gestisce la concorrenza delle richieste HTTP tramite un singolo thread e un Event Loop non bloccante. Questo permette al sistema di scalare su un alto numero di connessioni simultanee (I/O bound) senza il costoso overhead del context-switching tipico dei modelli thread-per-request.
+\end{itemize}
+
+\newpage
+
+\section{Logica di Implementazione del Backend}
+
+\subsection{L'adozione di Express.js e la Middleware Pipeline}
+
+Il cuore del layer applicativo è costruito sul framework \textbf{Express.js}, scelto per la sua leggerezza e flessibilità nel gestire architetture basate su API REST. L'implementazione segue il pattern della \textit{Chain of Responsibility} attraverso una pipeline di middleware configurata per elaborare le richieste HTTP in ingresso in modo sequenziale e modulare.
+
+Analizzando il punto di ingresso del server, la pipeline è strutturata in fasi distinte per garantire sicurezza e correttezza prima che la richiesta raggiunga la logica di business:
+
+\begin{itemize}
+    \item \textbf{Sicurezza degli Header (Helmet)} \\
+    Come prima linea di difesa, viene utilizzato il middleware \texttt{helmet}. Questo modulo si occupa di impostare vari header HTTP relativi alla sicurezza, disabilitando header potenzialmente rischiosi come \texttt{X-Powered-By}, che potrebbero rivelare informazioni sulla tecnologia sottostante agli attaccanti, riducendo la superficie di attacco del server.
+    \\
+    \item \textbf{Gestione CORS (Cross-Origin Resource Sharing)} \\
+    Dato che il frontend (Angular) e il backend risiedono su domini o porte differenti (rispettivamente 4200 e 3000 in sviluppo), è stata implementata una configurazione CORS rigorosa. Il sistema accetta richieste solo dall'origine del client specificata nelle variabili d'ambiente (\texttt{CLIENT\_URL}), permettendo esclusivamente i metodi HTTP necessari (GET, POST, PUT, DELETE) e l'invio di credenziali (cookie/token) tramite l'opzione \texttt{credentials: true}.
+    \\
+    \item \textbf{Parsing e Gestione Dati} \\
+    Le richieste in ingresso vengono elaborate da \texttt{express.json()} per il parsing dei payload JSON e da \texttt{cookie-parser} per la lettura dei cookie sicuri, fondamentali per il mantenimento della sessione utente.
+    \\
+    \item \textbf{Integrazione con Keycloak (Auth Middleware)} \\
+    Il middleware di autenticazione di Keycloak è posizionato strategicamente prima delle rotte API. Utilizzando una gestione di sessione basata su memoria (\texttt{MemoryStore}), il backend intercetta le richieste per verificare la validità del token JWT o la presenza di una sessione attiva, agendo da gatekeeper per tutte le risorse protette.
+\end{itemize}
+
+\newpage
+
+\subsection{Organizzazione e Routing delle API}
+
+L'architettura delle rotte segue un approccio RESTful, segregando le funzionalità in moduli distinti per migliorare la manutenibilità e la navigabilità del codice. Le rotte sono prefissate dal path \texttt{/api} per distinguere chiaramente le chiamate di servizio dalle risorse statiche o di navigazione.
+
+La struttura delle rotte rispecchia le entità del dominio modellate nel database:
+
+\begin{itemize}
+    \item \texttt{/api/auth}: Gestisce i flussi di autenticazione, logout e refresh dei token, interfacciandosi direttamente con l'Identity Provider.
+    \item \texttt{/api/users}: Espone endpoint per la gestione dei profili utente e la sincronizzazione dei dati anagrafici tra Keycloak e il database locale.
+    \item \texttt{/api/projects}: Gestisce il ciclo di vita dei progetti, inclusa la creazione e l'assegnazione dei membri del team.
+    \item \texttt{/api/issues}: Rappresenta il core del bug tracker, permettendo operazioni CRUD sui ticket e gestendo logiche complesse come l'upload degli allegati.
+    \item \texttt{/api/comments}: Gestisce l'interazione collaborativa, permettendo l'aggiunta e la visualizzazione dei commenti collegati alle issue.
+\end{itemize}
+
+Infine, il server espone una rotta statica dedicata \texttt{/uploads}, servita direttamente da Express, per permettere al frontend di recuperare in modo performante gli asset (immagini o documenti) caricati dagli utenti, mantenendo i file fisici separati dalla logica applicativa ma accessibili via HTTP.
+
+\subsection{Gestione Avanzata delle Autorizzazioni e RBAC}
+
+Oltre all'autenticazione gestita da Keycloak, il sistema implementa un controllo degli accessi basato sui ruoli, \textbf{Role-based access control} (RBAC), direttamente nel layer applicativo tramite middleware personalizzati.
+
+Un esempio critico è il middleware \texttt{canModifyIssue}, che regola l'accesso alle operazioni di modifica e cancellazione. La logica implementata distingue dinamicamente i permessi in base al ruolo e alla proprietà della risorsa:
+\begin{itemize}
+    \item \textbf{Ruolo Amministratore}\\
+          Se il token JWT contiene il ruolo \textit{Amministratore} (verificato analizzando sia i ruoli del realm che quelli del client), l'operazione viene sempre consentita, garantendo la supervisione totale del sistema.
+    \\
+    \item \textbf{Utente Standard (Owner)}\\
+          Se l'utente non è amministratore, il middleware esegue una query puntuale sul database per verificare se l'ID dell'utente autenticato corrisponde al campo \texttt{id\_creatore} dell'issue target. In caso negativo, la richiesta viene respinta con un codice 403 (Forbidden), impedendo la modifica di risorse altrui.
+\end{itemize}
+
+\newpage
+
+\subsection{Implementazione delle Regole di Business}
+
+I controller non si limitano a operazioni CRUD elementari, ma incapsulano regole di dominio specifiche per garantire l'integrità e la tracciabilità dei dati. Analizzando l'\texttt{issueController}, emergono tre pattern implementativi rilevanti:
+
+\begin{itemize}
+    \item \textbf{Integrità e Sicurezza degli Allegati} \\
+    Durante l'upload, il sistema non si limita a salvare i file. Per ogni allegato viene calcolato l'hash \textbf{SHA256} del contenuto binario tramite il modulo \texttt{crypto} di Node.js. Questo hash viene salvato nel database per garantire l'integrità del dato e la verifica di non alterazione nel tempo. Inoltre, viene applicata una validazione pre-upload che impedisce di superare il limite di 3 allegati per issue, interrogando il database per contare gli allegati esistenti prima di accettarne di nuovi.
+
+    \item \textbf{Audit Trail delle Modifiche (Append-Only)} \\
+    Per preservare la storia delle modifiche, l'aggiornamento della descrizione di una issue non sovrascrive il testo precedente. Il sistema utilizza una logica \textit{append-only}: la nuova descrizione viene accodata a quella esistente, separata da un header temporale generato lato server (timestamp). Questo garantisce che nessuna informazione venga persa e fornisce una cronologia immediata dell'evoluzione del ticket.
+
+    \item \textbf{Transazionalità e Pulizia (Rollback)} \\
+    In caso di errori durante la creazione complessa di una issue (es. fallimento della query SQL dopo l'upload fisico dei file), viene attivata una procedura di \textit{cleanup}. Il sistema intercetta l'eccezione e rimuove fisicamente dal filesystem i file appena caricati ma orfani di record nel database, prevenendo l'inconsistenza dello storage.
+\end{itemize}
+
+\newpage
+
+\section{Modello dei Dati Backend}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=1\textwidth]{images/class_Diagram_Backend.pdf}
+\end{figure}
+
+\newpage
+
+\section{Qualità del Codice}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=1\textwidth]{images/sonarqube.png}
+\end{figure}
+
+\subsection{Documentazione}
+
+Oltre a questa documentazione tecnica, il codice include commenti dove la logica non è immediatamente ovvia.
+
+\newpage
+
+\subsection{Deployment e Configurazione}
+
+\subsubsection{Configurazione}
+
+Il sistema utilizza file YAML per la configurazione, con supporto per override tramite variabili d'ambiente. Questo approccio permette di mantenere la stessa build per diversi ambienti, cambiando solo la configurazione.
+
+I parametri configurabili includono connessione al database, credenziali Keycloak, varie configurazioni di Keycloak, porte usate.
+
+\subsubsection{Containerizzazione}
+
+L'applicazione è containerizzata usando Docker, con un Dockerfile ottimizzato per produrre immagini minimal. Il container espone solo la porta necessaria e include health check per facilitare l'orchestrazione.
+
+\newpage
+
+\section{Descrizione e motivazione delle scelte di design dell’interfaccia utente adottate (Frontend)}
+
+\subsection{Introduzione}
+
+Il frontend dell'applicazione BugBoard26 è un sistema completo per la gestione di issue legate a dei progetti sviluppato come applicazione web SPA (Single Page Application) utilizzando Angular con l'ausilio di Tailwind. L'applicazione rappresenta un esempio di implementazione moderna che integra pattern architetturali consolidati con tecnologie all'avanguardia per creare un'esperienza utente fluida e manutenibile.
+
+L'obiettivo principale del progetto è fornire una piattaforma che permetta alle software house e singoli, di tenere traccia di ogni bug presente nelle loro applicazioni e per supervisionare l'andamento della risuluzione dei tali.
+
+\subsection{Architettura e Pattern Fondamentali}
+
+\subsubsection{Component-Bases Architetture}
+
+L'applicazione frontend implementa un'architettura rigorosamente Component-Based, organizzata secondo il pattern "Smart vs Dumb Components". Questa scelta garantisce che la logica di business e di recupero dati sia disaccoppiata dalla logica di presentazione visiva. I componenti "Smart" (o Container) agiscono come orchestratori: gestiscono lo stato della pagina, interagiscono con i servizi e passano i dati verso il basso. I componenti "Dumb" (o Presentational) sono puramente funzionali alla visualizzazione: ricevono dati tramite input, emettono eventi tramite output e rimangono agnostici rispetto al contesto applicativo, massimizzando la riusabilità del codice UI attraverso l'intera applicazione.
+
+\subsubsection{Programmazione Reattiva con RxJS}
+
+Al posto di pattern imperativi, l'applicazione adotta il paradigma della Programmazione Reattiva sfruttando la libreria RxJS. Questo approccio permette di gestire i flussi di dati asincroni (chiamate HTTP, eventi utente, input form) come stream continui (Observables). L'utilizzo degli Observables garantisce una gestione elegante della complessità asincrona: i componenti sottoscrivono i flussi di dati forniti dai servizi e reagiscono automaticamente ai cambiamenti di stato. Questo elimina la necessità di callback nidificate e permette di trasformare, filtrare e combinare i dati in arrivo dal backend prima che questi raggiungano la vista, garantendo che l'interfaccia utente rifletta sempre lo stato più aggiornato dei dati in modo predicibile.
+
+\newpage
+
+\subsubsection{Service Layer Pattern}
+
+Il Service Layer rappresenta l'incarnazione della logica di business nel frontend, centralizzando la comunicazione con le API REST del backend. I servizi Angular incapsulano la complessità delle chiamate di rete, la gestione degli header di autenticazione (tramite Interceptor) e la gestione degli errori. Delegando la logica di interazione dati ai servizi, i componenti (ViewModel) rimangono snelli e focalizzati esclusivamente sulla gestione dello stato della vista. I servizi sono progettati come Singleton, garantendo una gestione efficiente delle risorse e permettendo la condivisione dello stato tra diversi componenti quando necessario, senza duplicazione di logica.
+
+\subsubsection{Single Responsibility Principle (SRP)}
+
+Il principio di singola responsabilità permea l'intera struttura del progetto attraverso una granularità fine dei moduli. Nel frontend, ogni componente UI ha una responsabilità visiva unica (es. una card per le issue, una sidebar di navigazione), mentre la logica è delegata ai servizi. Nel backend, la separazione è garantita dall'uso di middleware per compiti trasversali (autenticazione, upload file, gestione errori) e controller distinti per ogni entità di dominio. Questa separazione meticolosa facilita la manutenzione evolutiva: la modifica della logica di validazione di un form, ad esempio, è isolata nel relativo componente o servizio, senza rischio di regressioni in parti non correlate del sistema.
+
+\subsubsection{Angular Dependency Injection}
+
+L'applicazione sfrutta il potente sistema di Dependency Injection (DI) nativo di Angular per gestire le dipendenze in modo dichiarativo e gerarchico. Questo pattern inverte il controllo della creazione degli oggetti: i componenti non istanziano le proprie dipendenze (come i servizi HTTP), ma le ricevono iniettate dal framework a runtime. L'approccio Type-Safe della DI di Angular non solo riduce l'accoppiamento tra le classi, ma facilita enormemente il testing unitario. È possibile, infatti, sostituire facilmente le implementazioni reali dei servizi con Mock o Stub durante i test, verificando il comportamento dei componenti in isolamento senza dover effettuare reali chiamate di rete.
+
+\newpage
+
+\subsection{Organizzazione delle Directory}
+
+L'organizzazione del codice sorgente nel client Angular riflette una chiara distinzione tra le funzionalità di business (Pagine) e le risorse infrastrutturali o condivise. La struttura della directory src/app adotta una convenzione visiva immediata basata sull'uso di prefissi:
+
+\begin{itemize}
+  \item \textbf{Directory Core e Shared (Prefisso \texttt{\_}):} Le cartelle che iniziano con underscore raggruppano elementi trasversali e non accessibili direttamente tramite routing.
+        \begin{itemize}
+          \item \texttt{\_services}: Centralizza la logica di comunicazione HTTP e la gestione dello stato, isolandola dai componenti.
+          \item \texttt{\_internalComponents}: Contiene i componenti "Dumb" riutilizzabili (es. card, modali, elementi UI) che costituiscono i mattoni dell'interfaccia.
+          \item \texttt{\_auth} e \texttt{\_config}: Custodiscono rispettivamente le guardie di navigazione (Guards) e le configurazioni globali (es. inizializzazione Keycloak).
+        \end{itemize}
+  \item \textbf{Directory Feature (Pagine):} Le cartelle senza prefisso (es. \texttt{dashboard}, \texttt{project}, \texttt{users}) rappresentano le viste principali dell'applicazione. Ogni directory incapsula tutto il necessario per quella specifica rotta, agendo come un modulo funzionale autonomo.
+\end{itemize}

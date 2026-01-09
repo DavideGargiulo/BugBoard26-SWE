@@ -1,0 +1,1225 @@
+\chapter{Attività di Testing}
+
+\vspace{-1cm}
+
+\section{Test Plan: Creazione di una Nuova Issue\label{test-plan}}
+
+\subsection{Scopo e Obiettivi}
+L'obiettivo di questo piano di test è verificare la correttezza funzionale e la robustezza della funzionalità di "Creazione di una nuova Issue" (Use Case \#02).
+Il test mira a garantire che il sistema accetti dati validi, gestisca correttamente gli errori di validazione e persista le informazioni nel database relazionale.
+
+\subsection{Oggetto del Test (Test Items)}
+Le componenti software oggetto di test sono:
+\begin{itemize}
+    \item \textbf{Controller:} \texttt{issueController.js} (metodo \texttt{createIssue}).
+    \item \textbf{Modello Dati:} \texttt{Issue} (validazione schema Sequelize).
+    \item \textbf{API Endpoint:} \texttt{POST /api/issues}.
+\end{itemize}
+
+\subsection{Strategia di Testing}
+Verranno adottate due strategie complementari:
+\begin{itemize}
+    \item \textbf{Unit Testing (White-box):} Verifica isolata della logica del controller e delle regole di validazione del database.
+    \item \textbf{Integration Testing (Black-box):} Verifica della risposta dell'API HTTP simulando richieste client complete.
+\end{itemize}
+
+\textbf{Strumenti utilizzati:}
+\begin{itemize}
+    \item \textbf{Vitest:} Framework per l'esecuzione dei test runner.
+    \item \textbf{Mock della request:} Per simulare le chiamate HTTP e verificare gli status code.
+\end{itemize}
+
+
+\subsection{Criteri di Accettazione}
+La funzionalità è considerata validata se:
+\begin{enumerate}
+  \item Tutte le Issue create con dati validi vengono salvate nel DB con stato iniziale 'TODO'.
+  \item Tentativi di creazione con campi obbligatori mancanti (titolo) restituiscono errore 400.
+  \item Tentativi di creazione con dati non conformi ai tipi enumerativi vengono rifiutati.
+\end{enumerate}
+\newpage
+
+\subsection{Casi di Test (Test Cases)}
+
+La seguente tabella definisce i casi di test identificati per coprire le classi di equivalenza dei dati di input.
+
+\begin{table}[H]
+  \centering
+  \renewcommand{\arraystretch}{1.8}
+  \setlength{\tabcolsep}{12pt}
+  \begin{tabularx}{\textwidth}{>{\centering\arraybackslash\bfseries}p{2.5cm}X}
+    \rowcolor{airforceblue!80!cyan}
+    \textcolor{white}{\textbf{ID Test}} & \textcolor{white}{\textbf{Descrizione Scenario e Risultato Atteso}} \\
+    \hline
+    \rowcolor{beaublue!30}
+    \textit{TC01} & \textbf{Utente non trovato nel DB locale.} \newline
+    \textit{Input:} Token valido ma utente non sincronizzato su DB locale. \newline
+    \textit{Output:} Status 400 con messaggio "Utente non trovato nel DB locale". \\
+    \hline
+    TC02 & \textbf{Validazione Campi Obbligatori.} \newline
+    \textit{Input:} Body della richiesta con campi vuoti (titolo, descrizione, tipo, progetto o priorità). \newline
+    \textit{Output:} Status 400 con lista dei campi mancanti. \\
+    \hline
+    \rowcolor{beaublue!30}
+    \textit{TC03} & \textbf{Progetto inesistente.} \newline
+    \textit{Input:} Tentativo di creare una issue per un progetto ('Progetto Alpha') non presente nel database. \newline
+    \textit{Output:} Status 404 con messaggio "Progetto non trovato". \\
+    \hline
+    TC04 & \textbf{Creazione con successo (Senza Allegati).} \newline
+    \textit{Input:} Dati validi, nessun file caricato. \newline
+    \textit{Output:} Status 201, Issue salvata con stato 'TODO', contatore allegati a 0. \\
+    \hline
+    \rowcolor{beaublue!30}
+    \textit{TC05} & \textbf{Creazione con successo (Con Allegati).} \newline
+    \textit{Input:} Dati validi e file PDF caricato. \newline
+    \textit{Output:} Status 201, Issue salvata e allegato registrato con hash SHA256 corretto. \\
+    \hline
+    TC06 & \textbf{Gestione Errore e Rollback (Cleanup).} \newline
+    \textit{Input:} File caricato fisicamente ma fallimento successivo nell'inserimento DB (Issue.create). \newline
+    \textit{Output:} Status 500, messaggio di errore e \textbf{rimozione automatica} del file orfano dal disco. \\
+    \hline
+    \rowcolor{beaublue!30}
+    \textit{TC07} & \textbf{Resilienza Errore Cleanup.} \newline
+    \textit{Input:} Fallimento DB seguito da fallimento nella rimozione del file. \newline
+    \textit{Output:} Status 500 (l'errore originale viene restituito correttamente senza causare crash del server). \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\newpage
+
+\section{Codice per test di unità automatici\label{test-code}}
+
+\subsection{CreateIssue.test.ts}
+
+\begin{lstlisting}[style=ES6, caption={ES6 (ECMAScript-2015) Listing}]
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createIssue } from '../controllers/issueController.js';
+import { Utente, Issue, Allegato, Progetto } from '../data/remote/Database.js';
+
+const fsMocks = vi.hoisted(() => ({
+  unlink: vi.fn(),
+  readFile: vi.fn()
+}));
+
+vi.mock('node:fs', () => ({
+  promises: fsMocks,
+  default: { ...fsMocks, promises: fsMocks }
+}));
+
+vi.mock('fs/promises', () => ({
+  ...fsMocks,
+  default: fsMocks
+}));
+
+vi.mock('../data/remote/Database.js', () => ({
+  Utente: { findOne: vi.fn() },
+  Progetto: { findOne: vi.fn() },
+  Issue: { create: vi.fn() },
+  Allegato: { create: vi.fn() }
+}));
+
+vi.mock('crypto', () => ({
+  default: {
+    createHash: vi.fn().mockReturnThis(),
+    update: vi.fn().mockReturnThis(),
+    digest: vi.fn().mockReturnValue('mocked-hash-123')
+  },
+  createHash: vi.fn().mockReturnThis()
+}));
+
+describe('createIssue', () => {
+  let req, res;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    req = {
+      user: { sub: 'keycloak-uuid-123' },
+      body: {
+        titolo: 'Titolo Issue',
+        descrizione: 'Descrizione Issue',
+        tipo: 'Bug',
+        progetto: 'Progetto Alpha',
+        priorita: 'Alta'
+      },
+      files: []
+    };
+
+    res = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis()
+    };
+  });
+
+  it('dovrebbe restituire 400 se l\'utente non esiste nel DB locale',
+      async () => {
+    Utente.findOne.mockResolvedValue(null);
+    await createIssue(req, res);
+    expect(Utente.findOne).toHaveBeenCalledWith({
+      where: { keycloak_id: 'keycloak-uuid-123' } });
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      message: "Utente non trovato nel DB locale"
+    }));
+  });
+
+  it('dovrebbe restituire 400 se manca il titolo obbligatorio', async () => {
+    Utente.findOne.mockResolvedValue({ id: 1 });
+    req.body.titolo = '';
+    await createIssue(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Campi obbligatori mancanti',
+      required: ['titolo', 'descrizione', 'tipo', 'priorita', 'progetto']
+    });
+  });
+
+  it('dovrebbe restituire 400 se manca la descrizione obbligatoria',
+      async () => {
+    Utente.findOne.mockResolvedValue({ id: 1 });
+    req.body.descrizione = '';
+    await createIssue(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Campi obbligatori mancanti',
+      required: ['titolo', 'descrizione', 'tipo', 'priorita', 'progetto']
+    });
+  });
+
+  it('dovrebbe restituire 400 se manca il tipo obbligatorio', async () => {
+    Utente.findOne.mockResolvedValue({ id: 1 });
+
+    req.body.tipo = '';
+
+    await createIssue(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Campi obbligatori mancanti',
+      required: ['titolo', 'descrizione', 'tipo', 'priorita', 'progetto']
+    });
+  });
+
+  it('dovrebbe restituire 400 se manca il progetto obbligatorio', async () => {
+    Utente.findOne.mockResolvedValue({ id: 1 });
+
+    req.body.progetto = '';
+
+    await createIssue(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Campi obbligatori mancanti',
+      required: ['titolo', 'descrizione', 'tipo', 'priorita', 'progetto']
+    });
+  });
+
+  it('dovrebbe restituire 400 se manca la priorita obbligatoria', async () => {
+    Utente.findOne.mockResolvedValue({ id: 1 });
+
+    req.body.priorita = '';
+
+    await createIssue(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Campi obbligatori mancanti',
+      required: ['titolo', 'descrizione', 'tipo', 'priorita', 'progetto']
+    });
+  });
+
+  it('dovrebbe restituire 404 se il progetto non viene trovato', async () => {
+    Utente.findOne.mockResolvedValue({ id: 1 });
+    Progetto.findOne.mockResolvedValue(null);
+
+    await createIssue(req, res);
+
+    expect(Progetto.findOne).toHaveBeenCalledWith({
+      where: { nome: 'Progetto Alpha' } });
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Progetto non trovato' });
+  });
+
+  it('dovrebbe creare una issue con successo senza allegati', async () => {
+    const mockUser = { id: 10 };
+    const mockProject = { id: 50, nome: 'Progetto Alpha' };
+    const mockCreatedIssue = {
+      id: 99,
+      titolo: req.body.titolo,
+      toJSON: () => ({ id: 99 })
+    };
+
+    Utente.findOne.mockResolvedValue(mockUser);
+    Progetto.findOne.mockResolvedValue(mockProject);
+    Issue.create.mockResolvedValue(mockCreatedIssue);
+
+    await createIssue(req, res);
+
+    expect(Issue.create).toHaveBeenCalledWith({
+      titolo: 'Titolo Issue',
+      descrizione: 'Descrizione Issue',
+      tipo: 'Bug',
+      stato: 'TODO',
+      priorita: 'Alta',
+      id_creatore: 10,
+      id_progetto: 50
+    });
+
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      message: 'Issue creata con successo',
+      issue: mockCreatedIssue,
+      allegati: 0
+    }));
+  });
+
+  it('dovrebbe creare una issue con successo con allegati', async () => {
+    const mockUser = { id: 10 };
+    const mockProject = { id: 50 };
+    const mockCreatedIssue = { id: 99 };
+
+    req.files = [
+      {
+        originalname: 'test.pdf',
+        filename: 'storage-123.pdf',
+        path: 'uploads/storage-123.pdf',
+        mimetype: 'application/pdf',
+        size: 500
+      }
+    ];
+
+    Utente.findOne.mockResolvedValue(mockUser);
+    Progetto.findOne.mockResolvedValue(mockProject);
+    Issue.create.mockResolvedValue(mockCreatedIssue);
+    fsMocks.readFile.mockResolvedValue(Buffer.from('file-content'));
+    Allegato.create.mockImplementation(data =>
+      Promise.resolve({ ...data, id: 777 }));
+
+    await createIssue(req, res);
+    expect(fsMocks.readFile).toHaveBeenCalledWith('uploads/storage-123.pdf');
+
+    expect(Allegato.create).toHaveBeenCalledWith(expect.objectContaining({
+      nome_file_originale: 'test.pdf',
+      nome_file_storage: 'storage-123.pdf',
+      hash_sha256: 'mocked-hash-123',
+      id_issue: 99
+    }));
+
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      allegati: 1,
+      allegatiDettagli: expect.arrayContaining([
+        expect.objectContaining({ id: 777, nome_originale: 'test.pdf' })
+      ])
+    }));
+  });
+
+  it('dovrebbe restituire 500 ed eliminare i file se si verifica un errore
+      durante la creazione', async () => {
+    req.files = [{ path: 'uploads/temp.jpg' }];
+
+    Utente.findOne.mockResolvedValue({ id: 1 });
+    Progetto.findOne.mockResolvedValue({ id: 1 });
+    Issue.create.mockRejectedValue(new Error('DB Insert Failed'));
+
+    fsMocks.unlink.mockResolvedValue();
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    await createIssue(req, res);
+
+    expect(fsMocks.unlink).toHaveBeenCalledWith('uploads/temp.jpg');
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Errore nella creazione della issue',
+      error: 'DB Insert Failed'
+    });
+
+    consoleSpy.mockRestore();
+  });
+
+  it('dovrebbe gestire il fallimento della pulizia dei file (unlink)
+      senza crashare', async () => {
+    req.files = [{ path: 'uploads/temp.jpg' }];
+
+    Utente.findOne.mockResolvedValue({ id: 1 });
+    Progetto.findOne.mockResolvedValue({ id: 1 });
+    Issue.create.mockRejectedValue(new Error('Errore Iniziale'));
+
+    fsMocks.unlink.mockRejectedValue(new Error('Impossibile eliminare file'));
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    await createIssue(req, res);
+
+    // Deve comunque restituire 500 per l'errore originale
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      message: 'Errore nella creazione della issue',
+      error: 'Errore Iniziale'
+    }));
+    consoleSpy.mockRestore();
+  });
+});
+\end{lstlisting}
+
+\subsection{createComment.test.js}
+
+\begin{lstlisting}[style=ES6, caption={ES6 (ECMAScript-2015) Listing}]
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createComment } from '../controllers/commentController.js';
+import { Commento, Allegato, Utente, Issue } from '../data/remote/Database.js';
+
+// 1. Setup Mock per FS
+const fsMocks = vi.hoisted(() => ({
+  unlink: vi.fn(),
+  readFile: vi.fn()
+}));
+
+// Mock 'node:fs'
+vi.mock('node:fs', () => ({
+  default: fsMocks
+}));
+
+// Mock 'node:util' per bypassare la logica dei callback di promisify
+vi.mock('node:util', () => ({
+  promisify: (fn) => fn
+}));
+
+// 2. Mock Database
+vi.mock('../data/remote/Database.js', () => ({
+  Utente: { findOne: vi.fn() },
+  Issue: { findByPk: vi.fn() },
+  Commento: { create: vi.fn() },
+  Allegato: { create: vi.fn() }
+}));
+
+// 3. Mock Crypto
+vi.mock('crypto', () => ({
+  default: {
+    createHash: vi.fn().mockReturnThis(),
+    update: vi.fn().mockReturnThis(),
+    digest: vi.fn().mockReturnValue('mocked-hash-comment')
+  },
+  createHash: vi.fn().mockReturnThis()
+}));
+
+describe('createComment', () => {
+  let req, res;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    // Setup base request
+    req = {
+      user: { sub: 'keycloak-uuid-123' },
+      body: {
+        testo: 'Questo è un commento di test',
+        id_issue: '10'
+      },
+      files: []
+    };
+
+    // Setup response
+    res = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis()
+    };
+  });
+
+  // --- Test di Validazione e Autenticazione ---
+  it('dovrebbe restituire 500 se l\'utente non è autenticato
+      (req.user mancante)', async () => {
+    req.user = null;
+
+    await createComment(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      success: false,
+      message: expect.stringContaining('Utente non autenticato')
+    }));
+  });
+
+  it('dovrebbe restituire 500 se mancano campi obbligatori (testo)',
+      async () => {
+    req.body.testo = '';
+    await createComment(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      success: false,
+      message: expect.stringContaining("Campi obbligatori mancanti")
+    }));
+  });
+
+  it('dovrebbe restituire 500 se mancano campi obbligatori (id_issue)',
+      async () => {
+    req.body.id_issue = '';
+    await createComment(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      success: false,
+      message: expect.stringContaining("Campi obbligatori mancanti")
+    }));
+  });
+
+  // --- Test Logica di Business (Utente/Issue non trovati) ---
+
+  it('dovrebbe restituire 500 se l\'utente non viene trovato nel DB locale',
+      async () => {
+    Utente.findOne.mockResolvedValue(null);
+    await createComment(req, res);
+
+    expect(Utente.findOne).toHaveBeenCalledWith({
+      where: { keycloak_id: 'keycloak-uuid-123' } });
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      message: "Utente non trovato nel database locale."
+    }));
+  });
+
+  it('dovrebbe restituire 500 se l\'issue non viene trovata', async () => {
+    Utente.findOne.mockResolvedValue({ id: 1 });
+    Issue.findByPk.mockResolvedValue(null);
+    await createComment(req, res);
+
+    expect(Issue.findByPk).toHaveBeenCalledWith('10');
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      message: "Issue non trovata."
+    }));
+  });
+
+  // --- Test Successo ---
+
+  it('dovrebbe creare un commento con successo senza allegati', async () => {
+    const mockUser = { id: 5 };
+    const mockIssue = { id: 10 };
+    const mockComment = {
+      id: 100,
+      testo: 'Testo',
+      toJSON: () => ({ id: 100, testo: 'Testo' })
+    };
+
+    Utente.findOne.mockResolvedValue(mockUser);
+    Issue.findByPk.mockResolvedValue(mockIssue);
+    Commento.create.mockResolvedValue(mockComment);
+    await createComment(req, res);
+
+    expect(Commento.create).toHaveBeenCalledWith({
+      testo: 'Questo è un commento di test',
+      id_utente: 5,
+      id_issue: 10 // Verifica conversione parseInt
+    });
+
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      message: 'Commento creato con successo',
+      data: {
+        id: 100,
+        testo: 'Testo',
+        allegati: []
+      }
+    });
+  });
+
+  it('dovrebbe creare un commento con successo con allegati', async () => {
+    const mockUser = { id: 5 };
+    const mockIssue = { id: 10 };
+    const mockComment = { id: 100, toJSON: () => ({ id: 100 }) };
+
+    req.files = [
+      {
+        originalname: 'img.png',
+        filename: 'hash123.png',
+        path: 'uploads/hash123.png',
+        mimetype: 'image/png',
+        size: 1024
+      }
+    ];
+
+    Utente.findOne.mockResolvedValue(mockUser);
+    Issue.findByPk.mockResolvedValue(mockIssue);
+    Commento.create.mockResolvedValue(mockComment);
+
+    // Poiché abbiamo mockato promisify per ritornare la funzione stessa,
+    // mockiamo readFile come una funzione che ritorna una Promise (async)
+    fsMocks.readFile.mockResolvedValue(Buffer.from('fake-image-data'));
+
+    Allegato.create.mockImplementation(data => Promise.resolve({
+      ...data, id: 500 }));
+
+    await createComment(req, res);
+
+    // Verifiche
+    expect(fsMocks.readFile).toHaveBeenCalledWith('uploads/hash123.png');
+    expect(Allegato.create).toHaveBeenCalledWith(expect.objectContaining({
+      nome_file_originale: 'img.png',
+      hash_sha256: 'mocked-hash-comment',
+      id_commento: 100,
+      id_issue: null
+    }));
+
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      success: true,
+      data: expect.objectContaining({
+        allegati: expect.arrayContaining([expect.objectContaining({
+          id: 500 })])
+      })
+    }));
+  });
+
+  // --- Test Gestione Errori e Pulizia (Cleanup) ---
+
+  it('dovrebbe eliminare i file caricati se si verifica un errore
+      (es. DB fallisce)', async () => {
+    req.files = [{ path: 'uploads/to-delete.jpg' }];
+
+    Utente.findOne.mockResolvedValue({ id: 5 });
+    Issue.findByPk.mockResolvedValue({ id: 10 });
+
+    // Simuliamo errore durante la creazione del commento
+    Commento.create.mockRejectedValue(new Error('DB Error'));
+    fsMocks.unlink.mockResolvedValue(); // Unlink ok
+
+    // Silenzia console.error
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    await createComment(req, res);
+    expect(fsMocks.unlink).toHaveBeenCalledWith('uploads/to-delete.jpg');
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      message: 'DB Error'
+    });
+
+    consoleSpy.mockRestore();
+  });
+
+  it('dovrebbe gestire l\'errore di req.files undefined', async () => {
+    req.files = undefined; // Simuliamo caso limite
+
+    Utente.findOne.mockResolvedValue({ id: 5 });
+    Issue.findByPk.mockResolvedValue({ id: 10 });
+    const mockComment = { id: 100, toJSON: () => ({}) };
+    Commento.create.mockResolvedValue(mockComment);
+
+    await createComment(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      success: true
+    }));
+  });
+
+  it('dovrebbe non crashare se la pulizia (unlink) fallisce', async () => {
+    req.files = [{ path: 'uploads/fail-delete.jpg' }];
+    Utente.findOne.mockRejectedValue(new Error('Errore Iniziale'));
+
+    // Unlink fallisce
+    fsMocks.unlink.mockRejectedValue(new Error('Unlink fallito'));
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    await createComment(req, res);
+
+    // Deve loggare l'errore di pulizia ma rispondere con l'errore originale
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      message: 'Errore Iniziale'
+    }));
+
+    // Verifica che console.error sia stato chiamato per l'unlink
+    expect(consoleSpy).toHaveBeenCalledWith('Errore pulizia file:',
+      expect.any(Error));
+
+    consoleSpy.mockRestore();
+  });
+});
+\end{lstlisting}
+
+\newpage
+
+\subsection{jwt.test.js}
+
+\begin{lstlisting}[style=ES6, caption={ES6 (ECMAScript-2015) Listing}]
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { protect } from "../middleware/authMiddleware.js";
+
+// Mock delle dipendenze
+vi.mock('jsonwebtoken');
+vi.mock('jwks-rsa');
+vi.mock('axios');
+
+import jwt from 'jsonwebtoken';
+import jwksClient from 'jwks-rsa';
+import axios from 'axios';
+
+describe("Controllo token di sessione", () => {
+  let req, res, next;
+
+  beforeEach(() => {
+    // Reset dei mock
+    vi.clearAllMocks();
+
+    // Setup request/response mock
+    req = {
+      headers: {},
+      cookies: {},
+      accessToken: null
+    };
+
+    res = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+      cookie: vi.fn().mockReturnThis(),
+      clearCookie: vi.fn().mockReturnThis()
+    };
+
+    next = vi.fn();
+
+    // Mock jwksClient
+    jwksClient.mockReturnValue({
+      getSigningKey: vi.fn((kid, callback) => {
+        callback(null, {
+          getPublicKey: () => 'mocked-public-key'
+        });
+      })
+    });
+  });
+
+  it("access_token presente e valido", async () => {
+    const mockDecoded = {
+      sub: 'user-123',
+      email: 'test@example.com',
+      preferred_username: 'testuser',
+      name: 'Test User',
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      realm_access: { roles: ['user'] }
+    };
+
+    // Mock jwt.verify per restituire un token valido
+    jwt.verify.mockImplementation((token, getKey, options, callback) => {
+      callback(null, mockDecoded);
+    });
+
+    req.cookies['access_token'] = 'valid-token-here';
+
+    await protect(req, res, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(req.user).toEqual(expect.objectContaining({
+      id: 'user-123',
+      email: 'test@example.com',
+      username: 'testuser'
+    }));
+  });
+
+  it("access_token mancante, refresh_token presente", async () => {
+    const mockDecoded = {
+      sub: 'user-456',
+      email: 'refresh@example.com',
+      preferred_username: 'refreshuser',
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      realm_access: { roles: ['user'] }
+    };
+
+    // Mock refresh token success
+    axios.post.mockResolvedValueOnce({
+      data: {
+        access_token: 'new-access-token',
+        refresh_token: 'new-refresh-token',
+        expires_in: 300
+      }
+    });
+
+    // Mock jwt.verify per il nuovo token
+    jwt.verify.mockImplementation((token, getKey, options, callback) => {
+      callback(null, mockDecoded);
+    });
+
+    req.cookies['refresh_token'] = 'valid-refresh-token';
+
+    await protect(req, res, next);
+
+    expect(axios.post).toHaveBeenCalled();
+    expect(res.cookie).toHaveBeenCalledWith('access_token', 'new-access-token',
+      expect.any(Object));
+    expect(next).toHaveBeenCalled();
+    expect(req.user.id).toBe('user-456');
+  });
+
+  it("access_token mancante, refresh_token mancante", async () => {
+    // Nessun token nei cookies
+    req.cookies = {};
+
+    await protect(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({
+      error: 'Autenticazione richiesta' });
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("access_token scaduto, refresh_token valido", async () => {
+    const expiredError = new Error('Token expired');
+    expiredError.name = 'TokenExpiredError';
+
+    const mockDecoded = {
+      sub: 'user-789',
+      email: 'expired@example.com',
+      preferred_username: 'expireduser',
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      realm_access: { roles: ['user'] }
+    };
+
+    // Prima chiamata: token scaduto
+    jwt.verify.mockImplementationOnce((token, getKey, options, callback) => {
+      callback(expiredError, null);
+    });
+
+    // Seconda chiamata (dopo refresh): token valido
+    jwt.verify.mockImplementationOnce((token, getKey, options, callback) => {
+      callback(null, mockDecoded);
+    });
+
+    // Mock refresh success
+    axios.post.mockResolvedValueOnce({
+      data: {
+        access_token: 'refreshed-token',
+        refresh_token: 'new-refresh-token',
+        expires_in: 300
+      }
+    });
+
+    req.cookies['access_token'] = 'expired-token';
+    req.cookies['refresh_token'] = 'valid-refresh-token';
+
+    await protect(req, res, next);
+
+    expect(axios.post).toHaveBeenCalled();
+    expect(next).toHaveBeenCalled();
+    expect(req.user.id).toBe('user-789');
+  });
+});
+\end{lstlisting}
+
+\newpage
+
+\subsection{updateIssue.test.js}
+
+\begin{lstlisting}[style=ES6, caption={ES6 (ECMAScript-2015) Listing}]
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { updateIssue } from '../controllers/issueController.js';
+import { Issue, Allegato } from '../data/remote/Database.js';
+import crypto from 'node:crypto';
+
+const fsMocks = vi.hoisted(() => ({
+  unlink: vi.fn(),
+  readFile: vi.fn()
+}));
+
+vi.mock('node:fs', () => ({
+  promises: fsMocks,
+  default: {
+    ...fsMocks,
+    promises: fsMocks
+  }
+}));
+
+vi.mock('fs/promises', () => ({
+  ...fsMocks,
+  default: fsMocks
+}));
+
+vi.mock('../data/remote/Database.js', () => ({
+  Issue: {
+    findByPk: vi.fn()
+  },
+  Allegato: {
+    count: vi.fn(),
+    create: vi.fn()
+  }
+}));
+
+vi.mock('crypto', () => ({
+  default: {
+    createHash: vi.fn().mockReturnThis(),
+    update: vi.fn().mockReturnThis(),
+    digest: vi.fn().mockReturnValue('mocked-hash')
+  },
+  createHash: vi.fn().mockReturnThis()
+}));
+
+describe('Test metodo UpdateIssue', () => {
+  let req, res;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    req = {
+      params: { id: '1' },
+      body: {},
+      files: null
+    };
+
+    res = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis()
+    };
+  });
+
+  it('dovrebbe restituire errore 400 se la descrizione è vuota', async () => {
+    req.body = { descrizione: '' };
+
+    await updateIssue(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      message: "Devi fornire almeno una descrizione per aggiornare l'issue"
+    });
+  });
+
+  it('dovrebbe restituire errore 400 se la descrizione contiene solo spazi',
+      async () => {
+    req.body = { descrizione: '   ' };
+
+    await updateIssue(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      message: "Devi fornire almeno una descrizione per aggiornare l'issue"
+    });
+  });
+
+  it('dovrebbe restituire errore 404 se l\'issue non viene trovata',
+      async () => {
+    req.body = { descrizione: 'Nuova descrizione' };
+    Issue.findByPk.mockResolvedValue(null);
+
+    await updateIssue(req, res);
+
+    expect(Issue.findByPk).toHaveBeenCalledWith('1');
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Issue non trovata' });
+  });
+
+  it('dovrebbe eliminare i file caricati se l\'issue non viene trovata',
+      async () => {
+    req.body = { descrizione: 'Nuova descrizione' };
+    req.files = [
+      { path: '/uploads/file1.jpg' },
+      { path: '/uploads/file2.jpg' }
+    ];
+
+    Issue.findByPk.mockResolvedValue(null);
+    fsMocks.unlink.mockResolvedValue();
+
+    await updateIssue(req, res);
+
+    expect(fsMocks.unlink).toHaveBeenCalledTimes(2);
+    expect(fsMocks.unlink).toHaveBeenCalledWith('/uploads/file1.jpg');
+    expect(fsMocks.unlink).toHaveBeenCalledWith('/uploads/file2.jpg');
+  });
+
+  it('dovrebbe restituire errore 400 se si supera il limite di 3 allegati',
+      async () => {
+    req.body = { descrizione: 'Nuova descrizione' };
+    req.files = [
+      { path: '/uploads/file1.jpg' },
+      { path: '/uploads/file2.jpg' }
+    ];
+
+    const mockIssue = { id: 1 };
+    Issue.findByPk.mockResolvedValue(mockIssue);
+    Allegato.count.mockResolvedValue(2);
+    fsMocks.unlink.mockResolvedValue();
+
+    await updateIssue(req, res);
+
+    expect(Allegato.count).toHaveBeenCalledWith({
+      where: {
+        id_issue: '1',
+        id_commento: null
+      }
+    });
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      message: "Limite superato. L'issue ha già 2 allegati e
+        ne stai inviando 2. Il massimo totale consentito è 3."
+    });
+    expect(fsMocks.unlink).toHaveBeenCalledTimes(2);
+  });
+
+  it('dovrebbe aggiornare l\'issue con successo con solo descrizione',
+      async () => {
+    req.body = { descrizione: 'Nuova descrizione' };
+
+    const mockIssue = {
+      id: 1,
+      descrizione: 'Descrizione esistente',
+      update: vi.fn().mockResolvedValue()
+    };
+
+    const mockUpdatedIssue = {
+      id: 1,
+      descrizione: 'Descrizione esistente<br><br><strong>22/12/2024,
+        10:30:</strong><br>Nuova descrizione',
+      allegati: []
+    };
+
+    Issue.findByPk
+      .mockResolvedValueOnce(mockIssue)
+      .mockResolvedValueOnce(mockUpdatedIssue);
+
+    Allegato.count.mockResolvedValue(0);
+
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2024-12-22T10:30:00'));
+
+    await updateIssue(req, res);
+
+    expect(mockIssue.update).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Issue aggiornata con successo',
+      issue: mockUpdatedIssue
+    });
+
+    vi.useRealTimers();
+  });
+
+  it('dovrebbe aggiornare l\'issue con descrizione e allegati', async () => {
+    req.body = { descrizione: 'Nuova descrizione' };
+    req.files = [
+      {
+        originalname: 'test.jpg',
+        filename: 'test-123.jpg',
+        path: '/uploads/test-123.jpg',
+        mimetype: 'image/jpeg',
+        size: 1024
+      }
+    ];
+
+    const mockIssue = {
+      id: 1,
+      descrizione: 'Descrizione esistente',
+      update: vi.fn().mockResolvedValue()
+    };
+
+    const mockUpdatedIssue = {
+      id: 1,
+      descrizione: 'Descrizione aggiornata',
+      allegati: [{ id: 1, nome_file_originale: 'test.jpg' }]
+    };
+
+    Issue.findByPk
+      .mockResolvedValueOnce(mockIssue)
+      .mockResolvedValueOnce(mockUpdatedIssue);
+
+    Allegato.count.mockResolvedValue(0);
+    Allegato.create.mockResolvedValue({ id: 1 });
+
+    fsMocks.readFile.mockResolvedValue(Buffer.from('test'));
+
+    const mockHash = {
+      update: vi.fn().mockReturnThis(),
+      digest: vi.fn().mockReturnValue('abc123')
+    };
+    crypto.createHash.mockReturnValue(mockHash);
+
+    await updateIssue(req, res);
+
+    expect(Allegato.create).toHaveBeenCalledWith({
+      nome_file_originale: 'test.jpg',
+      nome_file_storage: 'test-123.jpg',
+      percorso_relativo: '/uploads/test-123.jpg',
+      tipo_mime: 'image/jpeg',
+      dimensione_byte: 1024,
+      hash_sha256: 'abc123',
+      id_issue: '1',
+      id_commento: null
+    });
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Issue aggiornata con successo',
+      issue: mockUpdatedIssue
+    });
+  });
+
+  it('dovrebbe aggiungere l\'header con timestamp quando la descrizione
+      è vuota', async () => {
+    req.body = { descrizione: 'Prima descrizione' };
+
+    const mockIssue = {
+      id: 1,
+      descrizione: '',
+      update: vi.fn().mockResolvedValue()
+    };
+
+    Issue.findByPk.mockResolvedValue(mockIssue);
+    Allegato.count.mockResolvedValue(0);
+
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2024-12-22T10:30:00'));
+
+    await updateIssue(req, res);
+
+    const expectedDescription = '<br><br><strong>22/12/2024,
+      10:30:</strong><br>Prima descrizione';
+    expect(mockIssue.update).toHaveBeenCalledWith({
+      descrizione: expectedDescription });
+
+    vi.useRealTimers();
+  });
+
+  it('dovrebbe gestire errori generici e pulire i file caricati', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    req.body = { descrizione: 'Nuova descrizione' };
+    req.files = [{ path: '/uploads/file1.jpg' }];
+
+    Issue.findByPk.mockRejectedValue(new Error('Database error'));
+    fsMocks.unlink.mockResolvedValue();
+
+    await updateIssue(req, res);
+
+    expect(fsMocks.unlink).toHaveBeenCalledWith('/uploads/file1.jpg');
+    expect(res.status).toHaveBeenCalledWith(500);
+
+    consoleSpy.mockRestore();
+  });
+
+  it('dovrebbe gestire errori durante l\'eliminazione dei file', async () => {
+    req.body = { descrizione: 'Nuova descrizione' };
+    req.files = [{ path: '/uploads/file1.jpg' }];
+
+    Issue.findByPk.mockResolvedValue(null);
+    fsMocks.unlink.mockRejectedValue(new Error('Unlink error'));
+
+    await updateIssue(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+  });
+
+  it('dovrebbe processare multipli file contemporaneamente', async () => {
+    req.body = { descrizione: 'Nuova descrizione' };
+    req.files = [
+      {
+        originalname: 'test1.jpg',
+        filename: 'test1-123.jpg',
+        path: '/uploads/test1-123.jpg',
+        mimetype: 'image/jpeg',
+        size: 1024
+      },
+      {
+        originalname: 'test2.pdf',
+        filename: 'test2-456.pdf',
+        path: '/uploads/test2-456.pdf',
+        mimetype: 'application/pdf',
+        size: 2048
+      }
+    ];
+
+    const mockIssue = {
+      id: 1,
+      descrizione: '',
+      update: vi.fn().mockResolvedValue()
+    };
+
+    Issue.findByPk.mockResolvedValue(mockIssue);
+    Allegato.count.mockResolvedValue(0);
+    Allegato.create.mockResolvedValue({ id: 1 });
+
+    fsMocks.readFile.mockResolvedValue(Buffer.from('test'));
+
+    const mockHash = {
+      update: vi.fn().mockReturnThis(),
+      digest: vi.fn().mockReturnValue('abc123')
+    };
+    crypto.createHash.mockReturnValue(mockHash);
+
+    await updateIssue(req, res);
+
+    expect(Allegato.create).toHaveBeenCalledTimes(2);
+    expect(fsMocks.readFile).toHaveBeenCalledTimes(2);
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+});
+\end{lstlisting}
+
+\newpage
+
+\section{Documentazione delle strategie di test}
+
+In questa sezione vengono dettagliate le metodologie, le classi di equivalenza e i criteri di copertura adottati per ciascuno dei moduli sottoposti a test unitario (descritti nella Sezione \ref{test-code}).
+La strategia generale ha privilegiato un approccio \textit{White-box} per garantire la massima copertura dei rami decisionali (\textit{Branch Coverage}), simulando (mocking) le dipendenze esterne come il Database e il File System per isolare la logica di business.
+
+\subsection{Strategia per la Creazione Issue (createIssue)}
+Per il controller di creazione issue, la strategia si è focalizzata sulla validazione degli input e sulla gestione atomica delle risorse (file).
+
+\begin{itemize}
+    \item \textbf{Classi di Equivalenza Individuate:}
+    \begin{itemize}
+        \item \textit{Contesto Utente:} Utente non sincronizzato su DB locale (Caso d'errore specifico).
+        \item \textit{Input Obbligatori:} Set completo vs Set parziale (Test \textit{Fail-Fast}).
+        \item \textit{Integrità Referenziale:} Riferimento a Progetto inesistente.
+        \item \textit{Gestione Allegati:} Nessun allegato (Caso base) vs Allegati presenti (Caso complesso).
+    \end{itemize}
+    \item \textbf{Scenari Critici Coperti:}
+        È stata posta particolare enfasi sulla verifica del meccanismo di \textbf{Rollback manuale} (Cleanup). I test \texttt{TC06} e \texttt{TC07} verificano che, in caso di errore logico dopo l'upload fisico del file, il sistema rimuova il file orfano, garantendo l'\textit{Operational Safety} e prevenendo l'inconsistenza dello storage.
+\end{itemize}
+
+\subsection{Strategia per la Creazione Commento (createComment)}
+Il test della creazione commenti ha richiesto una strategia specifica per gestire la catena di dipendenze (Utente $\rightarrow$ Issue $\rightarrow$ Commento).
+
+\begin{itemize}
+    \item \textbf{Classi di Equivalenza Individuate:}
+    \begin{itemize}
+        \item \textit{Autenticazione:} Richiesta priva di oggetto \texttt{user} (Middleware failure simulation).
+        \item \textit{Relazioni:} Issue target inesistente vs Esistente.
+        \item \textit{Payload:} Commento solo testo vs Commento con allegati (verifica polimorfismo tabella Allegati).
+    \end{itemize}
+    \item \textbf{Criteri di Copertura:}
+        Sono stati coperti i rami di errore annidati: fallimento ricerca utente, fallimento ricerca issue, e fallimento creazione commento. Anche qui, la strategia di mock del modulo \texttt{fs} ha permesso di verificare la pulizia dei file in caso di fallimento a cascata.
+\end{itemize}
+
+\newpage
+
+\subsection{Strategia per l'Aggiornamento Issue (updateIssue)}
+La logica di aggiornamento è intrinsecamente più complessa della creazione a causa della gestione dello stato preesistente e dei limiti di dominio.
+
+\begin{itemize}
+    \item \textbf{Classi di Equivalenza Individuate:}
+    \begin{itemize}
+        \item \textit{Validità Descrizione:} Stringa vuota/spazi (Invalida) vs Testo valido.
+        \item \textit{Stato Precedente:} Issue non trovata (404).
+        \item \textit{Limiti di Business:} Numero allegati totali (Esistenti + Nuovi) $> 3$ vs $\le 3$.
+    \end{itemize}
+    \item \textbf{Logica di Business Testata:}
+    \begin{itemize}
+        \item \textbf{Append-Only Logic:} È stato verificato che l'aggiornamento non sovrascriva la descrizione ma la accodi. La strategia di test ha incluso l'uso di \textit{Fake Timers} (\texttt{vi.useFakeTimers}) per garantire che il timestamp generato nell'header della modifica fosse deterministico e verificabile.
+        \item \textbf{Vincoli Quantitativi:} Il test simula specificamente il conteggio degli allegati preesistenti per forzare l'errore di "superamento limite", coprendo un requisito funzionale specifico non testabile nella semplice creazione.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Strategia per l'Autenticazione (Middleware JWT)}
+Per il middleware di autenticazione (\texttt{jwt.test.js}), la strategia è passata da test di logica di business a test di sicurezza e gestione stati.
+
+\begin{itemize}
+    \item \textbf{Classi di Equivalenza Individuate:}
+    \begin{itemize}
+        \item \textit{Stato Token:} Access Token valido vs Scaduto vs Mancante.
+        \item \textit{Meccanismo di Refresh:} Refresh Token valido (con Access scaduto) vs Refresh Token mancante.
+    \end{itemize}
+    \item \textbf{Integrazione Simulata:}
+        A differenza dei controller, qui è stato necessario mockare chiamate HTTP esterne (verso l'Identity Provider Keycloak tramite \texttt{axios}). La strategia ha coperto il flusso di "Auto-Refresh":
+        \begin{enumerate}
+            \item Rilevamento token scaduto.
+            \item Chiamata all'endpoint di refresh.
+            \item Aggiornamento trasparente dei cookie nella risposta.
+        \end{enumerate}
+        Questo garantisce che la sessione utente rimanga attiva senza richiedere interventi manuali, coprendo un requisito non funzionale di \textit{Usabilità} e \textit{Sicurezza}.
+\end{itemize}

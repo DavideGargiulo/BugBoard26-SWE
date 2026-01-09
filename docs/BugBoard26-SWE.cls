@@ -54,6 +54,9 @@
 \RequirePackage{longtable}
 \RequirePackage[inkscapelatex=false]{svg}
 \RequirePackage{hyperref}
+\RequirePackage{listings}
+\RequirePackage{textcomp}
+\RequirePackage[acronym, toc]{glossaries}
 
 % Some colors
 \definecolor{arsenic}{rgb}{0.40, 0.40, 0.40}
@@ -272,7 +275,16 @@
 {\color{lightgray}\large\normalfont\mdseries\centering}{\filcenter\small\quad\textcolor{gray}{\textit{\thesection}}\quad}
 {1ex}{\color{gray!50!black}\Large\bfseries\filcenter#1}[]
 % Subsection
-\titleformat{\subsection}[hang]{\normalfont\mdseries\centering}{\color{gray}\textit{\thesubsection}}{2ex}{\colorbox{silver}{\begin{tabular}[t]{@{\color{lightgray}\vrule width 2pt\hspace{3ex}}p{\dimexpr\textwidth-6em\relax}}\raggedright#1\end{tabular}}}
+\titleformat{\subsection}[hang]{\normalfont\mdseries\centering}{\color{gray}\textit{\thesubsection}}{2ex}{%
+  \colorbox{silver}{%
+    \parbox{\dimexpr\textwidth-6em\relax}{%
+      \vspace{0.5ex}%
+      {\color{lightgray}\vrule width 2pt}\hspace{3ex}%
+      \parbox[t]{\dimexpr\textwidth-9em\relax}{\raggedright\color{black}#1}%
+      \vspace{0.5ex}%
+    }%
+  }%
+}
 % Subsubsection
 \titleformat{\subsubsection}[hang]{\normalfont\bfseries}{\color{gray}\mdseries\textit{\thesubsubsection}}{1em}{#1}[]
 
@@ -350,4 +362,89 @@
   \vspace{1pt}
 
   \end{tcolorbox}
+}
+
+\lstdefinelanguage[ECMAScript2015]{JavaScript}[]{JavaScript}{
+  morekeywords=[1]{await, async, case, catch, class, const, default, do,
+    enum, export, extends, finally, from, implements, import, instanceof,
+    let, static, super, switch, throw, try},
+  morestring=[b]` % Interpolation strings.
+}
+
+
+%
+% JavaScript version 1.1 by Gary Hammock
+%
+% Reference:
+%   B. Eich and C. Rand Mckinney, "JavaScript Language Specification
+%     (Preliminary Draft)", JavaScript 1.1.  1996-11-18.  [Online]
+%     http://hepunx.rl.ac.uk/~adye/jsspec11/titlepg2.htm
+%
+
+\lstdefinelanguage{JavaScript}{
+  morekeywords=[1]{break, continue, delete, else, for, function, if, in,
+    new, return, this, typeof, var, void, while, with},
+  % Literals, primitive types, and reference types.
+  morekeywords=[2]{false, null, true, boolean, number, undefined,
+    Array, Boolean, Date, Math, Number, String, Object},
+  % Built-ins.
+  morekeywords=[3]{eval, parseInt, parseFloat, escape, unescape},
+  sensitive,
+  morecomment=[s]{/*}{*/},
+  morecomment=[l]//,
+  morecomment=[s]{/**}{*/}, % JavaDoc style comments
+  morestring=[b]',
+  morestring=[b]"
+}[keywords, comments, strings]
+
+
+\lstalias[]{ES6}[ECMAScript2015]{JavaScript}
+
+% Requires package: color.
+\definecolor{mediumgray}{rgb}{0.3, 0.4, 0.4}
+\definecolor{mediumblue}{rgb}{0.0, 0.0, 0.8}
+\definecolor{forestgreen}{rgb}{0.13, 0.55, 0.13}
+\definecolor{darkviolet}{rgb}{0.58, 0.0, 0.83}
+\definecolor{royalblue}{rgb}{0.25, 0.41, 0.88}
+\definecolor{crimson}{rgb}{0.86, 0.8, 0.24}
+
+\lstdefinestyle{JSES6Base}{
+  backgroundcolor=\color{white},
+  basicstyle=\ttfamily,
+  breakatwhitespace=false,
+  breaklines=false,
+  captionpos=b,
+  columns=fullflexible,
+  commentstyle=\color{mediumgray}\upshape,
+  emph={},
+  emphstyle=\color{crimson},
+  extendedchars=true,  % requires inputenc
+  fontadjust=true,
+  frame=single,
+  identifierstyle=\color{black},
+  keepspaces=true,
+  keywordstyle=\color{mediumblue},
+  keywordstyle={[2]\color{darkviolet}},
+  keywordstyle={[3]\color{royalblue}},
+  numbers=left,
+  numbersep=5pt,
+  numberstyle=\tiny\color{black},
+  rulecolor=\color{black},
+  showlines=true,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  stringstyle=\color{forestgreen},
+  tabsize=2,
+  title=\lstname,
+  upquote=true  % requires textcomp
+}
+
+\lstdefinestyle{JavaScript}{
+  language=JavaScript,
+  style=JSES6Base
+}
+\lstdefinestyle{ES6}{
+  language=ES6,
+  style=JSES6Base
 }
